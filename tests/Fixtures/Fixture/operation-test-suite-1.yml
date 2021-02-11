@@ -1,0 +1,58 @@
+OpenAPITesting\Models\Fixture\OperationTestSuiteFixture:
+  updatePet:
+    operationTestCaseFixtures: [ '@OperationTestCase1' ]
+  findPetsByStatus:
+    operationTestCaseFixtures: [ '@OperationTestCase2', '@OperationTestCase3' ]
+
+OpenAPITesting\Models\Fixture\OperationTestCaseFixture:
+  OperationTestCase1:
+
+    description: 'TestCase 1 description'
+    request:
+      parameters:
+        path:
+          id: 1
+        query:
+          category: 'category test'
+      headers:
+        accept: application/json
+      body: 'Request Body 1'
+    response:
+      statusCode: 200,
+      headers:
+        accept: application/json
+      body: 'Response Body 1'
+
+  OperationTestCase2:
+    description: 'TestCase 2 description'
+    request:
+      parameters:
+        path:
+          id: 1
+        query:
+          category: 'category test'
+      headers:
+        accept: application/json
+      body: 'Request Body 2'
+    response:
+      statusCode: 200,
+      headers:
+        accept: application/json
+      body: 'Response Body 2'
+
+  OperationTestCase3:
+    description: 'TestCase 3 description'
+    request:
+      parameters:
+        path:
+          id: 1
+        query:
+          category: 'category test'
+      headers:
+        accept: application/json
+      body: 'Request Body 3'
+    response:
+      statusCode: 200,
+      headers:
+        accept: application/json
+      body: 'Response Body 3'
