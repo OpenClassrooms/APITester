@@ -14,7 +14,7 @@ class ExecuteTestPlanTest extends TestCase
     /**
      * @test
      */
-    public function AllExcluded_ReturnTestSuite()
+    public function AllExcluded_ReturnTestSuite(): void
     {
         $request = new ExecuteTestPlanRequest();
         $request->testPlan = new TestPlan();

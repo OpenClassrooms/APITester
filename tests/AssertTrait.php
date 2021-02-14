@@ -7,7 +7,7 @@ use Psr\Http\Message\RequestInterface;
 
 trait AssertTrait
 {
-    protected function assertRequests(array $expecteds, array $actuals)
+    protected function assertRequests(array $expecteds, array $actuals): void
     {
         Assert::assertCount(count($expecteds), $actuals);
         foreach ($expecteds as $key => $expected) {
@@ -15,7 +15,7 @@ trait AssertTrait
         }
     }
 
-    protected function assertRequest(RequestInterface $expected, RequestInterface $actual)
+    protected function assertRequest(RequestInterface $expected, RequestInterface $actual): void
     {
         Assert::assertEquals($expected->getUri(), $actual->getUri());
         Assert::assertEquals($expected->getMethod(), $actual->getMethod());

@@ -62,9 +62,12 @@ class OperationTestCaseTest extends TestCase
     /**
      * @test
      * @dataProvider getOperationTestCasesToFinish
-     * @param OperationTestCase $operationTestCase
+     *
+     * @param OperationTestCase   $operationTestCase
      * @param ResponseInterface[] $responses
-     * @param string[][] $expectedErrors
+     * @param string[][]          $expectedErrors
+     *
+     * @throws \OpenAPITesting\Models\Test\InvalidStatusException
      */
     public function finish_ReturnErrors(OperationTestCase $operationTestCase, array $responses, array $expectedErrors, $expectedStatus): void
     {
