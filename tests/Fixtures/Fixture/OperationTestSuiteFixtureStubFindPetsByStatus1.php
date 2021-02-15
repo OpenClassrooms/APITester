@@ -5,7 +5,7 @@ namespace OpenAPITesting\Tests\Fixtures\Fixture;
 use OpenAPITesting\Models\Fixture\OperationTestSuiteFixture;
 use OpenAPITesting\Tests\Fixtures\Models\OpenAPI\OperationStubFindPetsByStatus;
 
-class OperationTestSuiteFixtureStub2 extends OperationTestSuiteFixture
+class OperationTestSuiteFixtureStubFindPetsByStatus1 extends OperationTestSuiteFixture
 {
     public const OPERATION_ID = OperationStubFindPetsByStatus::OPERATION_ID;
 

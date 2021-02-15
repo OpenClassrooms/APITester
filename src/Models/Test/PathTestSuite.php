@@ -2,8 +2,6 @@
 
 namespace OpenAPITesting\Models\Test;
 
-use cebe\openapi\spec\PathItem;
-
 class PathTestSuite
 {
     /**
@@ -11,9 +9,19 @@ class PathTestSuite
      */
     protected array $operationTestSuites;
 
-    protected PathItem $path;
-
     protected string $pathName;
+
+    /**
+     * PathTestSuite constructor.
+     *
+     * @param OperationTestSuite[] $operationTestSuites
+     * @param string $pathName
+     */
+    public function __construct(string $pathName, array $operationTestSuites = [])
+    {
+        $this->operationTestSuites = $operationTestSuites;
+        $this->pathName = $pathName;
+    }
 
     public function addOperationTestSuite(OperationTestSuite $operationTestSuite)
     {
@@ -26,5 +34,10 @@ class PathTestSuite
     public function getOperationTestSuites(): array
     {
         return $this->operationTestSuites;
+    }
+
+    public function getPathName(): string
+    {
+        return $this->pathName;
     }
 }

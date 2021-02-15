@@ -4,7 +4,9 @@ namespace OpenAPITesting\Models\Test;
 
 use Carbon\Carbon;
 use cebe\openapi\spec\OpenApi;
+use DateInterval;
 use DateTime;
+use DateTimeInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class TestPlan
@@ -44,9 +46,27 @@ class TestPlan
         $this->pathTestSuites = array_merge($this->pathTestSuites, $pathTestSuites);
     }
 
+    /**
+     * @return PathTestSuite[]
+     */
+    public function getPathTestSuites(): array
+    {
+        return $this->pathTestSuites;
+    }
+
     public function getBaseUri(): string
     {
         return reset($this->openAPI->servers)->url;
+    }
+
+    /**
+     * @return OperationTestCase[]
+     */
+    public function launch(): array
+    {
+        $this->startDate = Carbon::now();
+
+        return $this->getOperationTestCases();
     }
 
     /**
@@ -62,16 +82,6 @@ class TestPlan
         }
 
         return $this->operationTestCases;
-    }
-
-    /**
-     * @return OperationTestCase[]
-     */
-    public function launch(): array
-    {
-        $this->startDate = Carbon::now();
-
-        return $this->getOperationTestCases();
     }
 
     /**
@@ -98,5 +108,15 @@ class TestPlan
         }
 
         return self::STATUS_NOT_LAUNCHED;
+    }
+
+    public function getStartDate(): DateTimeInterface
+    {
+        return $this->startDate;
+    }
+
+    public function getDuration(): DateInterval
+    {
+        return $this->startDate->diff($this->finishDate);
     }
 }

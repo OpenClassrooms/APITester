@@ -8,11 +8,13 @@ class PathTestSuiteFactoryImpl implements PathTestSuiteFactory
     {
         $pathTestSuites = [];
         foreach ($operations as $operationId => $operation) {
-            if (!array_key_exists($operation->getPath(), $pathTestSuites)) {
-                $pathTestSuites[$operation->getPath()] = new PathTestSuite();
+            if (array_key_exists($operationId, $operationTestSuiteFixtures)) {
+                if (!array_key_exists($operation->getPath(), $pathTestSuites)) {
+                    $pathTestSuites[$operation->getPath()] = new PathTestSuite($operation->getPath());
+                }
+                $pathTestSuite = $pathTestSuites[$operation->getPath()];
+                $pathTestSuite->addOperationTestSuite(new OperationTestSuite($operation, $operationTestSuiteFixtures[$operationId]));
             }
-            $pathTestSuite = $pathTestSuites[$operation->getPath()];
-            $pathTestSuite->addOperationTestSuite(new OperationTestSuite($operation, $operationTestSuiteFixtures[$operationId]));
         }
 
         return $pathTestSuites;
