@@ -22,7 +22,7 @@ class TestPlan
     /**
      * @var OperationTestCase[]
      */
-    private array $operationTestCases = [];
+    protected array $operationTestCases = [];
 
     /**
      * @var PathTestSuite[]
@@ -36,9 +36,32 @@ class TestPlan
         $this->openAPI = $openAPI;
     }
 
+    /**
+     * @param PathTestSuite[] $pathTestSuites
+     */
+    public function addPathTestSuites(array $pathTestSuites)
+    {
+        $this->pathTestSuites = array_merge($this->pathTestSuites, $pathTestSuites);
+    }
+
     public function getBaseUri(): string
     {
         return reset($this->openAPI->servers)->url;
+    }
+
+    /**
+     * @return OperationTestCase[]
+     */
+    protected function getOperationTestCases(): array
+    {
+        $this->operationTestCases = [];
+        foreach ($this->pathTestSuites as $pathTestSuite) {
+            foreach ($pathTestSuite->getOperationTestSuites() as $operationTestSuite) {
+                $this->operationTestCases = array_merge($this->operationTestCases, $operationTestSuite->getTestCases());
+            }
+        }
+
+        return $this->operationTestCases;
     }
 
     /**
@@ -49,21 +72,6 @@ class TestPlan
         $this->startDate = Carbon::now();
 
         return $this->getOperationTestCases();
-    }
-
-    /**
-     * @return OperationTestCase[]
-     */
-    public function getOperationTestCases(): array
-    {
-        $this->operationTestCases = [];
-        foreach ($this->pathTestSuites as $pathTestSuite) {
-            foreach ($pathTestSuite->getOperationTestSuites() as $operationTestSuite) {
-                $this->operationTestCases = array_merge($this->operationTestCases, $operationTestSuite->getTestCases());
-            }
-        }
-
-        return $this->operationTestCases;
     }
 
     /**
@@ -80,7 +88,7 @@ class TestPlan
         $this->finishDate = Carbon::now();
     }
 
-    private function getStatus(): string
+    protected function getStatus(): string
     {
         if ($this->finishDate !== null) {
             return self::STATUS_FINISHED;
