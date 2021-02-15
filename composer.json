@@ -13,6 +13,7 @@
     "nesbot/carbon": "2.*",
     "nyholm/psr7": "1.*",
     "psr/http-message": "1.*",
+    "psr/http-client": "1.*",
     "symfony/psr-http-message-bridge": "*",
     "webmozart/assert": "1.*",
     "sensio/framework-extra-bundle": "^5.6",

@@ -42,7 +42,8 @@ class PrepareTestPlan
         $operationTestSuiteFixtures = $this->getOperationTestSuiteFixtures($filters);
         $pathTestSuites = $this->createPathTestSuites($operations, $operationTestSuiteFixtures);
 
-        return $this->testPlanBuilder->create($openAPI)
+        return $this->testPlanBuilder
+            ->create($openAPI)
             ->withPathTestSuites($pathTestSuites)
 //            ->withNotFoundProcessor(todo)
 //            ->withInputProcessor(todo)
