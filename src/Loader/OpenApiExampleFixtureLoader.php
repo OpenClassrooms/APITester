@@ -6,7 +6,7 @@ namespace OpenAPITesting\Loader;
 
 use OpenAPITesting\Loader;
 
-class OpenApiExampleLoader implements Loader
+class OpenApiExampleFixtureLoader implements Loader
 {
     public function load($data)
     {

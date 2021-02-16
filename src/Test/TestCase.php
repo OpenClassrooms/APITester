@@ -13,7 +13,7 @@ use OpenAPITesting\Util\Assert;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class OperationTestCase implements Test
+class TestCase implements Test
 {
     public const STATUS_FAILED = 'failed';
 
@@ -38,7 +38,7 @@ class OperationTestCase implements Test
 
     private string $method;
 
-    private TestPlan $parent;
+    private TestSuite $parent;
 
     private string $path;
 
@@ -48,7 +48,7 @@ class OperationTestCase implements Test
         Operation $operation,
         string $path,
         string $method,
-        TestPlan $parent,
+        TestSuite $parent,
         OperationTestCaseFixture $operationTestCaseFixture
     ) {
         $this->parent = $parent;
@@ -73,7 +73,7 @@ class OperationTestCase implements Test
         return $this->operation;
     }
 
-    public function getParent(): TestPlan
+    public function getParent(): TestSuite
     {
         return $this->parent;
     }

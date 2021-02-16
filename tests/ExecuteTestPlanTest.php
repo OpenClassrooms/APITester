@@ -2,14 +2,14 @@
 
 namespace OpenAPITesting\Tests;
 
-use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Loader\AggregateLoader;
 use OpenAPITesting\Loader\AliceFixtureLoader;
 use OpenAPITesting\Loader\FileConcatLoader;
 use OpenAPITesting\Loader\JsonLoader;
 use OpenAPITesting\Loader\OpenApiLoader;
 use OpenAPITesting\Loader\YamlLoader;
-use OpenAPITesting\Test\TestPlan;
+use OpenAPITesting\Requester\HttpRequester;
+use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +23,7 @@ class ExecuteTestPlanTest extends TestCase
     {
         $openApiLoader = new AggregateLoader(new FileConcatLoader(), new JsonLoader(), new OpenApiLoader());
         $fixtureLoader = new AggregateLoader(new FileConcatLoader(), new YamlLoader(), new AliceFixtureLoader());
-        $testPlan = new TestPlan(
+        $testPlan = new TestSuite(
             $openApiLoader->load(FixturesLocation::OPEN_API_PETSTORE_FILE),
             $fixtureLoader->load(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)
         );

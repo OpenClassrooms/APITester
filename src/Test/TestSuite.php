@@ -9,7 +9,7 @@ use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Test;
 use OpenAPITesting\Requester;
 
-class TestPlan implements Test
+class TestSuite implements Test
 {
     protected ?DateTimeInterface $finishedAt = null;
 
@@ -23,7 +23,7 @@ class TestPlan implements Test
     private OpenApiTestPlanFixture $fixture;
 
     /**
-     * @var OperationTestCase[]
+     * @var TestCase[]
      */
     private array $operationTestCases;
 
@@ -42,7 +42,7 @@ class TestPlan implements Test
         foreach ($this->openApi->paths as $pathName => $path) {
             foreach ($path->getOperations() as $method => $operation) {
                 foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
-                    $this->operationTestCases[] = new OperationTestCase(
+                    $this->operationTestCases[] = new TestCase(
                         $operation,
                         $pathName,
                         mb_strtoupper($method),
