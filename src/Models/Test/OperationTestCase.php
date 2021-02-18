@@ -104,6 +104,6 @@ class OperationTestCase
 
     public function getId(): string
     {
-        return $this->operation->operationId . ' - ' . $this->title;
+        return $this->operation->operationId;
     }
 }

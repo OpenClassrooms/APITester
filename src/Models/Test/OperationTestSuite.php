@@ -27,9 +27,6 @@ class OperationTestSuite
      */
     public function getTestCases(): array
     {
-        if ($this->operationTestCases === null) {
-        }
-
         return $this->operationTestCases;
     }
 }

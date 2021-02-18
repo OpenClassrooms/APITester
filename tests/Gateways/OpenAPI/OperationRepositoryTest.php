@@ -2,9 +2,9 @@
 
 namespace OpenAPITesting\Tests\Gateways\OpenAPI;
 
+use cebe\openapi\Reader;
 use cebe\openapi\spec\Operation;
 use Generator;
-use OpenAPITesting\Gateways\OpenAPI\OpenAPIRepository;
 use OpenAPITesting\Gateways\OpenAPI\OperationGateway;
 use OpenAPITesting\Gateways\OpenAPI\OperationRepository;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
@@ -116,13 +116,14 @@ class OperationRepositoryTest extends TestCase
         $this->assertCount(count($expectedOperations), $actualOperations);
         foreach ($expectedOperations as $operationId => $expectedOperation) {
             $actualOperation = $actualOperations[$operationId];
-//            $this->assertSame($expectedOperation->operationId, $actualOperation->operationId);
-//            $this->assertEquals($expectedOperation->tags, $actualOperation->tags);
+            $this->assertSame($expectedOperation->operationId, $actualOperation->operationId);
+            $this->assertEquals($expectedOperation->tags, $actualOperation->tags);
         }
     }
 
     protected function setUp(): void
     {
-        $this->operationGateway = new OperationRepository(new OpenAPIRepository([FixturesLocation::OPEN_API_PETSTORE_FILE]));
+        $openAPI = Reader::readFromJsonFile(FixturesLocation::OPEN_API_PETSTORE_FILE);
+        $this->operationGateway = new OperationRepository($openAPI);
     }
 }

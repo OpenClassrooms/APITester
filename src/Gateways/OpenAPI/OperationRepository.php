@@ -19,8 +19,12 @@ class OperationRepository implements OperationGateway
         $operations = [];
         foreach ($this->openAPI->paths as $pathName => $path) {
             $filteredOperations = $this->applyFilters($path->getOperations(), $filters);
-            foreach ($filteredOperations as $filteredOperation) {
-                $operations[$filteredOperation->operationId] = new \OpenAPITesting\Models\OpenAPI\Operation(['operation' => $filteredOperation, 'path' => $pathName]);
+            foreach ($filteredOperations as $method => $filteredOperation) {
+                $operations[$filteredOperation->operationId] = new \OpenAPITesting\Models\OpenAPI\Operation([
+                    'operation' => $filteredOperation,
+                    'path' => $pathName,
+                    'method' => $method
+                ]);
             }
         }
 
