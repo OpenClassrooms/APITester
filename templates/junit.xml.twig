@@ -1,0 +1,60 @@
+{# https://llg.cubic.org/docs/junit/ #}
+<?xml version="1.0" encoding="utf-8"?>
+{# @var testPlan \OpenAPITesting\Models\Test\TestPlan #}
+<testsuites
+        xmlns="https://github.com/jenkinsci/xunit-plugin/blob/master/src/main/resources/org/jenkinsci/plugins/xunit/types/model/xsd/junit-10.xsd"
+        disabled="{{ testPlan.disabledCount }}"
+        errors="{{ testPlan.errorsCount }}"
+        failures="{{ testPlan.failuresCount }}"
+        name="{{ testPlan.name }}"
+        tests="{{ testPlan.testCasesCounts }}"
+        time="{{ testPlan.duration }}"
+>
+    {# @var pathTestSuite \OpenAPITesting\Models\Test\PathTestSuite #}
+    {% set testSuitesCount = 0 %}
+    {% for pathTestSuite in testPlan.pathTestSuites %}
+    {# @var operationTestSuite \OpenAPITesting\Models\Test\OperationTestSuite #}
+    {% for operationTestSuite in pathTestSuite.operationTestSuites %}
+        <testsuite name="{{ operationTestSuite.name }}"
+                   tests="{{ operationTestSuite.testCasesCount }}"
+                   disabled="{{ operationTestSuite.disabledCount }}"
+                   errors="{{ operationTestSuite.errorsCount }}"
+                   failures="{{ operationTestSuite.failuresCount }}"
+                   hostname=""
+                   id="{{ testSuitesCount++ }}"
+                   package="{{ pathTestSuite.name }}"
+                   skipped="{{ operationTestSuite.skippedCount }}"
+                   time="{{ operationTestSuite.duration }}"
+                   timestamp="{{ operationTestSuite.startDate }}"
+        >
+            {# @var testCase \OpenAPITesting\Models\Test\OperationTestCase #}
+            {% for testCase in operationTestSuite.testCases %}
+                <testcase name="{{ testCase.name }}"
+                          assertions="{{ testCase.assertionsCount }}"
+                          classname="{{ operationTestSuite.name }}"
+                          status="{{ testCase.status }}"
+                          time="{{ testCase.duration }}"
+                >
+
+                    {% if testCase.status === constant('SKIPPED', testCase) %}
+                        <skipped message="{{ testCase.message }}"/>
+                    {% endif %}
+                    {% if testCase.status === constant('ERROR', testCase) %}
+                        <error message="{{ testCase.message }}"
+                               type="{{ testCase.code }}"
+                        >
+                            {# error description #}
+                        </error>
+                    {% endif %}
+                    {% if testCase.status === constant('FAILURE', testCase) %}
+                        <failure message="{{ testCase.message }}"
+                                 type="{{ testCase.assertionError }}"
+                        >
+                            {# failure description #}
+                        </failure>
+                    {% endif %}
+                </testcase>
+            {% endfor %}
+        </testsuite>
+    {% endfor %}
+</testsuites>

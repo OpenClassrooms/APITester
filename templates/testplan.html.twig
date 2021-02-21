@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{# @var testPlan \OpenAPITesting\Models\Test\TestPlan #}
+{{ testPlan }}
+{# @var pathTestSuite \OpenAPITesting\Models\Test\PathTestSuite #}
+{% for pathTestSuite in testPlan.pathTestSuites %}
+    {# @var operationTestSuite \OpenAPITesting\Models\Test\OperationTestSuite #}
+    {% for operationTestSuite in pathTestSuite.operationTestSuites %}
+        {# @var testCase \OpenAPITesting\Models\Test\OperationTestCase #}
+        {% for testCase in operationTestSuite.testCases %}
+            {{ testCase. }}
+        {% endfor %}
+    {% endfor %}

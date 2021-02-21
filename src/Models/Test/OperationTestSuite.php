@@ -29,4 +29,9 @@ class OperationTestSuite
     {
         return $this->operationTestCases;
     }
+
+    public function getMethod(): string
+    {
+        return $this->operation->getMethod();
+    }
 }

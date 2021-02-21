@@ -10,6 +10,37 @@ class PrepareTestPlanRequest
 
     public string $version;
 
+    public static function create(): PrepareTestPlanRequest
+    {
+        return new static();
+    }
+
+    public function withFilters(array $filters): PrepareTestPlanRequest
+    {
+        $this->filters = $filters;
+
+        return $this;
+    }
+
+    public function openAPITitle(string $openAPITitle): PrepareTestPlanRequest
+    {
+        $this->openAPITitle = $openAPITitle;
+
+        return $this;
+    }
+
+    public function version(string $version): PrepareTestPlanRequest
+    {
+        $this->version = $version;
+
+        return $this;
+    }
+
+    public function build(): PrepareTestPlanRequest
+    {
+        return $this;
+    }
+
     public function getFilters(): array
     {
         return $this->filters;
