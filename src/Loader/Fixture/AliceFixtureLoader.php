@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Loader;
+namespace OpenAPITesting\Loader\Fixture;
 
 use Nelmio\Alice\DataLoaderInterface;
 use Nelmio\Alice\Loader\NativeLoader;
-use OpenAPITesting\Loader;
 use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
+use OpenAPITesting\Fixture\OperationTestCaseFixture;
+use OpenAPITesting\Loader;
 
 class AliceFixtureLoader implements Loader
 {
@@ -26,6 +27,10 @@ class AliceFixtureLoader implements Loader
      */
     public function load($data): OpenApiTestPlanFixture
     {
+        $data = [
+            OperationTestCaseFixture::class => $data,
+        ];
+
         return new OpenApiTestPlanFixture($this->loader->loadData($data)->getObjects());
     }
 }

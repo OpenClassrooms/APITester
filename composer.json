@@ -17,6 +17,7 @@
         "psr/http-message": "1.*",
         "symfony/console": "5.*",
         "symfony/http-client": "5.*",
+        "symfony/http-kernel": "^5.2",
         "symfony/psr-http-message-bridge": "*",
         "webmozart/assert": "1.*"
     },
@@ -41,10 +42,5 @@
         "psr-4": {
             "OpenAPITesting\\Tests\\": "tests/"
         }
-    },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php72": "*"
     }
 }

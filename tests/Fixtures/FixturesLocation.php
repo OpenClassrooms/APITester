@@ -13,4 +13,6 @@ class FixturesLocation
     public const OPEN_API_PETSTORE_EXPANDED_FILE = __DIR__ . '/OpenAPIFiles/petstore-expanded.json';
 
     public const OPEN_API_PETSTORE_FILE = __DIR__ . '/OpenAPIFiles/petstore.json';
+
+    public const OPEN_API_PETSTORE_YAML = __DIR__ . '/OpenAPIFiles/petstore.yaml';
 }

@@ -7,9 +7,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class OperationTestCaseFixture
 {
-    protected string $operationId;
-
     private string $description;
+
+    private string $operationId;
 
     private array $request = [];
 

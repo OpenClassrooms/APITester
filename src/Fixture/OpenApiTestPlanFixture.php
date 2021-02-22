@@ -9,7 +9,7 @@ class OpenApiTestPlanFixture
      */
     protected array $operationTestCaseFixtures = [];
 
-    public function __construct(array $operationTestCaseFixtures)
+    public function __construct(array $operationTestCaseFixtures = [])
     {
         $this->operationTestCaseFixtures = $operationTestCaseFixtures;
     }
@@ -20,5 +20,12 @@ class OpenApiTestPlanFixture
             $this->operationTestCaseFixtures,
             static fn ($fixture) => $fixture->getOperationId() === $operationId
         );
+    }
+
+    public function add(OperationTestCaseFixture $fixture): OpenApiTestPlanFixture
+    {
+        $this->operationTestCaseFixtures[] = $fixture;
+
+        return $this;
     }
 }
