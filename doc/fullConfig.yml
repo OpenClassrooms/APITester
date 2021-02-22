@@ -1,0 +1,50 @@
+OpenApi:
+  location: # url or git
+    url: https://example.com
+    git:
+      url: git@...
+      branch: master
+      #maybe authentication stuff
+
+Fixtures:
+  location: # url or git
+    url: https://example.com
+    git:
+      url: git@
+      branch: master
+      #maybe authentication stuff
+
+Test plan:
+  Data fixtures:
+    location:
+      url: https://example.com
+      git:
+        url: git@...
+        branch: master
+        #maybe authentication stuff
+  include: [ operation id 1 ]
+  exclude: [ operation id 2 ]
+  Automations:
+    Bad Request:
+      active: true
+      include: [ operation id 1 ]
+      exclude: [ ]
+
+Automations:
+  Bad Request:
+    status code: 400
+      patterns:
+          - required: "The field \w. is required"
+            - format:
+                - default: "The field %fieldName% should be a %fieldType%"
+                - int: "The field %fieldName% should be an integer"
+
+  Unauthorized:
+    status code: 401
+    patterns:
+
+  Forbidden:
+
+  Not Found:
+    status code: 404
+    patterns:
