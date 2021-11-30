@@ -30,6 +30,7 @@
         "orklah/psalm-strict-equality": "^2.0",
         "orklah/psalm-strict-types": "^0.1.3",
         "orklah/psalm-use-constants": "^1.0",
+        "php-coveralls/php-coveralls": "^2.5",
         "php-standard-library/psalm-plugin": "^1.1",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.2",
