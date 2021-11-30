@@ -1,71 +1,95 @@
 {
-    "type": "project",
-    "license": "proprietary",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require": {
-        "php": ">=7.4",
-        "ext-ctype": "*",
-        "ext-iconv": "*",
-        "ext-json": "*",
-        "azjezz/psl": "^1.6",
-        "cebe/php-openapi": "1.4.*",
-        "n98/junit-xml": "1.*",
-        "nelmio/alice": "3.*",
-        "nesbot/carbon": "2.*",
-        "nikic/iter": "^2.2",
-        "nyholm/psr7": "1.*",
-        "psr/http-client": "^1.0",
-        "psr/http-message": "1.*",
-        "someniatko/iter-psalm-plugin": "dev-master",
-        "symfony/console": "4.*",
-        "symfony/http-client": "4.*",
-        "symfony/http-kernel": "^4.2",
-        "symfony/psr-http-message-bridge": "2.*",
-        "webmozart/assert": "1.*"
+  "type": "project",
+  "license": "proprietary",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=7.4",
+    "ext-ctype": "*",
+    "ext-iconv": "*",
+    "ext-json": "*",
+    "azjezz/psl": "^1.6",
+    "cebe/php-openapi": "1.4.*",
+    "n98/junit-xml": "1.*",
+    "nelmio/alice": "3.*",
+    "nesbot/carbon": "2.*",
+    "nikic/iter": "^2.2",
+    "nyholm/psr7": "1.*",
+    "psr/http-client": "^1.0",
+    "psr/http-message": "1.*",
+    "someniatko/iter-psalm-plugin": "dev-master",
+    "symfony/console": "4.*",
+    "symfony/http-client": "4.*",
+    "symfony/psr-http-message-bridge": "2.*",
+    "webmozart/assert": "1.*"
+  },
+  "require-dev": {
+    "ergebnis/phpstan-rules": "^1.0",
+    "orklah/psalm-insane-comparison": "^1.0",
+    "orklah/psalm-strict-equality": "^2.0",
+    "orklah/psalm-strict-types": "^0.1.3",
+    "orklah/psalm-use-constants": "^1.0",
+    "php-coveralls/php-coveralls": "^2.5",
+    "php-standard-library/psalm-plugin": "^1.1",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan": "^1.2",
+    "phpstan/phpstan-beberlei-assert": "^1.0",
+    "phpstan/phpstan-deprecation-rules": "^1.0",
+    "phpstan/phpstan-phpunit": "^1.0",
+    "phpstan/phpstan-strict-rules": "^1.1",
+    "phpstan/phpstan-symfony": "^1.0",
+    "phpstan/phpstan-webmozart-assert": "^1.0",
+    "phpunit/phpunit": "9.5.*",
+    "psalm/plugin-phpunit": "^0.16.1",
+    "roave/security-advisories": "dev-latest",
+    "spaze/phpstan-disallowed-calls": "^2.1",
+    "struggle-for-php/sfp-psalm-typed-local-variable-plugin": "^0.2.0",
+    "symfony/var-dumper": "^4.2",
+    "symfony/yaml": "^4.2",
+    "symplify/easy-coding-standard": "^9.4",
+    "thecodingmachine/phpstan-strict-rules": "^1.0",
+    "vimeo/psalm": "^4.13"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": {
+      "*": "dist"
     },
-    "require-dev": {
-        "ergebnis/phpstan-rules": "^1.0",
-        "orklah/psalm-insane-comparison": "^1.0",
-        "orklah/psalm-strict-equality": "^2.0",
-        "orklah/psalm-strict-types": "^0.1.3",
-        "orklah/psalm-use-constants": "^1.0",
-        "php-coveralls/php-coveralls": "^2.5",
-        "php-standard-library/psalm-plugin": "^1.1",
-        "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "^1.2",
-        "phpstan/phpstan-beberlei-assert": "^1.0",
-        "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpstan/phpstan-phpunit": "^1.0",
-        "phpstan/phpstan-strict-rules": "^1.1",
-        "phpstan/phpstan-symfony": "^1.0",
-        "phpstan/phpstan-webmozart-assert": "^1.0",
-        "phpunit/phpunit": "9.5.*",
-        "psalm/plugin-phpunit": "^0.16.1",
-        "roave/security-advisories": "dev-latest",
-        "spaze/phpstan-disallowed-calls": "^2.1",
-        "struggle-for-php/sfp-psalm-typed-local-variable-plugin": "^0.2.0",
-        "symfony/var-dumper": "^4.2",
-        "symfony/yaml": "^4.2",
-        "symplify/easy-coding-standard": "^9.4",
-        "thecodingmachine/phpstan-strict-rules": "^1.0",
-        "vimeo/psalm": "^4.13"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": {
-            "*": "dist"
-        },
-        "sort-packages": true
-    },
-    "autoload": {
-        "psr-4": {
-            "OpenAPITesting\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "OpenAPITesting\\Tests\\": "tests/"
-        }
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "OpenAPITesting\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "OpenAPITesting\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "complete-check": [
+      "@check-cs",
+      "@check-code",
+      "@test-code"
+    ],
+    "check-cs": [
+      "vendor/bin/ecs check --ansi",
+      "vendor/bin/ecs check-markdown README.md --ansi"
+    ],
+    "fix-cs": [
+      "vendor/bin/ecs check --fix --ansi",
+      "vendor/bin/ecs check-markdown README.md --fix --ansi"
+    ],
+    "check-code": [
+      "@psalm",
+      "@phpstan"
+    ],
+    "test-code": [
+      "@phpunit"
+    ],
+    "phpunit": "phpunit",
+    "psalm": "psalm --threads=4 --shepherd",
+    "phpstan": "vendor/bin/phpstan analyse --ansi"
+  }
 }

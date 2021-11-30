@@ -1,10 +1,7 @@
-on:
-  push:
-    branches:
-      - master
-  pull_request: null
-
 name: Code Analysis
+
+on: [ push, pull_request ]
+
 jobs:
   matrix:
     strategy:
