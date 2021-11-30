@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Fixture;
 
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 
-class OperationTestCaseFixture
+final class OperationTestCaseFixture
 {
     private string $description;
 

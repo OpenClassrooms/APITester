@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Fixture;
 
-class OpenApiTestPlanFixture
+final class OpenApiTestPlanFixture
 {
     /**
-     * @var \OpenAPITesting\Fixture\OperationTestCaseFixture[]
+     * @var OperationTestCaseFixture[]
      */
-    protected array $operationTestCaseFixtures = [];
+    private array $operationTestCaseFixtures;
 
     public function __construct(array $operationTestCaseFixtures = [])
     {
@@ -22,7 +24,7 @@ class OpenApiTestPlanFixture
         );
     }
 
-    public function add(OperationTestCaseFixture $fixture): OpenApiTestPlanFixture
+    public function add(OperationTestCaseFixture $fixture): self
     {
         $this->operationTestCaseFixtures[] = $fixture;
 

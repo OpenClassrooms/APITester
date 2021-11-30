@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class SymfonyKernelRequester implements Requester
+final class SymfonyKernelRequester implements Requester
 {
     private KernelInterface $kernel;
 
@@ -23,19 +23,12 @@ class SymfonyKernelRequester implements Requester
         $this->kernel = $kernel;
     }
 
-    /**
-     * @throws \Exception
-     */
     public function request(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->symfonyToPsrResponse(
-            $this->kernel->handle(
-                $this->psrToSymfonyRequest($request)
-            )
-        );
+        return $this->symfonyToPsrResponse($this->kernel->handle($this->psrToSymfonyRequest($request)));
     }
 
-    protected function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface
+    private function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface
     {
         $psr17Factory = new Psr17Factory();
         $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
@@ -43,7 +36,7 @@ class SymfonyKernelRequester implements Requester
         return $psrHttpFactory->createResponse($symfonyResponse);
     }
 
-    protected function psrToSymfonyRequest(ServerRequestInterface $request): Request
+    private function psrToSymfonyRequest(ServerRequestInterface $request): Request
     {
         $httpFoundationFactory = new HttpFoundationFactory();
 

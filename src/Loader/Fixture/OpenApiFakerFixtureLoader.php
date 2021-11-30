@@ -11,11 +11,11 @@ use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Loader;
 
-class OpenApiFakerFixtureLoader implements Loader
+final class OpenApiFakerFixtureLoader implements Loader
 {
     public function load($data): OpenApiTestPlanFixture
     {
-        if (!$data instanceof OpenApi) {
+        if (! $data instanceof OpenApi) {
             throw new \InvalidArgumentException('Please use OpenApiLoader before');
         }
 

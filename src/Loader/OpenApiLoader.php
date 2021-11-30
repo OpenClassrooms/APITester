@@ -7,9 +7,11 @@ namespace OpenAPITesting\Loader;
 use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Loader;
 
-class OpenApiLoader implements Loader
+final class OpenApiLoader implements Loader
 {
     /**
+     * @param mixed $data
+     *
      * @throws \cebe\openapi\exceptions\TypeErrorException
      */
     public function load($data): OpenApi

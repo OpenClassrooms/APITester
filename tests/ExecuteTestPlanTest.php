@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Tests;
 
 use OpenAPITesting\Loader\AggregateLoader;
-use OpenAPITesting\Loader\AliceFixtureLoader;
 use OpenAPITesting\Loader\FileConcatLoader;
+use OpenAPITesting\Loader\Fixture\AliceFixtureLoader;
 use OpenAPITesting\Loader\JsonLoader;
 use OpenAPITesting\Loader\OpenApiLoader;
 use OpenAPITesting\Loader\YamlLoader;
@@ -12,14 +14,15 @@ use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
+use function Psl\Json\encode;
 
-class ExecuteTestPlanTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ExecuteTestPlanTest extends TestCase
 {
-    /**
-     * @test
-     * @throws \JsonException
-     */
-    public function execute(): void
+    public function testExecute(): void
     {
         $openApiLoader = new AggregateLoader(new FileConcatLoader(), new JsonLoader(), new OpenApiLoader());
         $fixtureLoader = new AggregateLoader(new FileConcatLoader(), new YamlLoader(), new AliceFixtureLoader());
@@ -28,6 +31,6 @@ class ExecuteTestPlanTest extends TestCase
             $fixtureLoader->load(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)
         );
         $testPlan->launch(new HttpRequester());
-        $this->assertEmpty($testPlan->getErrors(), json_encode($testPlan->getErrors(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
+        static::assertEmpty($testPlan->getErrors(), encode($testPlan->getErrors(), true));
     }
 }

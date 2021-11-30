@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
@@ -13,7 +15,11 @@ use OpenAPITesting\Util\Assert;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class TestCase implements Test
+/**
+ * @internal
+ * @coversNothing
+ */
+final class TestCase implements Test
 {
     public const STATUS_FAILED = 'failed';
 
@@ -23,18 +29,18 @@ class TestCase implements Test
 
     public const STATUS_SUCCESS = 'success';
 
-    protected ResponseInterface $actualResponse;
+    private ResponseInterface $actualResponse;
 
     /**
      * @var string[][]
      */
-    protected array $errors = [];
+    private array $errors = [];
 
-    protected ?DateTimeInterface $finishedAt = null;
+    private ?DateTimeInterface $finishedAt = null;
 
-    protected OperationTestCaseFixture $fixture;
+    private OperationTestCaseFixture $fixture;
 
-    protected Operation $operation;
+    private Operation $operation;
 
     private string $method;
 
@@ -80,10 +86,10 @@ class TestCase implements Test
 
     public function getStatus(): string
     {
-        if ($this->finishedAt !== null) {
-            return count($this->errors) === 0 ? self::STATUS_SUCCESS : self::STATUS_FAILED;
+        if (null !== $this->finishedAt) {
+            return 0 === \count($this->errors) ? self::STATUS_SUCCESS : self::STATUS_FAILED;
         }
-        if ($this->startedAt !== null) {
+        if (null !== $this->startedAt) {
             return self::STATUS_LAUNCHED;
         }
 
@@ -98,16 +104,6 @@ class TestCase implements Test
         $this->finishedAt = Carbon::now();
     }
 
-    private function getRequest(): RequestInterface
-    {
-        return new Request(
-            $this->getMethod(),
-            "{$this->parent->getBaseUri()}/{$this->getPath()}",
-            $this->fixture->getRequestHeaders(),
-            $this->fixture->getRequestBody()
-        );
-    }
-
     public function getMethod(): string
     {
         return $this->method;
@@ -116,5 +112,15 @@ class TestCase implements Test
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    private function getRequest(): RequestInterface
+    {
+        return new Request(
+            $this->getMethod(),
+            "{$this->parent->getBaseUri()}/{$this->getPath()}",
+            $this->fixture->getRequestHeaders(),
+            $this->fixture->getRequestBody()
+        );
     }
 }

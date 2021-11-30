@@ -1,25 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use cebe\openapi\spec\OpenApi;
 use DateTimeInterface;
 use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
-use OpenAPITesting\Test;
 use OpenAPITesting\Requester;
+use OpenAPITesting\Test;
 
-class TestSuite implements Test
+/**
+ * @internal
+ * @coversNothing
+ */
+final class TestSuite implements Test
 {
-    protected ?DateTimeInterface $finishedAt = null;
+    private ?DateTimeInterface $finishedAt = null;
 
-    protected OpenApi $openApi;
+    private OpenApi $openApi;
 
-    protected ?DateTimeInterface $startedAt = null;
+    private ?DateTimeInterface $startedAt = null;
 
-    /**
-     * @var \OpenAPITesting\Fixture\OpenApiTestPlanFixture
-     */
     private OpenApiTestPlanFixture $fixture;
 
     /**
@@ -27,31 +30,11 @@ class TestSuite implements Test
      */
     private array $operationTestCases;
 
-    public function __construct(
-        OpenApi $openApi,
-        OpenApiTestPlanFixture $fixture,
-        array $filters = []
-    ) {
+    public function __construct(OpenApi $openApi, OpenApiTestPlanFixture $fixture)
+    {
         $this->openApi = $openApi;
         $this->fixture = $fixture;
-        $this->buildTestCases($filters);
-    }
-
-    protected function buildTestCases(array $filters = []): void
-    {
-        foreach ($this->openApi->paths as $pathName => $path) {
-            foreach ($path->getOperations() as $method => $operation) {
-                foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
-                    $this->operationTestCases[] = new TestCase(
-                        $operation,
-                        $pathName,
-                        mb_strtoupper($method),
-                        $this,
-                        $testCaseFixture,
-                    );
-                }
-            }
-        }
+        $this->buildTestCases();
     }
 
     public function getBaseUri(): string
@@ -59,9 +42,6 @@ class TestSuite implements Test
         return rtrim($this->openApi->servers[0]->url, '/');
     }
 
-    /**
-     * @var string[][]
-     */
     public function getErrors(): array
     {
         $errors = [];
@@ -79,5 +59,22 @@ class TestSuite implements Test
             $testCase->launch($requester);
         }
         $this->finishedAt = Carbon::now();
+    }
+
+    private function buildTestCases(): void
+    {
+        foreach ($this->openApi->paths as $pathName => $path) {
+            foreach ($path->getOperations() as $method => $operation) {
+                foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
+                    $this->operationTestCases[] = new TestCase(
+                        $operation,
+                        $pathName,
+                        mb_strtoupper($method),
+                        $this,
+                        $testCaseFixture,
+                    );
+                }
+            }
+        }
     }
 }

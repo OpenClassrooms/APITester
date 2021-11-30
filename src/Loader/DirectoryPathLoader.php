@@ -6,7 +6,7 @@ namespace OpenAPITesting\Loader;
 
 use OpenAPITesting\Loader;
 
-class DirectoryPathLoader implements Loader
+final class DirectoryPathLoader implements Loader
 {
     public function load($data): array
     {

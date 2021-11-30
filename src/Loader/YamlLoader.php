@@ -8,7 +8,7 @@ use OpenAPITesting\Loader;
 use OpenAPITesting\Util\Array_;
 use Symfony\Component\Yaml\Yaml;
 
-class YamlLoader implements Loader
+final class YamlLoader implements Loader
 {
     public function load($data): array
     {

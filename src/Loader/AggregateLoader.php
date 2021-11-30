@@ -6,7 +6,7 @@ namespace OpenAPITesting\Loader;
 
 use OpenAPITesting\Loader;
 
-class AggregateLoader implements Loader
+final class AggregateLoader implements Loader
 {
     /**
      * @var Loader[]
@@ -19,6 +19,8 @@ class AggregateLoader implements Loader
     }
 
     /**
+     * @param mixed $data
+     *
      * @return mixed
      */
     public function load($data)

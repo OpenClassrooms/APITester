@@ -10,12 +10,9 @@ use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Loader;
 
-class AliceFixtureLoader implements Loader
+final class AliceFixtureLoader implements Loader
 {
-    /**
-     * @var NativeLoader
-     */
-    private $loader;
+    private DataLoaderInterface $loader;
 
     public function __construct(?DataLoaderInterface $loader = null)
     {
@@ -23,6 +20,8 @@ class AliceFixtureLoader implements Loader
     }
 
     /**
+     * @param mixed $data
+     *
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      */
     public function load($data): OpenApiTestPlanFixture

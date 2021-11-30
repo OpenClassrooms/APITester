@@ -6,19 +6,20 @@ namespace OpenAPITesting\Loader;
 
 use OpenAPITesting\Loader;
 use OpenAPITesting\Util\Array_;
+use function Psl\Json\decode;
 
-class JsonLoader implements Loader
+final class JsonLoader implements Loader
 {
     /**
-     * @throws \JsonException
+     * @param string[]|string $data
      */
     public function load($data): array
     {
-        $list = (array) $data;
+        $list = (array)$data;
 
         $content = [];
         foreach ($list as $item) {
-            $content[] = json_decode($item, true, 512, JSON_THROW_ON_ERROR);
+            $content[] = decode($item);
         }
 
         return Array_::merge(...$content);

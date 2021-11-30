@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Tests\Fixtures;
 
-class FixturesLocation
+final class FixturesLocation
 {
     public const FIXTURE_OPERATION_TEST_SUITE_1 = __DIR__ . '/Fixture/operation-test-suite-1.yml';
 

@@ -9,11 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\HttpClient\Psr18Client;
 
-class HttpRequester implements Requester
+final class HttpRequester implements Requester
 {
-    /**
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     */
     public function request(ServerRequestInterface $request): ResponseInterface
     {
         return (new Psr18Client())->sendRequest($request);

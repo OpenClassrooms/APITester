@@ -6,7 +6,7 @@ namespace OpenAPITesting\Loader;
 
 use OpenAPITesting\Loader;
 
-class FileConcatLoader implements Loader
+final class FileConcatLoader implements Loader
 {
     private string $separator;
 
