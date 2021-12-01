@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf9eb8779380230e68c8f207e2d6e75c",
+    "content-hash": "875084f9179a799d47aa1c47a857dc16",
     "packages": [
         {
             "name": "amphp/amp",
@@ -3691,16 +3691,16 @@
         },
         {
             "name": "vimeo/psalm",
-            "version": "4.13.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "5cf660f63b548ccd4a56f62d916ee4d6028e01a3"
+                "reference": "b8e34edd0d26d3bc3e6640fcbfec2ddd9e8b1765"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/5cf660f63b548ccd4a56f62d916ee4d6028e01a3",
-                "reference": "5cf660f63b548ccd4a56f62d916ee4d6028e01a3",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/b8e34edd0d26d3bc3e6640fcbfec2ddd9e8b1765",
+                "reference": "b8e34edd0d26d3bc3e6640fcbfec2ddd9e8b1765",
                 "shasum": ""
             },
             "require": {
@@ -3749,6 +3749,7 @@
                 "ext-curl": "In order to send data to shepherd",
                 "ext-igbinary": "^2.0.5 is required, used to serialize caching data"
             },
+            "default-branch": true,
             "bin": [
                 "psalm",
                 "psalm-language-server",
@@ -3791,9 +3792,9 @@
             ],
             "support": {
                 "issues": "https://github.com/vimeo/psalm/issues",
-                "source": "https://github.com/vimeo/psalm/tree/4.13.1"
+                "source": "https://github.com/vimeo/psalm/tree/master"
             },
-            "time": "2021-11-23T23:52:49+00:00"
+            "time": "2021-11-30T23:02:03+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -4377,6 +4378,53 @@
             "time": "2021-10-06T17:43:30+00:00"
         },
         {
+            "name": "orklah/psalm-elvis-begone",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/orklah/psalm-elvis-begone.git",
+                "reference": "36f02361bec97735a1cd4726df0a21aa52240a75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/orklah/psalm-elvis-begone/zipball/36f02361bec97735a1cd4726df0a21aa52240a75",
+                "reference": "36f02361bec97735a1cd4726df0a21aa52240a75",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3|^8.0",
+                "vimeo/psalm": "^4.10.0"
+            },
+            "type": "psalm-plugin",
+            "extra": {
+                "psalm": {
+                    "pluginClass": "Orklah\\ElvisBegone\\Plugin"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Orklah\\ElvisBegone\\": [
+                        "./src"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "orklah"
+                }
+            ],
+            "description": "Replace Elvis operator (?:) by null coalesce operator (??) when applicable",
+            "support": {
+                "issues": "https://github.com/orklah/psalm-elvis-begone/issues",
+                "source": "https://github.com/orklah/psalm-elvis-begone/tree/v1.0.0"
+            },
+            "time": "2021-10-13T16:15:23+00:00"
+        },
+        {
             "name": "orklah/psalm-insane-comparison",
             "version": "v1.0.3",
             "source": {
@@ -4539,6 +4587,61 @@
                 "source": "https://github.com/orklah/psalm-strict-types/tree/v0.1.3"
             },
             "time": "2021-08-30T20:46:21+00:00"
+        },
+        {
+            "name": "orklah/psalm-type-setters-params",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/orklah/psalm-type-setters-params.git",
+                "reference": "cf707aa744db423fb747a88ec79279bd5a477240"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/orklah/psalm-type-setters-params/zipball/cf707aa744db423fb747a88ec79279bd5a477240",
+                "reference": "cf707aa744db423fb747a88ec79279bd5a477240",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3|^8.0",
+                "vimeo/psalm": "master"
+            },
+            "require-dev": {
+                "nikic/php-parser": "^4.0",
+                "phpunit/phpunit": "^9.5",
+                "psalm/plugin-phpunit": "^0.15.0"
+            },
+            "type": "psalm-plugin",
+            "extra": {
+                "psalm": {
+                    "pluginClass": "Orklah\\TypeSetters\\Plugin"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Orklah\\TypeSetters\\": [
+                        "./src"
+                    ],
+                    "Orklah\\TypeSetters\\Tests\\": [
+                        "./tests"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "orklah"
+                }
+            ],
+            "description": "Use property type to fix param in the setter ",
+            "support": {
+                "issues": "https://github.com/orklah/psalm-type-setters-params/issues",
+                "source": "https://github.com/orklah/psalm-type-setters-params/tree/v1.0.0"
+            },
+            "time": "2021-09-13T10:47:13+00:00"
         },
         {
             "name": "orklah/psalm-use-constants",

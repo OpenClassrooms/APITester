@@ -16,8 +16,11 @@
         <pluginClass class="Orklah\PsalmInsaneComparison\Plugin"/>
         <pluginClass class="Orklah\StrictTypes\Plugin"/>
         <pluginClass class="Orklah\StrictEquality\Plugin"/>
-        <pluginClass class="Orklah\UseConstants\Plugin"/>
+<!--        <pluginClass class="Orklah\UseConstants\Plugin"/>-->
         <pluginClass class="AlexS\iter\PsalmPlugin"/>
         <pluginClass class="Sfp\Psalm\TypedLocalVariablePlugin\Plugin"/>
+        <pluginClass class="Psl\Integration\Psalm\Plugin"/>
+        <pluginClass class="Orklah\TypeSetters\Plugin"/>
+        <pluginClass class="Orklah\ElvisBegone\Plugin"/>
     </plugins>
 </psalm>

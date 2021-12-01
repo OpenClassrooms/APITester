@@ -25,9 +25,11 @@
   },
   "require-dev": {
     "ergebnis/phpstan-rules": "^1.0",
+    "orklah/psalm-elvis-begone": "^1.0",
     "orklah/psalm-insane-comparison": "^1.0",
     "orklah/psalm-strict-equality": "^2.0",
     "orklah/psalm-strict-types": "^0.1.3",
+    "orklah/psalm-type-setters-params": "^1.0",
     "orklah/psalm-use-constants": "^1.0",
     "php-coveralls/php-coveralls": "^2.5",
     "php-standard-library/psalm-plugin": "^1.1",
