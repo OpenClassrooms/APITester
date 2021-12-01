@@ -25,6 +25,7 @@
   },
   "require-dev": {
     "ergebnis/phpstan-rules": "^1.0",
+    "korbeil/phpstan-generic-rules": "^1.0",
     "orklah/psalm-elvis-begone": "^1.0",
     "orklah/psalm-insane-comparison": "^1.0",
     "orklah/psalm-strict-equality": "^2.0",

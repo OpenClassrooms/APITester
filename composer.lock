@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "875084f9179a799d47aa1c47a857dc16",
+    "content-hash": "7923b0cf851ac977a253af0f3011674b",
     "packages": [
         {
             "name": "amphp/amp",
@@ -4376,6 +4376,53 @@
                 }
             ],
             "time": "2021-10-06T17:43:30+00:00"
+        },
+        {
+            "name": "korbeil/phpstan-generic-rules",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Korbeil/phpstan-generic-rules.git",
+                "reference": "44381129160f13f9007121b16e0d5d39739b0636"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Korbeil/phpstan-generic-rules/zipball/44381129160f13f9007121b16e0d5d39739b0636",
+                "reference": "44381129160f13f9007121b16e0d5d39739b0636",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "^4.0",
+                "php": ">=7.2",
+                "phpstan/phpstan": "^0.11 || ^0.12 || ^1.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "symfony/var-dumper": "^4.3"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Korbeil\\GenericRules\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Generic rules extensions for PHPStan",
+            "support": {
+                "issues": "https://github.com/Korbeil/phpstan-generic-rules/issues",
+                "source": "https://github.com/Korbeil/phpstan-generic-rules/tree/v1.0.0"
+            },
+            "time": "2021-11-05T15:31:45+00:00"
         },
         {
             "name": "orklah/psalm-elvis-begone",
