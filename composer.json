@@ -74,12 +74,12 @@
       "@test-code"
     ],
     "check-cs": [
-      "vendor/bin/ecs check --ansi",
-      "vendor/bin/ecs check-markdown README.md --ansi"
+      "vendor/bin/ecs check --ansi -c ecs.php",
+      "vendor/bin/ecs check-markdown README.md --ansi -c ecs.php"
     ],
     "fix-cs": [
-      "vendor/bin/ecs check --fix --ansi",
-      "vendor/bin/ecs check-markdown README.md --fix --ansi"
+      "vendor/bin/ecs check --fix --ansi -c ecs.php",
+      "vendor/bin/ecs check-markdown README.md --fix --ansi -c ecs.php"
     ],
     "check-code": [
       "@psalm",
@@ -88,8 +88,8 @@
     "test-code": [
       "@phpunit"
     ],
-    "phpunit": "phpunit",
-    "psalm": "psalm --threads=4 --shepherd",
-    "phpstan": "vendor/bin/phpstan analyse --ansi"
+    "phpunit": "vendor/bin/phpunit -c phpunit.xml",
+    "psalm": "vendor/bin/psalm -c psalm.xml",
+    "phpstan": "vendor/bin/phpstan analyse --ansi -c phpstan.neon"
   }
 }
