@@ -46,7 +46,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(PhpCsFixer\Fixer\CastNotation\CastSpacesFixer::class)
         ->call('configure', [
             [
-                'space' => 'none',
+                'space' => 'single',
             ],
         ]);
 //    $services->set(GeneralPhpdocAnnotationRemoveFixer::class) //buggy
