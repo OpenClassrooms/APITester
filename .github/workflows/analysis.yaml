@@ -4,6 +4,10 @@ on: [ push, pull_request ]
 
 jobs:
   matrix:
+    name: ${{ matrix.actions.name }}
+    runs-on: ubuntu-latest
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -18,16 +22,10 @@ jobs:
             run: composer check-cs --ansi
 
           - name: PhpUnit
-            run: |
-              composer test --ansi
-              ./vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
-
-    name: ${{ matrix.actions.name }}
-    env:
-      COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    runs-on: ubuntu-latest
+            run: composer coveralls --ansi
     steps:
       - uses: actions/checkout@v2
+
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 7.4
