@@ -15,7 +15,7 @@ final class JsonLoader implements Loader
      */
     public function load($data): array
     {
-        $list = (array)$data;
+        $list = (array) $data;
 
         $content = [];
         foreach ($list as $item) {

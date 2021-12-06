@@ -16,7 +16,7 @@ final class OpenApiLoader implements Loader
      */
     public function load($data): OpenApi
     {
-        $data = (array)$data;
+        $data = (array) $data;
 
         return new OpenApi($data);
     }
