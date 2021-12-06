@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalDependencies">
+    <plugin id="com.intellij.php.psalm" />
+    <plugin id="com.intellij.php.tools.quality.phpstan" />
+    <plugin id="com.intellij.swagger" />
+    <plugin id="com.kalessil.phpStorm.phpInspectionsEA" />
+  </component>
+</project>

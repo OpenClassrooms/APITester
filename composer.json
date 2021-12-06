@@ -78,11 +78,11 @@
       "@test-code"
     ],
     "check-cs": [
-      "vendor/bin/ecs check --ansi -c ecs.php",
+      "vendor/bin/ecs check -c ecs.php",
       "vendor/bin/ecs check-markdown README.md --ansi -c ecs.php"
     ],
     "fix-cs": [
-      "vendor/bin/ecs check --fix --ansi -c ecs.php",
+      "vendor/bin/ecs check --fix -c ecs.php",
       "vendor/bin/ecs check-markdown README.md --fix --ansi -c ecs.php"
     ],
     "check-code": [
@@ -98,6 +98,6 @@
     ],
     "phpunit": "vendor/bin/phpunit -c phpunit.xml",
     "psalm": "vendor/bin/psalm -c psalm.xml",
-    "phpstan": "vendor/bin/phpstan analyse --ansi -c phpstan.neon"
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon"
   }
 }
