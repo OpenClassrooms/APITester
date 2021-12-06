@@ -7,6 +7,7 @@ namespace OpenAPITesting\Test;
 use Carbon\Carbon;
 use cebe\openapi\spec\Operation;
 use DateTimeInterface;
+use GuzzleHttp\Psr7\ServerRequest;
 use Nyholm\Psr7\Request;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
@@ -14,6 +15,7 @@ use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @internal
@@ -69,6 +71,9 @@ final class TestCase implements Test
         return $this->operation->operationId . ' - ' . $this->fixture->getDescription();
     }
 
+    /**
+     * @return string[][]
+     */
     public function getErrors(): array
     {
         return $this->errors;
@@ -114,9 +119,9 @@ final class TestCase implements Test
         return $this->path;
     }
 
-    private function getRequest(): RequestInterface
+    private function getRequest(): ServerRequestInterface
     {
-        return new Request(
+        return new ServerRequest(
             $this->getMethod(),
             "{$this->parent->getBaseUri()}/{$this->getPath()}",
             $this->fixture->getRequestHeaders(),

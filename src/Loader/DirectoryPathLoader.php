@@ -8,6 +8,9 @@ use OpenAPITesting\Loader;
 
 final class DirectoryPathLoader implements Loader
 {
+    /**
+     * @return array<int, string>
+     */
     public function load($data): array
     {
         $directories = (array) $data;

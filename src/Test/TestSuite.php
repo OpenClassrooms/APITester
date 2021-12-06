@@ -42,6 +42,9 @@ final class TestSuite implements Test
         return rtrim($this->openApi->servers[0]->url, '/');
     }
 
+    /**
+     * @return string[][]
+     */
     public function getErrors(): array
     {
         $errors = [];
