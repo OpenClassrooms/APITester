@@ -2,9 +2,7 @@ name: Code Analysis
 
 on:
   pull_request: ~
-  push:
-    branches:
-      - master
+  push: ~
 
 jobs:
   matrix:
