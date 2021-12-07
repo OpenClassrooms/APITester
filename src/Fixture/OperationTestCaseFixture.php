@@ -13,9 +13,15 @@ final class OperationTestCaseFixture
 
     private ?string $operationId = null;
 
-    private array $request = [];
+    /**
+     * @var array{'headers'?: array<array-key, string>, 'body'?: string}
+     */
+    public array $request = [];
 
-    private array $response = [];
+    /**
+     * @var array{'statusCode'?: int, 'headers'?: array<array-key, string>, 'body'?: string}
+     */
+    public array $response = [];
 
     public function getDescription(): ?string
     {
@@ -30,9 +36,9 @@ final class OperationTestCaseFixture
     public function getExpectedResponse(): ResponseInterface
     {
         return new Response(
-            $this->response['statusCode'] ?? null,
+            $this->response['statusCode'] ?? 0,
             $this->response['headers'] ?? [],
-            $this->response['body'] ?? null
+            $this->response['body'] ?? ''
         );
     }
 
@@ -46,36 +52,16 @@ final class OperationTestCaseFixture
         $this->operationId = $operationId;
     }
 
-    public function getRequest(): array
-    {
-        return $this->request;
-    }
-
-    public function setRequest(array $request): void
-    {
-        $this->request = $request;
-    }
-
     public function getRequestBody(): ?string
     {
         return $this->request['body'] ?? null;
     }
 
     /**
-     * @return array<string, array<string>|string>
+     * @return array<array-key, string>
      */
     public function getRequestHeaders(): array
     {
         return $this->request['headers'] ?? [];
-    }
-
-    public function getResponse(): array
-    {
-        return $this->response;
-    }
-
-    public function setResponse(array $response): void
-    {
-        $this->response = $response;
     }
 }
