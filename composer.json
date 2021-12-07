@@ -54,7 +54,7 @@
     "symfony/yaml": "^4.2",
     "symplify/easy-coding-standard": "^9.4",
     "thecodingmachine/phpstan-strict-rules": "^1.0",
-    "vimeo/psalm": "^4.13"
+    "vimeo/psalm": "^4.14"
   },
   "config": {
     "optimize-autoloader": true,

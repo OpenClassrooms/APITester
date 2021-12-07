@@ -14,7 +14,7 @@
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
         <pluginClass class="Psl\Psalm\Plugin"/>
         <pluginClass class="Orklah\PsalmInsaneComparison\Plugin"/>
-        <pluginClass class="Orklah\StrictTypes\Plugin"/>
+<!--        <pluginClass class="Orklah\StrictTypes\Plugin"/>-->
         <pluginClass class="Orklah\StrictEquality\Plugin"/>
 <!--        <pluginClass class="Orklah\UseConstants\Plugin"/>-->
         <pluginClass class="AlexS\iter\PsalmPlugin"/>

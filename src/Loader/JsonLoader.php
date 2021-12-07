@@ -9,8 +9,9 @@ use OpenAPITesting\Util\Json;
 final class JsonLoader
 {
     /**
-     * @return array<int|string, mixed>
      * @throws \JsonException
+     *
+     * @return array<int|string, mixed>
      */
     public function __invoke(string $data): array
     {

@@ -12,29 +12,33 @@ use Webmozart\Assert\Assert as BaseAssert;
 final class Assert
 {
     /**
-     * @return array<string, array<int|string, string>>
+     * @return array<array-key, array<array-key, string>>
      */
     public static function assertResponse(ResponseInterface $actual, ResponseInterface $expected): array
     {
-        $errors = [];
-        $errors = array_merge(
-            $errors,
-            self::assertStatusCode($actual->getStatusCode(), $expected->getStatusCode())
+        $errors = self::assertStatusCode(
+            $actual->getStatusCode(),
+            $expected->getStatusCode(),
         );
         $errors = array_merge(
             $errors,
-            self::assertHeaders($actual->getHeaders(), $expected->getHeaders())
-        );
-        $errors = array_merge(
-            $errors,
-            self::assertBody($actual->getBody(), $expected->getBody())
+            self::assertHeaders(
+                $actual->getHeaders(),
+                $expected->getHeaders(),
+            )
         );
 
-        return $errors;
+        return array_merge(
+            $errors,
+            self::assertBody(
+                $actual->getBody(),
+                $expected->getBody()
+            )
+        );
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<array-key, array<array-key, string>>
      */
     private static function assertStatusCode(int $actualStatusCode, int $expectedStatusCode): array
     {
@@ -49,10 +53,10 @@ final class Assert
     }
 
     /**
-     * @param array<int, array<int, string>> $actualHeaders
-     * @param array<int, array<int, string>> $expectedHeaders
+     * @param array<array-key, array<array-key, string>> $actualHeaders
+     * @param array<array-key, array<array-key, string>> $expectedHeaders
      *
-     * @return array<string, array<int|string, string>>
+     * @return array<array-key, array<array-key, string>>
      */
     private static function assertHeaders(array $actualHeaders, array $expectedHeaders): array
     {
@@ -75,7 +79,7 @@ final class Assert
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<array-key, array<array-key, string>>
      */
     private static function assertBody(StreamInterface $actualBody, StreamInterface $expectedBody): array
     {

@@ -9,19 +9,19 @@ use Psr\Http\Message\ResponseInterface;
 
 final class OperationTestCaseFixture
 {
-    private ?string $description = null;
-
-    private ?string $operationId = null;
-
     /**
-     * @var array{'headers'?: array<array-key, string>, 'body'?: string}
+     * @var array{'headers'?: array<string, string|string[]>, 'body'?: string}
      */
     public array $request = [];
 
     /**
-     * @var array{'statusCode'?: int, 'headers'?: array<array-key, string>, 'body'?: string}
+     * @var array{'statusCode'?: int, 'headers'?: array<string, string|string[]>, 'body'?: string}
      */
     public array $response = [];
+
+    private ?string $description = null;
+
+    private ?string $operationId = null;
 
     public function getDescription(): ?string
     {
@@ -58,7 +58,7 @@ final class OperationTestCaseFixture
     }
 
     /**
-     * @return array<array-key, string>
+     * @return array<string, string|string[]>
      */
     public function getRequestHeaders(): array
     {

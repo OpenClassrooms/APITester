@@ -13,6 +13,7 @@ final class AliceFixtureLoader
 {
     /**
      * @param array<array-key, mixed> $data
+     *
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      */
     public function __invoke(array $data, ?DataLoaderInterface $loader = null): OpenApiTestPlanFixture
@@ -22,6 +23,23 @@ final class AliceFixtureLoader
             OperationTestCaseFixture::class => $data,
         ];
 
-        return new OpenApiTestPlanFixture($loader->loadData($data)->getObjects());
+        $testCaseFixtures = $this->getTestCaseFixtures($loader, $data);
+
+        return new OpenApiTestPlanFixture($testCaseFixtures);
+    }
+
+    /**
+     * @param array<array-key, mixed> $data
+     *
+     * @throws \Nelmio\Alice\Throwable\LoadingThrowable
+     * @psalm-suppress MixedReturnTypeCoercion
+     *
+     * @return array<array-key, OperationTestCaseFixture>
+     */
+    private function getTestCaseFixtures(DataLoaderInterface $loader, array $data): array
+    {
+        return $loader->loadData($data)
+            ->getObjects()
+        ;
     }
 }

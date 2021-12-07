@@ -7,12 +7,12 @@ namespace OpenAPITesting\Fixture;
 final class OpenApiTestPlanFixture
 {
     /**
-     * @var array<int, OperationTestCaseFixture>
+     * @var array<array-key, OperationTestCaseFixture>
      */
     private array $operationTestCaseFixtures;
 
     /**
-     * @param array<int, OperationTestCaseFixture> $operationTestCaseFixtures
+     * @param array<array-key, OperationTestCaseFixture> $operationTestCaseFixtures
      */
     public function __construct(array $operationTestCaseFixtures = [])
     {
@@ -20,7 +20,7 @@ final class OpenApiTestPlanFixture
     }
 
     /**
-     * @return array<int, OperationTestCaseFixture>
+     * @return array<array-key, OperationTestCaseFixture>
      */
     public function getOperationTestCaseFixtures(?string $operationId = null): array
     {

@@ -7,4 +7,9 @@ namespace OpenAPITesting;
 interface Test
 {
     public function launch(Requester $requester): void;
+
+    /**
+     * @return string[][]
+     */
+    public function getErrors(): array;
 }

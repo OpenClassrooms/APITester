@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Util;
 
-
 final class Json
 {
     public static function isJson(string $string): bool
@@ -21,8 +20,9 @@ final class Json
     /**
      * @param int<1, max> $depth
      *
-     * @return array<int|string, mixed>
      * @throws \JsonException
+     *
+     * @return array<int|string, mixed>
      */
     public static function decode(string $json, int $depth = 512): array
     {
@@ -52,11 +52,10 @@ final class Json
      */
     public static function encode(array $data, int $flags = JSON_THROW_ON_ERROR): string
     {
-        if ($flags !== JSON_THROW_ON_ERROR) {
+        if (JSON_THROW_ON_ERROR !== $flags) {
             $flags |= JSON_THROW_ON_ERROR;
         }
 
         return (string) json_encode($data, $flags);
     }
-
 }

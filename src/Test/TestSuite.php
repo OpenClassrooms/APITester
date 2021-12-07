@@ -28,7 +28,7 @@ final class TestSuite implements Test
     /**
      * @var TestCase[]
      */
-    private array $operationTestCases;
+    private array $operationTestCases = [];
 
     public function __construct(OpenApi $openApi, OpenApiTestPlanFixture $fixture)
     {
@@ -81,8 +81,8 @@ final class TestSuite implements Test
                 foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
                     $this->operationTestCases[] = new TestCase(
                         $operation,
-                        $pathName,
-                        mb_strtoupper($method),
+                        (string) $pathName,
+                        mb_strtoupper((string) $method),
                         $this,
                         $testCaseFixture,
                     );

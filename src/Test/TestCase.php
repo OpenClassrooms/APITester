@@ -63,7 +63,7 @@ final class TestCase implements Test
 
     public function getDescription(): string
     {
-        return $this->operation->operationId . ' - ' . $this->fixture->getDescription();
+        return $this->operation->operationId . ' - ' . ($this->fixture->getDescription() ?? 'test');
     }
 
     /**

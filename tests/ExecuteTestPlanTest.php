@@ -12,7 +12,6 @@ use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
-
 use function Psl\Json\encode;
 
 /**
