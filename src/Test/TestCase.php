@@ -74,6 +74,14 @@ final class TestCase implements Test
         return $this->errors;
     }
 
+    public function launch(Requester $requester): void
+    {
+        $this->startedAt = Carbon::now();
+        $response = $requester->request($this->getRequest());
+        $this->errors = Assert::assertResponse($response, $this->fixture->getExpectedResponse());
+        $this->finishedAt = Carbon::now();
+    }
+
     public function getOperation(): Operation
     {
         return $this->operation;
@@ -94,14 +102,6 @@ final class TestCase implements Test
         }
 
         return self::STATUS_NOT_LAUNCHED;
-    }
-
-    public function launch(Requester $requester): void
-    {
-        $this->startedAt = Carbon::now();
-        $response = $requester->request($this->getRequest());
-        $this->errors = Assert::assertResponse($response, $this->fixture->getExpectedResponse());
-        $this->finishedAt = Carbon::now();
     }
 
     public function getMethod(): string
