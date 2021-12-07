@@ -4,25 +4,18 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Loader;
 
-use OpenAPITesting\Loader;
-
-final class FileConcatLoader implements Loader
+final class FileConcatLoader
 {
-    private string $separator;
-
-    public function __construct(string $separator = "\n")
+    /**
+     * @param array<int, string> $fileNames
+     */
+    public function __invoke(array $fileNames, string $separator = "\n"): string
     {
-        $this->separator = $separator;
-    }
-
-    public function load($data): string
-    {
-        $files = (array) $data;
         $content = [];
-        foreach ($files as $file) {
-            $content[] = file_get_contents($file);
+        foreach ($fileNames as $fileName) {
+            $content[] = file_get_contents($fileName);
         }
 
-        return implode($this->separator, $content);
+        return implode($separator, $content);
     }
 }

@@ -99,6 +99,7 @@
     <inspection_tool class="PhpDocMissingThrowsInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="SKIP_ON_EMPTY_PHPDOC" value="false" />
     </inspection_tool>
+    <inspection_tool class="PhpDocSignatureInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PhpFeatureEnvyLocalInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="PhpFullyQualifiedNameUsageInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="IGNORE_GLOBAL_NAMESPACE" value="true" />
@@ -122,7 +123,9 @@
     <inspection_tool class="PhpOverridingMethodVisibilityInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="PhpPluralMixedCanBeReplacedWithArrayInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PhpSeparateElseIfInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="PhpStanGlobal" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+    <inspection_tool class="PhpStanGlobal" enabled="false" level="WEAK WARNING" enabled_by_default="false">
+      <option name="FULL_PROJECT" value="true" />
+      <option name="memoryLimit" value="8G" />
       <option name="level" value="8" />
       <option name="config" value="$PROJECT_DIR$/phpstan.neon" />
     </inspection_tool>

@@ -9,17 +9,22 @@ use Psr\Http\Message\ResponseInterface;
 
 final class OperationTestCaseFixture
 {
-    private string $description;
+    private ?string $description = null;
 
-    private string $operationId;
+    private ?string $operationId = null;
 
     private array $request = [];
 
     private array $response = [];
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
     }
 
     public function getExpectedResponse(): ResponseInterface
@@ -31,14 +36,24 @@ final class OperationTestCaseFixture
         );
     }
 
-    public function getOperationId(): string
+    public function getOperationId(): ?string
     {
         return $this->operationId;
+    }
+
+    public function setOperationId(string $operationId): void
+    {
+        $this->operationId = $operationId;
     }
 
     public function getRequest(): array
     {
         return $this->request;
+    }
+
+    public function setRequest(array $request): void
+    {
+        $this->request = $request;
     }
 
     public function getRequestBody(): ?string
@@ -57,21 +72,6 @@ final class OperationTestCaseFixture
     public function getResponse(): array
     {
         return $this->response;
-    }
-
-    public function setDescription(string $description): void
-    {
-        $this->description = $description;
-    }
-
-    public function setOperationId(string $operationId): void
-    {
-        $this->operationId = $operationId;
-    }
-
-    public function setRequest(array $request): void
-    {
-        $this->request = $request;
     }
 
     public function setResponse(array $response): void

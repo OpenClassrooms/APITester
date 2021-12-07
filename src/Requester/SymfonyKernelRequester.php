@@ -6,7 +6,6 @@ namespace OpenAPITesting\Requester;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenAPITesting\Requester;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;

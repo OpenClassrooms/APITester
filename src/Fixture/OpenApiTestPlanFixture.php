@@ -7,7 +7,7 @@ namespace OpenAPITesting\Fixture;
 final class OpenApiTestPlanFixture
 {
     /**
-     * @var OperationTestCaseFixture[]
+     * @var array<int, OperationTestCaseFixture>
      */
     private array $operationTestCaseFixtures;
 
@@ -20,11 +20,9 @@ final class OpenApiTestPlanFixture
     }
 
     /**
-     * @param string|null $operationId
-     *
      * @return array<int, OperationTestCaseFixture>
      */
-    public function getOperationTestCaseFixtures(string $operationId = null): array
+    public function getOperationTestCaseFixtures(?string $operationId = null): array
     {
         return array_filter(
             $this->operationTestCaseFixtures,

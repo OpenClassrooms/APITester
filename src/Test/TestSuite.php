@@ -64,6 +64,16 @@ final class TestSuite implements Test
         $this->finishedAt = Carbon::now();
     }
 
+    public function getFinishedAt(): ?DateTimeInterface
+    {
+        return $this->finishedAt;
+    }
+
+    public function getStartedAt(): ?DateTimeInterface
+    {
+        return $this->startedAt;
+    }
+
     private function buildTestCases(): void
     {
         foreach ($this->openApi->paths as $pathName => $path) {

@@ -5,19 +5,16 @@ declare(strict_types=1);
 namespace OpenAPITesting\Loader;
 
 use cebe\openapi\spec\OpenApi;
-use OpenAPITesting\Loader;
 
-final class OpenApiLoader implements Loader
+final class OpenApiLoader
 {
     /**
-     * @param mixed $data
+     * @param array<int|string, mixed> $data
      *
      * @throws \cebe\openapi\exceptions\TypeErrorException
      */
-    public function load($data): OpenApi
+    public function __invoke(array $data): OpenApi
     {
-        $data = (array) $data;
-
         return new OpenApi($data);
     }
 }

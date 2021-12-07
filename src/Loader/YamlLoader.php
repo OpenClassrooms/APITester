@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Loader;
 
-use OpenAPITesting\Loader;
-use OpenAPITesting\Util\Array_;
 use Symfony\Component\Yaml\Yaml;
 
-final class YamlLoader implements Loader
+final class YamlLoader
 {
-    public function load($data): array
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function __invoke(string $data): array
     {
-        $list = (array) $data;
-
-        $content = [];
-        foreach ($list as $item) {
-            $content[] = Yaml::parse($item);
-        }
-
-        return Array_::merge(...$content);
+        return (array) Yaml::parse($data);
     }
 }

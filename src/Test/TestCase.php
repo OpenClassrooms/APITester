@@ -8,13 +8,10 @@ use Carbon\Carbon;
 use cebe\openapi\spec\Operation;
 use DateTimeInterface;
 use GuzzleHttp\Psr7\ServerRequest;
-use Nyholm\Psr7\Request;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -30,8 +27,6 @@ final class TestCase implements Test
     public const STATUS_NOT_LAUNCHED = 'not launched';
 
     public const STATUS_SUCCESS = 'success';
-
-    private ResponseInterface $actualResponse;
 
     /**
      * @var string[][]

@@ -9,13 +9,12 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Response;
 use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
-use OpenAPITesting\Loader;
 
-final class OpenApiExampleFixtureLoader implements Loader
+final class OpenApiExampleFixtureLoader
 {
     public function load($data): OpenApiTestPlanFixture
     {
-        if (! $data instanceof OpenApi) {
+        if (!$data instanceof OpenApi) {
             throw new \InvalidArgumentException('Please use OpenApiLoader before');
         }
 
