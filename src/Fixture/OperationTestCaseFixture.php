@@ -46,6 +46,9 @@ final class OperationTestCaseFixture
         return $this->request['body'] ?? null;
     }
 
+    /**
+     * @return array<string, array<string>|string>
+     */
     public function getRequestHeaders(): array
     {
         return $this->request['headers'] ?? [];

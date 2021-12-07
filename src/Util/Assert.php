@@ -6,20 +6,33 @@ namespace OpenAPITesting\Util;
 
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Webmozart\Assert\Assert as BaseAssert;
 
 class Assert extends BaseAssert
 {
+    /**
+     * @param \Psr\Http\Message\ResponseInterface $actual
+     * @param \Psr\Http\Message\ResponseInterface $expected
+     *
+     * @return array<string, array<int|string, string>>
+     */
     public static function assertResponse(ResponseInterface $actual, ResponseInterface $expected): array
     {
         $errors = [];
-        $errors = array_merge($errors, static::assertStatusCode($actual->getStatusCode(), $expected->getStatusCode()));
-        $errors = array_merge($errors, static::assertHeaders($actual->getHeaders(), $expected->getHeaders()));
-        $errors = array_merge($errors, static::assertBody($actual->getBody(), $expected->getBody()));
+        $errors = array_merge($errors, self::assertStatusCode($actual->getStatusCode(), $expected->getStatusCode()));
+        $errors = array_merge($errors, self::assertHeaders($actual->getHeaders(), $expected->getHeaders()));
+        $errors = array_merge($errors, self::assertBody($actual->getBody(), $expected->getBody()));
 
         return $errors;
     }
 
+    /**
+     * @param int $actualStatusCode
+     * @param int $expectedStatusCode
+     *
+     * @return array<string, array<string, string>>
+     */
     private static function assertStatusCode(int $actualStatusCode, int $expectedStatusCode): array
     {
         $errors = [];
@@ -32,6 +45,12 @@ class Assert extends BaseAssert
         return $errors;
     }
 
+    /**
+     * @param array<int, array<int, string>> $actualHeaders
+     * @param array<int, array<int, string>> $expectedHeaders
+     *
+     * @return array<string, array<int|string, string>>
+     */
     private static function assertHeaders(array $actualHeaders, array $expectedHeaders): array
     {
         $errors = [];
@@ -52,7 +71,13 @@ class Assert extends BaseAssert
         return $errors;
     }
 
-    private static function assertBody(string $actualBody, string $expectedBody): array
+    /**
+     * @param StreamInterface $actualBody
+     * @param StreamInterface $expectedBody
+     *
+     * @return array<string, array<string, string>>
+     */
+    private static function assertBody(StreamInterface $actualBody, StreamInterface $expectedBody): array
     {
         $errors = [];
         try {

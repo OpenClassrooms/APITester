@@ -11,11 +11,19 @@ final class OpenApiTestPlanFixture
      */
     private array $operationTestCaseFixtures;
 
+    /**
+     * @param array<int, OperationTestCaseFixture> $operationTestCaseFixtures
+     */
     public function __construct(array $operationTestCaseFixtures = [])
     {
         $this->operationTestCaseFixtures = $operationTestCaseFixtures;
     }
 
+    /**
+     * @param string|null $operationId
+     *
+     * @return array<int, OperationTestCaseFixture>
+     */
     public function getOperationTestCaseFixtures(string $operationId = null): array
     {
         return array_filter(
