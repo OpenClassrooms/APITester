@@ -12,6 +12,7 @@ use OpenAPITesting\Fixture\OperationTestCaseFixture;
 final class AliceFixtureLoader
 {
     /**
+     * @param array<array-key, mixed> $data
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      */
     public function __invoke(array $data, ?DataLoaderInterface $loader = null): OpenApiTestPlanFixture

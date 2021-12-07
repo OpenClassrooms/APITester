@@ -12,21 +12,20 @@ use OpenAPITesting\Fixture\OperationTestCaseFixture;
 
 final class OpenApiExampleFixtureLoader
 {
-    public function load($data): OpenApiTestPlanFixture
+    public function load(OpenApi $data): OpenApiTestPlanFixture
     {
-        if (!$data instanceof OpenApi) {
-            throw new \InvalidArgumentException('Please use OpenApiLoader before');
-        }
-
         $testPlanFixture = new OpenApiTestPlanFixture();
         foreach ($data->paths as $path) {
             foreach ($path->getOperations() as $operation) {
                 $request = $this->buildRequest($operation);
+                if (null === $operation->responses) {
+                    continue;
+                }
                 foreach ($operation->responses as $response) {
                     $response = $this->buildResponse($response);
                     $fixture = new OperationTestCaseFixture();
-                    $fixture->setRequest($request);
-                    $fixture->setResponse($response);
+                    $fixture->request = $request;
+                    $fixture->response = $response;
                     $fixture->setOperationId($operation->operationId);
                     $testPlanFixture->add($fixture);
                 }
@@ -36,11 +35,17 @@ final class OpenApiExampleFixtureLoader
         return $testPlanFixture;
     }
 
+    /**
+     * @return array{'headers'?: array<array-key, string>, 'body'?: string}
+     */
     private function buildRequest(Operation $operation): array
     {
         return [];
     }
 
+    /**
+     * @return array{'statusCode'?: int, 'headers'?: array<array-key, string>, 'body'?: string}
+     */
     private function buildResponse(Response $response): array
     {
         return [];

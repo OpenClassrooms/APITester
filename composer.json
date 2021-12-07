@@ -99,7 +99,7 @@
       "vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v"
     ],
     "phpunit": "vendor/bin/phpunit -c phpunit.xml --ansi",
-    "psalm": "vendor/bin/psalm -c psalm.xml --ansi",
+    "psalm": "vendor/bin/psalm -c psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon --ansi",
     "ecs": "@check-cs"
   }
