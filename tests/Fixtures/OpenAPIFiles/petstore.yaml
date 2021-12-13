@@ -21,6 +21,7 @@ paths:
                     schema:
                         type: integer
                         format: int32
+                        example: 12
             responses:
                 '200':
                     description: A paged array of pets
@@ -29,10 +30,16 @@ paths:
                             description: A link to the next page of responses
                             schema:
                                 type: string
+                            example: /toto
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Pets"
+                            example:
+                                -   id: 1234
+                                    name: Toto
+                                -   id: 5678
+                                    name: Tata
                 default:
                     description: unexpected error
                     content:
@@ -50,9 +57,8 @@ paths:
                         examples:
                             201:
                                 $ref: '#/components/examples/Jessica'
-                            400:
+                            default:
                                 $ref: '#/components/examples/Ron'
-
             tags:
                 - pets
             responses:
@@ -77,6 +83,7 @@ paths:
                     description: The id of the pet to retrieve
                     schema:
                         type: string
+                        example: 123
             responses:
                 '200':
                     description: Expected response to a valid request

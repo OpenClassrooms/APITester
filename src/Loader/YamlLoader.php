@@ -13,6 +13,6 @@ final class YamlLoader
      */
     public function __invoke(string $data): array
     {
-        return (array) Yaml::parse($data);
+        return (array) Yaml::parse(file_get_contents($data));
     }
 }
