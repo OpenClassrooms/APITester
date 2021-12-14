@@ -26,13 +26,23 @@ final class OpenApiTestPlanFixture
     {
         return array_filter(
             $this->operationTestCaseFixtures,
-            static fn ($fixture) => $fixture->getOperationId() === $operationId
+            static fn($fixture) => $fixture->getOperationId() === $operationId
         );
     }
 
     public function add(OperationTestCaseFixture $fixture): self
     {
         $this->operationTestCaseFixtures[] = $fixture;
+
+        return $this;
+    }
+
+    /**
+     * @param array<OperationTestCaseFixture> $fixtures
+     */
+    public function addMany(array $fixtures): self
+    {
+        $this->operationTestCaseFixtures = array_merge($this->operationTestCaseFixtures, $fixtures);
 
         return $this;
     }

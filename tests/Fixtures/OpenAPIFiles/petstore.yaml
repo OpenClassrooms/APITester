@@ -14,6 +14,20 @@ paths:
             tags:
                 - pets
             parameters:
+                -   name: kind
+                    in: query
+                    description: Filter pets by kind
+                    required: false
+                    schema:
+                        type: string
+                        enum: [ 'cat', 'dog', 'turtle' ]
+                    examples:
+                        cat:
+                            value: cat
+                            summary: expects 200.default
+                        unknown:
+                            value: horse
+                            summary: expects default.badRequest
                 -   name: limit
                     in: query
                     description: How many items to return at one time (max 100)
@@ -21,7 +35,16 @@ paths:
                     schema:
                         type: integer
                         format: int32
-                        example: 12
+                    examples:
+                        default:
+                            value: 10
+                            summary: expects 200.default
+                        double:
+                            value: 20
+                            summary: expects 200.double
+                        badType:
+                            value: aaa
+                            summary: expects default.badRequest
             responses:
                 '200':
                     description: A paged array of pets
@@ -35,41 +58,70 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Pets"
-                            example:
-                                -   id: 1234
-                                    name: Toto
-                                -   id: 5678
-                                    name: Tata
+                            examples:
+                                default:
+                                    value:
+                                        -   id: 12
+                                            name: aaa
+                                        -   id: 34
+                                            name: bbb
+                                double:
+                                    value:
+                                        -   id: 12
+                                            name: aaa
+                                        -   id: 34
+                                            name: bbb
+                                        -   id: 56
+                                            name: ccc
+                                        -   id: 78
+                                            name: ddd
                 default:
                     description: unexpected error
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Error"
+                            examples:
+                                badRequest:
+                                    $ref: '#/components/examples/badRequestResponse'
+                                unauthorized:
+                                    $ref: '#/components/examples/unauthorizedResponse'
+
         post:
             summary: Create a pet
             operationId: createPets
-            requestBody:
-                content:
-                    application/json: # Media type
-                        schema: # Request body contents
-                            $ref: '#/components/schemas/Pet'   # Reference to an object
-                        examples:
-                            201:
-                                $ref: '#/components/examples/Jessica'
-                            default:
-                                $ref: '#/components/examples/Ron'
             tags:
                 - pets
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Pet'
+                        examples:
+                            '201':
+                                $ref: '#/components/examples/petCreationBody'
+                            default:
+                                $ref: '#/components/examples/badPetCreationBody'
             responses:
                 '201':
-                    description: Null response
+                    description: pet created successfuly
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Pet'
+                            example:
+                                $ref: '#/components/examples/petExample'
                 default:
                     description: unexpected error
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Error"
+                            examples:
+                                badRequest:
+                                    $ref: '#/components/examples/badRequestResponse'
+                                unauthorized:
+                                    $ref: '#/components/examples/unauthorizedResponse'
     /pets/{petId}:
         get:
             summary: Info for a specific pet
@@ -83,7 +135,7 @@ paths:
                     description: The id of the pet to retrieve
                     schema:
                         type: string
-                        example: 123
+                        example: 123 # if example has no summary => should it expect 200, 201, default ? if post => 201, otherwise => 200
             responses:
                 '200':
                     description: Expected response to a valid request
@@ -91,12 +143,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Pet"
+                            example:
+                                $ref: '#/components/examples/petExample'
                 default:
                     description: unexpected error
                     content:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Error"
+                            examples:
+                                badRequest:
+                                    $ref: '#/components/examples/badRequestResponse'
+                                unauthorized:
+                                    $ref: '#/components/examples/unauthorizedResponse'
+                                notFound:
+                                    $ref: '#/components/examples/notFoundResponse'
 components:
     schemas:
         Pet:
@@ -112,7 +173,6 @@ components:
                     type: string
                 tag:
                     type: string
-
         Pets:
             type: array
             items:
@@ -129,12 +189,34 @@ components:
                 message:
                     type: string
     examples:
-        Jessica: # Example 1
+        # Request parameters examples
+
+        # Request body examples
+        petCreationBody:
             value:
                 id: 10
                 name: Jessica Smith
-        Ron: # Example 2
+            summary: expects 201
+        badPetCreationBody: # Example 2
             value:
                 id: 11
-                name: Ron Stewart
-                tag: halala
+                name: 123
+            summary: expects default.badRequest
+
+        # Response body examples
+        petExample:
+            value:
+                id: 10
+                name: Jessica Smith
+        badRequestResponse:
+            value:
+                code: 400
+                message: 'Bad request'
+        unauthorizedResponse:
+            value:
+                code: 403
+                message: 'Unauthorized'
+        notFoundResponse:
+            value:
+                code: 404
+                message: 'Resource not found'
