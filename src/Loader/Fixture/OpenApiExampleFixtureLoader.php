@@ -8,15 +8,15 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Response;
-use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
+use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Util\Json;
 
 final class OpenApiExampleFixtureLoader
 {
-    public function __invoke(OpenApi $data): OpenApiTestPlanFixture
+    public function __invoke(OpenApi $data): OpenApiTestSuiteFixture
     {
-        $testPlanFixture = new OpenApiTestPlanFixture();
+        $testPlanFixture = new OpenApiTestSuiteFixture();
         foreach ($data->paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 if (null === $operation->responses) {
@@ -53,28 +53,24 @@ final class OpenApiExampleFixtureLoader
         foreach ($operation->parameters as $parameter) {
             $examples = $this->getParameterExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
-                if (isset($requests[$expectedResponse])) {
-                    $requests[$expectedResponse] = $this->addParameterToRequest(
-                        $parameter,
-                        $example,
-                        $requests[$expectedResponse]
-                    );
-                } else {
-                    $newRequest = [
+                if (!isset($requests[$expectedResponse])) {
+                    $requests[$expectedResponse] = [
                         'path' => $path,
                         'method' => $method,
                     ];
-
-                    $requests[$expectedResponse] = $this->addParameterToRequest(
+                }
+                $requests[$expectedResponse] = array_merge(
+                    $requests[$expectedResponse],
+                    $this->addParameterToRequest(
                         $parameter,
                         $example,
-                        $newRequest
-                    );
-                }
+                        $requests[$expectedResponse]
+                    )
+                );
             }
         }
 
-        return $this->redirectDefaultRequests($method, $requests);
+        return $requests;
     }
 
 
@@ -115,9 +111,17 @@ final class OpenApiExampleFixtureLoader
         $testCases = [];
         foreach ($requests as $key => $request) {
             $response = [];
-            foreach (explode('.', explode('expects ', (string) $key)[1] ?? (string) $key) as $item) {
-                $response = $response[$item] ?? $responses[$item];
+
+            if (!str_contains('expects', (string) $key) && $key === 'default') {
+                $key = array_key_first($responses);
             }
+
+            foreach (explode('.', explode('expects ', (string) $key)[1] ?? (string) $key) as $item) {
+                if ($key) {
+                    $response = $response[$item] ?? $responses[$item];
+                }
+            }
+
             if (!empty($response)) {
                 $fixture = new OperationTestCaseFixture();
 
@@ -203,19 +207,5 @@ final class OpenApiExampleFixtureLoader
         }
 
         return $bodies;
-    }
-
-    private function redirectDefaultRequests(string $method, array $requests)
-    {
-        if (count($requests) === 1 && array_keys($requests)[0] === 'default') {
-            $expectedResponse = '200';
-            if ($method === 'post') {
-                $expectedResponse = '201';
-            }
-            $requests[$expectedResponse] = $requests['default'];
-            unset($requests['default']);
-        }
-
-        return $requests;
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Fixture;
 
-final class OpenApiTestPlanFixture
+final class OpenApiTestSuiteFixture
 {
     /**
      * @var array<array-key, OperationTestCaseFixture>

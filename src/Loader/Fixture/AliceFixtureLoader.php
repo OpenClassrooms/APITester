@@ -6,7 +6,7 @@ namespace OpenAPITesting\Loader\Fixture;
 
 use Nelmio\Alice\DataLoaderInterface;
 use Nelmio\Alice\Loader\NativeLoader;
-use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
+use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 
 final class AliceFixtureLoader
@@ -16,7 +16,7 @@ final class AliceFixtureLoader
      *
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      */
-    public function __invoke(array $data, ?DataLoaderInterface $loader = null): OpenApiTestPlanFixture
+    public function __invoke(array $data, ?DataLoaderInterface $loader = null): OpenApiTestSuiteFixture
     {
         $loader ??= new NativeLoader();
         $data = [
@@ -25,7 +25,7 @@ final class AliceFixtureLoader
 
         $testCaseFixtures = $this->getTestCaseFixtures($loader, $data);
 
-        return new OpenApiTestPlanFixture($testCaseFixtures);
+        return new OpenApiTestSuiteFixture($testCaseFixtures);
     }
 
     /**

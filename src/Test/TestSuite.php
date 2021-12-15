@@ -6,7 +6,7 @@ namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
+use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 
@@ -22,14 +22,14 @@ final class TestSuite implements Test
 
     private ?DateTimeInterface $startedAt = null;
 
-    private OpenApiTestPlanFixture $fixture;
+    private OpenApiTestSuiteFixture $fixture;
 
     /**
      * @var TestCase[]
      */
     private array $operationTestCases = [];
 
-    public function __construct(string $baseUri, OpenApiTestPlanFixture $fixture)
+    public function __construct(string $baseUri, OpenApiTestSuiteFixture $fixture)
     {
         $this->baseUri = $baseUri;
         $this->fixture = $fixture;

@@ -33,17 +33,15 @@ final class ExecuteTestPlanTest extends TestCase
 //        $aliceFixtureLoader = new AliceFixtureLoader();
         $openApiFixtureLoader = new OpenApiExampleFixtureLoader();
 
-//        $openApiPsx = OpenAPI::fromFile(FixturesLocation::OPEN_API_PETSTORE_YAML, '/pets');
-//        dd($openApiPsx);
         $openApi = Reader::readFromYamlFile(realpath(FixturesLocation::OPEN_API_PETSTORE_YAML));
-        $testPlan = new TestSuite(
+        $testSuite = new TestSuite(
             rtrim($openApi->servers[0]->url, '/'),
             $openApiFixtureLoader($openApi),
         // $aliceFixtureLoader($yamlLoader(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)),
         );
 
-        $testPlan->launch(new HttpRequester());
+        $testSuite->launch(new HttpRequester());
 
-        static::assertEmpty($testPlan->getErrors(), encode($testPlan->getErrors(), true));
+        static::assertEmpty($testSuite->getErrors(), encode($testSuite->getErrors(), true));
     }
 }
