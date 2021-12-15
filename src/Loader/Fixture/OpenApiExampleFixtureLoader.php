@@ -6,6 +6,8 @@ namespace OpenAPITesting\Loader\Fixture;
 
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\Parameter;
+use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Response;
 use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
@@ -23,9 +25,9 @@ final class OpenApiExampleFixtureLoader
                     continue;
                 }
 
-                $requests = $this->buildRequests($method, $operation, $path);
+                $requests = $this->buildRequests($operation, (string) $method, (string) $path);
                 $responses = $this->buildResponses($operation);
-                $testCases = $this->buildTestCases($requests, $responses, $operation->operationId);
+                $testCases = $this->buildTestCases($operation->operationId, $requests, $responses);
 
                 $testPlanFixture->addMany($testCases);
             }
@@ -34,7 +36,10 @@ final class OpenApiExampleFixtureLoader
         return $testPlanFixture;
     }
 
-    private function buildRequests(string $method, Operation $operation, string $path): array
+    /**
+     * @return mixed[]
+     */
+    private function buildRequests(Operation $operation, string $method, string $path): array
     {
         $requests = [];
         $requestBodies = $this->getRequestExampleBodies($operation->requestBody);
@@ -74,8 +79,14 @@ final class OpenApiExampleFixtureLoader
     }
 
 
-    private function buildResponses(Operation $operation)
+    /**
+     * @return array[]
+     */
+    private function buildResponses(Operation $operation): array
     {
+        if (!$operation->responses) {
+            return [];
+        }
         $responses = [];
         foreach ($operation->responses as $statusCode => $response) {
             $examples = $this->getResponseExampleBodies($statusCode, $response);
@@ -106,7 +117,10 @@ final class OpenApiExampleFixtureLoader
         return $responses;
     }
 
-    private function buildTestCases(array $requests, array $responses, string $operationId)
+    /**
+     * @return OperationTestCaseFixture[]
+     */
+    private function buildTestCases(string $operationId, array $requests, array $responses): array
     {
         $testCases = [];
         foreach ($requests as $key => $request) {
@@ -155,7 +169,10 @@ final class OpenApiExampleFixtureLoader
         return $request;
     }
 
-    private function getParameterExamples($parameter): array
+    /**
+     * @param Parameter|Reference $parameter
+     */
+    private function getParameterExamples(object $parameter): array
     {
         $examples = [];
 
@@ -174,6 +191,8 @@ final class OpenApiExampleFixtureLoader
 
     /**
      * @param int|string $statusCode
+     *
+     * @return mixed[]
      */
     private function getResponseExampleBodies($statusCode, Response $response): array
     {
@@ -189,14 +208,21 @@ final class OpenApiExampleFixtureLoader
         return $bodies;
     }
 
-    private function getRequestExampleBodies(?RequestBody $request = null): array
+    /**
+     * @param RequestBody|null $request
+     *
+     * @return mixed[]
+     */
+    private function getRequestExampleBodies(?object $request = null): array
     {
         if (!$request) {
             return [];
         }
 
         $bodies = [];
-        if (isset($request->content['application/json']->example->value)) {
+        if (is_object($request->content['application/json']->example)
+            && property_exists($request->content['application/json']->example, 'value')
+        ) {
             $bodies['default'] = $request->content['application/json']->example->value;
         }
 

@@ -20,17 +20,13 @@ use function Psl\Json\encode;
 final class ExecuteTestPlanTest extends TestCase
 {
     /**
-     * @throws \JsonException
+     * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \Nelmio\Alice\Throwable\LoadingThrowable
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
     public function testExecute(): void
     {
-//        $jsonLoader = new JsonLoader();
-
 //        $openApiLoader = new OpenApiLoader();
-
-//        $aliceFixtureLoader = new AliceFixtureLoader();
         $openApiFixtureLoader = new OpenApiExampleFixtureLoader();
 
         $openApi = Reader::readFromYamlFile(realpath(FixturesLocation::OPEN_API_PETSTORE_YAML));
