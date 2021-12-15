@@ -10,6 +10,7 @@ use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Response;
 use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
+use OpenAPITesting\Util\Json;
 
 final class OpenApiExampleFixtureLoader
 {
@@ -24,11 +25,11 @@ final class OpenApiExampleFixtureLoader
 
                 $requests = $this->buildRequests($method, $operation, $path);
                 $responses = $this->buildResponses($operation);
-                $testCases = $this->buildTestCases($requests, $responses);
+                $testCases = $this->buildTestCases($requests, $responses, $operation->operationId);
+
                 $testPlanFixture->addMany($testCases);
             }
         }
-        dd($testPlanFixture);
 
         return $testPlanFixture;
     }
@@ -36,24 +37,24 @@ final class OpenApiExampleFixtureLoader
     private function buildRequests(string $method, Operation $operation, string $path): array
     {
         $requests = [];
-        $requestBodyExamples = $this->extractExampleBodiesFromRequest($operation->requestBody);
-        foreach ($requestBodyExamples as $expectedResponse => $bodyExample) {
+        $requestBodies = $this->getRequestExampleBodies($operation->requestBody);
+        foreach ($requestBodies as $expectedResponse => $body) {
             if (isset($requests[$expectedResponse])) {
-                $requests[$expectedResponse]['body'] = $bodyExample;
+                $requests[$expectedResponse]['body'] = $body;
             } else {
                 $requests[$expectedResponse] = [
                     'path' => $path,
                     'method' => $method,
-                    'body' => $bodyExample,
+                    'body' => Json::encode($body),
                 ];
             }
         }
 
         foreach ($operation->parameters as $parameter) {
-            $examples = $this->extractExamplesFromParameter($parameter);
+            $examples = $this->getParameterExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
                 if (isset($requests[$expectedResponse])) {
-                    $requests[$expectedResponse] = $this->assignExampleParameterToRequest(
+                    $requests[$expectedResponse] = $this->addParameterToRequest(
                         $parameter,
                         $example,
                         $requests[$expectedResponse]
@@ -64,7 +65,7 @@ final class OpenApiExampleFixtureLoader
                         'method' => $method,
                     ];
 
-                    $requests[$expectedResponse] = $this->assignExampleParameterToRequest(
+                    $requests[$expectedResponse] = $this->addParameterToRequest(
                         $parameter,
                         $example,
                         $newRequest
@@ -81,35 +82,47 @@ final class OpenApiExampleFixtureLoader
     {
         $responses = [];
         foreach ($operation->responses as $statusCode => $response) {
-            $examples = $this->extractExampleBodiesFromResponse($statusCode, $response);
+            $examples = $this->getResponseExampleBodies($statusCode, $response);
             foreach ($examples as $label => $body) {
                 if ($statusCode === 'default') {
                     $responses[$statusCode][$label] = [
                         'statusCode' => $body['code'],
-                        'body' => $body,
+                        'body' => Json::encode($body),
+                    ];
+                } elseif ($statusCode === $label) {
+                    $responses[$statusCode] = [
+                        'statusCode' => $statusCode,
+                        'body' => Json::encode($body),
                     ];
                 } else {
                     $responses[$statusCode][$label] = [
                         'statusCode' => $statusCode,
-                        'body' => $body,
+                        'body' => Json::encode($body),
                     ];
                 }
+            }
+
+            foreach ($response->headers as $name => $value) {
+                $responses[$statusCode][$label]['headers'][$name] = $value->example;
             }
         }
 
         return $responses;
     }
 
-    private function buildTestCases(array $requests, array $responses)
+    private function buildTestCases(array $requests, array $responses, string $operationId)
     {
         $testCases = [];
         foreach ($requests as $key => $request) {
             $response = [];
-            foreach (explode('.', (string) $key) as $item) {
+            foreach (explode('.', explode('expects ', (string) $key)[1] ?? (string) $key) as $item) {
                 $response = $response[$item] ?? $responses[$item];
             }
             if (!empty($response)) {
                 $fixture = new OperationTestCaseFixture();
+
+                $fixture->setOperationId($operationId);
+                $fixture->setDescription((string) $key);
                 $fixture->request = $request;
                 $fixture->response = $response;
                 $testCases[] = $fixture;
@@ -119,7 +132,7 @@ final class OpenApiExampleFixtureLoader
         return $testCases;
     }
 
-    private function assignExampleParameterToRequest($parameter, $example, $request): array
+    private function addParameterToRequest($parameter, $example, $request): array
     {
         if ($parameter->in === 'query') {
             $request['queryParameters'][$parameter->name] = $example;
@@ -138,7 +151,7 @@ final class OpenApiExampleFixtureLoader
         return $request;
     }
 
-    private function extractExamplesFromParameter($parameter): array
+    private function getParameterExamples($parameter): array
     {
         $examples = [];
 
@@ -148,7 +161,7 @@ final class OpenApiExampleFixtureLoader
 
         if ($parameter->examples) {
             foreach ($parameter->examples as $example) {
-                $examples[explode('expects ', $example->summary)[1]] = $example->value;
+                $examples[$example->summary] = $example->value;
             }
         }
 
@@ -158,7 +171,7 @@ final class OpenApiExampleFixtureLoader
     /**
      * @param int|string $statusCode
      */
-    private function extractExampleBodiesFromResponse($statusCode, Response $response): array
+    private function getResponseExampleBodies($statusCode, Response $response): array
     {
         $bodies = [];
         if (isset($response->content['application/json']->example->value)) {
@@ -172,7 +185,7 @@ final class OpenApiExampleFixtureLoader
         return $bodies;
     }
 
-    private function extractExampleBodiesFromRequest(?RequestBody $request = null): array
+    private function getRequestExampleBodies(?RequestBody $request = null): array
     {
         if (!$request) {
             return [];
@@ -184,8 +197,8 @@ final class OpenApiExampleFixtureLoader
         }
 
         if ($request->content['application/json']->examples) {
-            foreach ($request->content['application/json']->examples as $label => $example) {
-                $bodies[explode('expects ', $example->summary)[1]] = $example->value;
+            foreach ($request->content['application/json']->examples as $example) {
+                $bodies[$example->summary] = $example->value;
             }
         }
 

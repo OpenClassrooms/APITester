@@ -24,6 +24,10 @@ final class OpenApiTestPlanFixture
      */
     public function getOperationTestCaseFixtures(?string $operationId = null): array
     {
+        if (!$operationId) {
+            return $this->operationTestCaseFixtures;
+        }
+
         return array_filter(
             $this->operationTestCaseFixtures,
             static fn($fixture) => $fixture->getOperationId() === $operationId

@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Tests;
 
 use cebe\openapi\Reader;
-use OpenAPITesting\Loader\Fixture\AliceFixtureLoader;
 use OpenAPITesting\Loader\Fixture\OpenApiExampleFixtureLoader;
-use OpenAPITesting\Loader\JsonLoader;
-use OpenAPITesting\Loader\OpenApiLoader;
-use OpenAPITesting\Loader\YamlLoader;
 use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
@@ -30,24 +26,24 @@ final class ExecuteTestPlanTest extends TestCase
      */
     public function testExecute(): void
     {
-        $jsonLoader = new JsonLoader();
-        $yamlLoader = new YamlLoader();
+//        $jsonLoader = new JsonLoader();
 
-        $openApiLoader = new OpenApiLoader();
+//        $openApiLoader = new OpenApiLoader();
 
-        $aliceFixtureLoader = new AliceFixtureLoader();
+//        $aliceFixtureLoader = new AliceFixtureLoader();
         $openApiFixtureLoader = new OpenApiExampleFixtureLoader();
-        dd(
-            $openApiFixtureLoader(
-                Reader::readFromYamlFile(realpath(FixturesLocation::OPEN_API_PETSTORE_YAML))
-            )
+
+//        $openApiPsx = OpenAPI::fromFile(FixturesLocation::OPEN_API_PETSTORE_YAML, '/pets');
+//        dd($openApiPsx);
+        $openApi = Reader::readFromYamlFile(realpath(FixturesLocation::OPEN_API_PETSTORE_YAML));
+        $testPlan = new TestSuite(
+            rtrim($openApi->servers[0]->url, '/'),
+            $openApiFixtureLoader($openApi),
+        // $aliceFixtureLoader($yamlLoader(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)),
         );
 
-        $testPlan = new TestSuite(
-            $openApiLoader($yamlLoader(FixturesLocation::OPEN_API_PETSTORE_FILE)),
-            $aliceFixtureLoader($yamlLoader(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)),
-        );
         $testPlan->launch(new HttpRequester());
+
         static::assertEmpty($testPlan->getErrors(), encode($testPlan->getErrors(), true));
     }
 }

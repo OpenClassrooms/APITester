@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\Operation;
 use DateTimeInterface;
 use GuzzleHttp\Psr7\ServerRequest;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
@@ -37,33 +36,21 @@ final class TestCase implements Test
 
     private OperationTestCaseFixture $fixture;
 
-    private Operation $operation;
-
-    private string $method;
-
     private TestSuite $parent;
-
-    private string $path;
 
     private ?DateTimeInterface $startedAt = null;
 
     public function __construct(
-        Operation $operation,
-        string $path,
-        string $method,
         TestSuite $parent,
         OperationTestCaseFixture $operationTestCaseFixture
     ) {
         $this->parent = $parent;
-        $this->operation = $operation;
-        $this->path = $path;
-        $this->method = $method;
         $this->fixture = $operationTestCaseFixture;
     }
 
     public function getDescription(): string
     {
-        return $this->operation->operationId . ' - ' . ($this->fixture->getDescription() ?? 'test');
+        return $this->fixture->getOperationId() . ' > ' . $this->fixture->getDescription() ?? 'test';
     }
 
     /**
@@ -80,11 +67,6 @@ final class TestCase implements Test
         $response = $requester->request($this->getRequest());
         $this->errors = Assert::assertResponse($response, $this->fixture->getExpectedResponse());
         $this->finishedAt = Carbon::now();
-    }
-
-    public function getOperation(): Operation
-    {
-        return $this->operation;
     }
 
     public function getParent(): TestSuite
@@ -104,21 +86,11 @@ final class TestCase implements Test
         return self::STATUS_NOT_LAUNCHED;
     }
 
-    public function getMethod(): string
-    {
-        return $this->method;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
     private function getRequest(): ServerRequestInterface
     {
         return new ServerRequest(
-            $this->getMethod(),
-            "{$this->parent->getBaseUri()}/{$this->getPath()}",
+            $this->fixture->getMethod(),
+            "{$this->parent->getBaseUri()}/{$this->fixture->getPath()}",
             $this->fixture->getRequestHeaders(),
             $this->fixture->getRequestBody()
         );

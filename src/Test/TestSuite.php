@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\OpenApi;
 use DateTimeInterface;
 use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Requester;
@@ -19,7 +18,7 @@ final class TestSuite implements Test
 {
     private ?DateTimeInterface $finishedAt = null;
 
-    private OpenApi $openApi;
+    private string $baseUri;
 
     private ?DateTimeInterface $startedAt = null;
 
@@ -30,16 +29,16 @@ final class TestSuite implements Test
      */
     private array $operationTestCases = [];
 
-    public function __construct(OpenApi $openApi, OpenApiTestPlanFixture $fixture)
+    public function __construct(string $baseUri, OpenApiTestPlanFixture $fixture)
     {
-        $this->openApi = $openApi;
+        $this->baseUri = $baseUri;
         $this->fixture = $fixture;
         $this->buildTestCases();
     }
 
     public function getBaseUri(): string
     {
-        return rtrim($this->openApi->servers[0]->url, '/');
+        return $this->baseUri;
     }
 
     /**
@@ -49,10 +48,11 @@ final class TestSuite implements Test
     {
         $errors = [];
         foreach ($this->operationTestCases as $testCase) {
-            $errors[] = $testCase->getErrors();
+            $errors[$testCase->getDescription()] = $testCase->getErrors();
         }
 
-        return array_filter(array_merge(...$errors));
+        return $errors;
+//        return array_filter(array_merge(...$errors));
     }
 
     public function launch(Requester $requester): void
@@ -76,18 +76,11 @@ final class TestSuite implements Test
 
     private function buildTestCases(): void
     {
-        foreach ($this->openApi->paths as $pathName => $path) {
-            foreach ($path->getOperations() as $method => $operation) {
-                foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
-                    $this->operationTestCases[] = new TestCase(
-                        $operation,
-                        (string) $pathName,
-                        mb_strtoupper((string) $method),
-                        $this,
-                        $testCaseFixture,
-                    );
-                }
-            }
+        foreach ($this->fixture->getOperationTestCaseFixtures() as $testCaseFixture) {
+            $this->operationTestCases[] = new TestCase(
+                $this,
+                $testCaseFixture,
+            );
         }
     }
 }

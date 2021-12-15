@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 final class OperationTestCaseFixture
 {
     /**
-     * @var array{'headers'?: array<string, string|string[]>, 'body'?: string}
+     * @var array{'method'?: string, 'path'?: string, 'headers'?: array<string, string|string[]>, 'body'?: string}
      */
     public array $request = [];
 
@@ -63,5 +63,15 @@ final class OperationTestCaseFixture
     public function getRequestHeaders(): array
     {
         return $this->request['headers'] ?? [];
+    }
+
+    public function getMethod(): string
+    {
+        return $this->request['method'] ?? 'get';
+    }
+
+    public function getPath(): string
+    {
+        return $this->request['path'] ?? '';
     }
 }
