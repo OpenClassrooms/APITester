@@ -9,6 +9,7 @@ use DateTimeInterface;
 use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
+use PHPUnit\Framework\ExpectationFailedException;
 
 /**
  * @internal
@@ -42,15 +43,15 @@ final class TestSuite implements Test
     }
 
     /**
-     * @return string[][][]
-     *
-     * @psalm-return array<string, array<array<string>>>
+     * @return array<string, ExpectationFailedException>
      */
     public function getErrors(): array
     {
         $errors = [];
         foreach ($this->operationTestCases as $testCase) {
-            $errors[$testCase->getDescription()] = $testCase->getErrors();
+            if (null !== $testCase->getErrors()) {
+                $errors[$testCase->getDescription()] = $testCase->getErrors();
+            }
         }
 
         return $errors;
@@ -65,13 +66,20 @@ final class TestSuite implements Test
         $this->finishedAt = Carbon::now();
     }
 
+    public function getStartedAt(): ?DateTimeInterface
+    {
+        return $this->startedAt;
+    }
+
+    public function getFinishedAt(): ?DateTimeInterface
+    {
+        return $this->finishedAt;
+    }
+
     private function buildTestCases(): void
     {
         foreach ($this->fixture->getOperationTestCaseFixtures() as $testCaseFixture) {
-            $this->operationTestCases[] = new TestCase(
-                $this,
-                $testCaseFixture,
-            );
+            $this->operationTestCases[] = new TestCase($testCaseFixture);
         }
     }
 }

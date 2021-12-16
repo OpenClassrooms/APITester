@@ -6,11 +6,11 @@ namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use GuzzleHttp\Psr7\ServerRequest;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
+use PHPUnit\Framework\ExpectationFailedException;
 
 /**
  * @internal
@@ -26,57 +26,47 @@ final class TestCase implements Test
 
     public const STATUS_SUCCESS = 'success';
 
-    /**
-     * @var string[][]
-     */
-    private array $errors = [];
+    private ?ExpectationFailedException $errors = null;
 
     private OperationTestCaseFixture $fixture;
-
-    private TestSuite $parent;
 
     private ?DateTimeInterface $startedAt = null;
 
     private ?DateTimeInterface $finishedAt = null;
 
-    public function __construct(
-        TestSuite $parent,
-        OperationTestCaseFixture $operationTestCaseFixture
-    ) {
-        $this->parent = $parent;
+    public function __construct(OperationTestCaseFixture $operationTestCaseFixture)
+    {
         $this->fixture = $operationTestCaseFixture;
     }
 
     public function getDescription(): string
     {
-        return $this->fixture->getOperationId() . ' > ' . $this->fixture->getDescription() ?? 'test';
+        return $this->fixture->getOperationId() . ' > ' . ($this->fixture->getDescription() ?? 'test');
     }
 
-    /**
-     * @return string[][]
-     */
-    public function getErrors(): array
+    public function getErrors(): ?ExpectationFailedException
     {
         return $this->errors;
     }
 
+    /**
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
     public function launch(Requester $requester): void
     {
         $this->startedAt = Carbon::now();
-        $response = $requester->request($this->getRequest());
-        $this->errors = Assert::assertResponse($response, $this->fixture->getExpectedResponse());
+        $response = $requester->request($this->fixture->getRequest());
+        $this->errors = Assert::assertObjectsEqual($response, $this->fixture->getExpectedResponse());
         $this->finishedAt = Carbon::now();
     }
 
-    private function getRequest(): ServerRequest
+    public function getStartedAt(): ?DateTimeInterface
     {
-        $fixtureRequest = $this->fixture->getRequest();
+        return $this->startedAt;
+    }
 
-        return new ServerRequest(
-            $fixtureRequest->getMethod(),
-            "{$this->parent->getBaseUri()}/{$fixtureRequest->getUri()}",
-            $fixtureRequest->getHeaders(),
-            $fixtureRequest->getBody()
-        );
+    public function getFinishedAt(): ?DateTimeInterface
+    {
+        return $this->finishedAt;
     }
 }

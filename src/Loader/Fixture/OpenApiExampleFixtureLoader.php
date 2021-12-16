@@ -66,7 +66,7 @@ final class OpenApiExampleFixtureLoader
             /** @var array<string, array<string|int>> $examples */
             $examples = $this->getExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
-                if (!isset($requests[$expectedResponse])) {
+                if (! isset($requests[$expectedResponse])) {
                     $requests[$expectedResponse] = new Request($method, $path, []);
                 }
                 $this->addParameterToRequest(
@@ -80,13 +80,12 @@ final class OpenApiExampleFixtureLoader
         return $requests;
     }
 
-
     /**
      * @return array<string, Response>
      */
     private function buildResponses(Operation $operation): array
     {
-        if (!isset($operation->responses)) {
+        if (! isset($operation->responses)) {
             return [];
         }
         $responses = [];
@@ -114,7 +113,7 @@ final class OpenApiExampleFixtureLoader
     }
 
     /**
-     * @param array<string, Request> $requests
+     * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
      *
      * @return OperationTestCaseFixture[]
@@ -124,7 +123,7 @@ final class OpenApiExampleFixtureLoader
         ksort($responses);
         $testCases = [];
         foreach ($requests as $key => $request) {
-            if ($key === 'default') {
+            if ('default' === $key) {
                 $key = (string) array_key_first($responses);
             } else {
                 $key = str_replace('expects ', '', $key);
@@ -143,11 +142,11 @@ final class OpenApiExampleFixtureLoader
 
     private function addParameterToRequest(Request $request, Parameter $parameter, string $example): void
     {
-        if ($parameter->in === 'query') {
+        if ('query' === $parameter->in) {
             $request->withUri(
-                new Uri(((string) $request->getUri()) . "&$parameter->name=$example")
+                new Uri(((string) $request->getUri()) . "&{$parameter->name}={$example}")
             );
-        } elseif ($parameter->in === 'path') {
+        } elseif ('path' === $parameter->in) {
             $request->withUri(
                 new Uri(
                     str_replace(
@@ -170,7 +169,7 @@ final class OpenApiExampleFixtureLoader
     private function getExamples(object $object, string $defaultKey = 'default'): array
     {
         $examples = [];
-        if (is_object($object->example) && property_exists($object->example, 'value')) {
+        if (\is_object($object->example) && isset($object->example->value)) {
             $examples[$defaultKey] = (array) $object->example->value;
         }
 

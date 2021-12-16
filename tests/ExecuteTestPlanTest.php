@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests;
 
-use cebe\openapi\Reader;
 use OpenAPITesting\Loader\Fixture\OpenApiExampleFixtureLoader;
+use OpenAPITesting\Loader\OpenApiLoader;
 use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
+use OpenAPITesting\Util\Json;
 use PHPUnit\Framework\TestCase;
-
-use function Psl\Json\encode;
 
 /**
  * @internal
@@ -23,21 +22,20 @@ final class ExecuteTestPlanTest extends TestCase
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \InvalidArgumentException
      */
     public function testExecute(): void
     {
-//        $openApiLoader = new OpenApiLoader();
-        $openApiFixtureLoader = new OpenApiExampleFixtureLoader();
-
-        $openApi = Reader::readFromYamlFile(realpath(FixturesLocation::OPEN_API_PETSTORE_YAML));
+        $openApi = (new OpenApiLoader())(FixturesLocation::OPEN_API_PETSTORE_YAML);
         $testSuite = new TestSuite(
             rtrim($openApi->servers[0]->url, '/'),
-            $openApiFixtureLoader($openApi),
-        // $aliceFixtureLoader($yamlLoader(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)),
+            (new OpenApiExampleFixtureLoader())($openApi),
         );
 
         $testSuite->launch(new HttpRequester());
 
-        static::assertEmpty($testSuite->getErrors(), encode($testSuite->getErrors(), true));
+        static::assertEmpty($testSuite->getErrors(), Json::encode($testSuite->getErrors()));
     }
 }

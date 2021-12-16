@@ -34,11 +34,3 @@ final class Array_
         return $merged;
     }
 }
-
-/*
- * psalm: InvalidReturnType:
- * The declared return type
- * 'array<Tk:fn-openapitesting\util\array_::merge as array-key, Tv:fn-openapitesting\util\array_::merge as mixed>'
- * for OpenAPITesting\Util\Array_::merge is incorrect, got
- * 'array<Tk:fn-openapitesting\util\array_::merge as array-key, (Tv:fn-openapitesting\util\array_::merge as mixed)|array<array-key, mixed>>'
- */

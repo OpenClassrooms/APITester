@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace OpenAPITesting\Requester;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\ServerRequest;
 use OpenAPITesting\Requester;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,9 +24,14 @@ final class SymfonyKernelRequester implements Requester
         $this->kernel = $kernel;
     }
 
-    public function request(ServerRequestInterface $request): ResponseInterface
+    /**
+     * @throws \Exception
+     */
+    public function request(RequestInterface $request): ResponseInterface
     {
-        return $this->symfonyToPsrResponse($this->kernel->handle($this->psrToSymfonyRequest($request)));
+        return $this->symfonyToPsrResponse(
+            $this->kernel->handle($this->psrToSymfonyRequest($request))
+        );
     }
 
     private function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface
@@ -36,10 +42,15 @@ final class SymfonyKernelRequester implements Requester
         return $psrHttpFactory->createResponse($symfonyResponse);
     }
 
-    private function psrToSymfonyRequest(ServerRequestInterface $request): Request
+    private function psrToSymfonyRequest(RequestInterface $request): Request
     {
-        $httpFoundationFactory = new HttpFoundationFactory();
+        $serverRequest = new ServerRequest(
+            $request->getMethod(),
+            $request->getUri(),
+            $request->getHeaders(),
+            $request->getBody(),
+        );
 
-        return $httpFoundationFactory->createRequest($request);
+        return (new HttpFoundationFactory())->createRequest($serverRequest);
     }
 }

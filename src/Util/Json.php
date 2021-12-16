@@ -6,8 +6,6 @@ namespace OpenAPITesting\Util;
 
 final class Json
 {
-
-
     /**
      * @param int<1, max> $depth
      *

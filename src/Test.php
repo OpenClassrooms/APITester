@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting;
 
+use DateTimeInterface;
+
 interface Test
 {
     public function launch(Requester $requester): void;
 
-    /**
-     * @return string[][]
-     */
-    public function getErrors(): array;
+    public function getStartedAt(): ?DateTimeInterface;
+
+    public function getFinishedAt(): ?DateTimeInterface;
 }

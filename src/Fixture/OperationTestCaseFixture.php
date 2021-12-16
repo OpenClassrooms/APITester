@@ -58,6 +58,4 @@ final class OperationTestCaseFixture
     {
         return $this->request;
     }
-
-
 }

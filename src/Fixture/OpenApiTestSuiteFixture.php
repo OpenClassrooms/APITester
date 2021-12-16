@@ -24,13 +24,13 @@ final class OpenApiTestSuiteFixture
      */
     public function getOperationTestCaseFixtures(?string $operationId = null): array
     {
-        if (!$operationId) {
+        if (null === $operationId) {
             return $this->operationTestCaseFixtures;
         }
 
         return array_filter(
             $this->operationTestCaseFixtures,
-            static fn($fixture) => $fixture->getOperationId() === $operationId
+            static fn ($fixture) => $fixture->getOperationId() === $operationId
         );
     }
 
