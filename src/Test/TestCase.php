@@ -11,7 +11,6 @@ use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @internal
@@ -69,30 +68,16 @@ final class TestCase implements Test
         $this->finishedAt = Carbon::now();
     }
 
-    public function getParent(): TestSuite
-    {
-        return $this->parent;
-    }
-
-    public function getStatus(): string
-    {
-        if (null !== $this->finishedAt) {
-            return 0 === \count($this->errors) ? self::STATUS_SUCCESS : self::STATUS_FAILED;
-        }
-        if (null !== $this->startedAt) {
-            return self::STATUS_LAUNCHED;
-        }
-
-        return self::STATUS_NOT_LAUNCHED;
-    }
-
-    private function getRequest(): ServerRequestInterface
+    private function getRequest(): ServerRequest
     {
         return new ServerRequest(
-            $this->fixture->getMethod(),
-            "{$this->parent->getBaseUri()}/{$this->fixture->getPath()}",
-            $this->fixture->getRequestHeaders(),
-            $this->fixture->getRequestBody()
+            $this->getRequest()
+                ->getMethod(),
+            "{$this->parent->getBaseUri()}/{$this->getRequest()->getUri()}",
+            $this->fixture->getRequest()
+                ->getHeaders(),
+            $this->fixture->getRequest()
+                ->getBody()
         );
     }
 }

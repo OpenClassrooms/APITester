@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Loader\Fixture;
 
+use cebe\openapi\spec\Header;
+use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Parameter;
-use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\RequestBody;
-use cebe\openapi\spec\Response;
+use cebe\openapi\spec\Schema;
+use Nyholm\Psr7\Request;
+use Nyholm\Psr7\Response;
+use Nyholm\Psr7\Uri;
 use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Util\Json;
@@ -19,13 +23,14 @@ final class OpenApiExampleFixtureLoader
     public function __invoke(OpenApi $data): OpenApiTestSuiteFixture
     {
         $testPlanFixture = new OpenApiTestSuiteFixture();
+        /** @var string $path */
         foreach ($data->paths as $path => $pathInfo) {
+            /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 if (null === $operation->responses) {
                     continue;
                 }
-
-                $requests = $this->buildRequests($operation, (string) $method, (string) $path);
+                $requests = $this->buildRequests($operation, $method, $path);
                 $responses = $this->buildResponses($operation);
                 $testCases = $this->buildTestCases($operation->operationId, $requests, $responses);
 
@@ -37,40 +42,37 @@ final class OpenApiExampleFixtureLoader
     }
 
     /**
-     * @return mixed[]
+     * @return array<string, Request>
      */
     private function buildRequests(Operation $operation, string $method, string $path): array
     {
         $requests = [];
-        $requestBodies = $this->getRequestExampleBodies($operation->requestBody);
-        foreach ($requestBodies as $expectedResponse => $body) {
-            if (isset($requests[$expectedResponse])) {
-                $requests[$expectedResponse]['body'] = $body;
-            } else {
-                $requests[$expectedResponse] = [
-                    'path' => $path,
-                    'method' => $method,
-                    'body' => Json::encode($body),
-                ];
+        if (null !== $operation->requestBody) {
+            /** @var RequestBody $requestBody */
+            $requestBody = $operation->requestBody;
+            $examples = $this->getExamples($requestBody->content['application/json']);
+            foreach ($examples as $expectedResponse => $body) {
+                $requests[$expectedResponse] = new Request(
+                    $method,
+                    $path . '?1=1',
+                    [],
+                    Json::encode($body),
+                );
             }
         }
 
+        /** @var Parameter $parameter */
         foreach ($operation->parameters as $parameter) {
-            $examples = $this->getParameterExamples($parameter);
+            /** @var array<string, array<string|int>> $examples */
+            $examples = $this->getExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
                 if (!isset($requests[$expectedResponse])) {
-                    $requests[$expectedResponse] = [
-                        'path' => $path,
-                        'method' => $method,
-                    ];
+                    $requests[$expectedResponse] = new Request($method, $path, []);
                 }
-                $requests[$expectedResponse] = array_merge(
+                $this->addParameterToRequest(
                     $requests[$expectedResponse],
-                    $this->addParameterToRequest(
-                        $parameter,
-                        $example,
-                        $requests[$expectedResponse]
-                    )
+                    $parameter,
+                    (string) $example[0],
                 );
             }
         }
@@ -80,37 +82,31 @@ final class OpenApiExampleFixtureLoader
 
 
     /**
-     * @return array[]
+     * @return array<string, Response>
      */
     private function buildResponses(Operation $operation): array
     {
-        if (!$operation->responses) {
+        if (!isset($operation->responses)) {
             return [];
         }
         $responses = [];
         foreach ($operation->responses as $statusCode => $response) {
-            $examples = $this->getResponseExampleBodies($statusCode, $response);
+            /** @var MediaType $content */
+            $content = $response->content['application/json'];
+            $examples = $this->getExamples($content, (string) $statusCode);
             foreach ($examples as $label => $body) {
-                if ($statusCode === 'default') {
-                    $responses[$statusCode][$label] = [
-                        'statusCode' => $body['code'],
-                        'body' => Json::encode($body),
-                    ];
-                } elseif ($statusCode === $label) {
-                    $responses[$statusCode] = [
-                        'statusCode' => $statusCode,
-                        'body' => Json::encode($body),
-                    ];
-                } else {
-                    $responses[$statusCode][$label] = [
-                        'statusCode' => $statusCode,
-                        'body' => Json::encode($body),
-                    ];
+                $key = $statusCode . '.' . $label;
+                $responses[$key] = new Response(
+                    (int) $statusCode,
+                    [],
+                    Json::encode($body)
+                );
+                /** @var Header $value */
+                foreach ($response->headers as $name => $value) {
+                    /** @var string $example */
+                    $example = $value->example;
+                    $responses[$key]->withAddedHeader($name, $example);
                 }
-            }
-
-            foreach ($response->headers as $name => $value) {
-                $responses[$statusCode][$label]['headers'][$name] = $value->example;
             }
         }
 
@@ -118,120 +114,80 @@ final class OpenApiExampleFixtureLoader
     }
 
     /**
+     * @param array<string, Request> $requests
+     * @param array<string, Response> $responses
+     *
      * @return OperationTestCaseFixture[]
      */
     private function buildTestCases(string $operationId, array $requests, array $responses): array
     {
+        ksort($responses);
         $testCases = [];
         foreach ($requests as $key => $request) {
-            $response = [];
-
-            if (!str_contains('expects', (string) $key) && $key === 'default') {
-                $key = array_key_first($responses);
+            if ($key === 'default') {
+                $key = (string) array_key_first($responses);
+            } else {
+                $key = str_replace('expects ', '', $key);
             }
-
-            foreach (explode('.', explode('expects ', (string) $key)[1] ?? (string) $key) as $item) {
-                if ($key) {
-                    $response = $response[$item] ?? $responses[$item];
-                }
-            }
-
-            if (!empty($response)) {
-                $fixture = new OperationTestCaseFixture();
-
-                $fixture->setOperationId($operationId);
-                $fixture->setDescription((string) $key);
-                $fixture->request = $request;
-                $fixture->response = $response;
-                $testCases[] = $fixture;
-            }
+            $fixture = new OperationTestCaseFixture(
+                $operationId,
+                $request,
+                $responses[$key] ?? new Response(),
+                $key,
+            );
+            $testCases[] = $fixture;
         }
 
         return $testCases;
     }
 
-    private function addParameterToRequest($parameter, $example, $request): array
+    private function addParameterToRequest(Request $request, Parameter $parameter, string $example): void
     {
         if ($parameter->in === 'query') {
-            $request['queryParameters'][$parameter->name] = $example;
-        } elseif ($parameter->in === 'path') {
-            $request['path'] = str_replace(
-                sprintf('{%s}', $parameter->name),
-                $example,
-                $request['path']
+            $request->withUri(
+                new Uri(((string) $request->getUri()) . "&$parameter->name=$example")
             );
-        } elseif ($parameter->in === 'header') {
-            $request['headers'][$parameter->name] = $example;
-        } elseif ($parameter->in === 'cookie') {
-            $request['cookies'][$parameter->name] = $example;
+        } elseif ($parameter->in === 'path') {
+            $request->withUri(
+                new Uri(
+                    str_replace(
+                        sprintf('{%s}', $parameter->name),
+                        $example,
+                        (string) $request->getUri()
+                    )
+                )
+            );
+        } else {
+            $request->withAddedHeader($parameter->name, $example);
         }
-
-        return $request;
     }
 
     /**
-     * @param Parameter|Reference $parameter
+     * @param MediaType|Schema|Parameter $object
+     *
+     * @return array<string, mixed[]>
      */
-    private function getParameterExamples(object $parameter): array
+    private function getExamples(object $object, string $defaultKey = 'default'): array
     {
         $examples = [];
-
-        if ($parameter->schema->example) {
-            $examples['default'] = $parameter->schema->example;
+        if (is_object($object->example) && property_exists($object->example, 'value')) {
+            $examples[$defaultKey] = (array) $object->example->value;
         }
 
-        if ($parameter->examples) {
-            foreach ($parameter->examples as $example) {
-                $examples[$example->summary] = $example->value;
+        if (isset($object->example)) {
+            $examples[$defaultKey] = (array) $object->example;
+        }
+
+        if (isset($object->schema->example)) {
+            $examples[$defaultKey] = (array) $object->schema->example;
+        }
+
+        if (isset($object->examples)) {
+            foreach ($object->examples as $example) {
+                $examples[$example->summary] = (array) $example->value;
             }
         }
 
         return $examples;
-    }
-
-    /**
-     * @param int|string $statusCode
-     *
-     * @return mixed[]
-     */
-    private function getResponseExampleBodies($statusCode, Response $response): array
-    {
-        $bodies = [];
-        if (isset($response->content['application/json']->example->value)) {
-            $bodies[$statusCode] = $response->content['application/json']->example->value;
-        }
-
-        foreach ($response->content['application/json']->examples as $label => $example) {
-            $bodies[$label] = $example->value;
-        }
-
-        return $bodies;
-    }
-
-    /**
-     * @param RequestBody|null $request
-     *
-     * @return mixed[]
-     */
-    private function getRequestExampleBodies(?object $request = null): array
-    {
-        if (!$request) {
-            return [];
-        }
-
-        $bodies = [];
-        if (is_object($request->content['application/json']->example)
-            && property_exists($request->content['application/json']->example, 'value')
-        ) {
-            $bodies['default'] = $request->content['application/json']->example->value;
-        }
-
-        if ($request->content['application/json']->examples) {
-            foreach ($request->content['application/json']->examples as $example) {
-                $bodies[$example->summary] = $example->value;
-            }
-        }
-
-        return $bodies;
     }
 }

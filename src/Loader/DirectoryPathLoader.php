@@ -7,7 +7,9 @@ namespace OpenAPITesting\Loader;
 final class DirectoryPathLoader
 {
     /**
-     * @return array<int, string>
+     * @return string[]
+     *
+     * @psalm-return list<string>
      */
     public function load(string $path): array
     {

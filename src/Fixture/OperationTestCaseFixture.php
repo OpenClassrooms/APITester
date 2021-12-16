@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Fixture;
 
-use Nyholm\Psr7\Response;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 final class OperationTestCaseFixture
 {
-    /**
-     * @var array{'method'?: string, 'path'?: string, 'headers'?: array<string, string|string[]>, 'body'?: string}
-     */
-    public array $request = [];
+    private RequestInterface $request;
 
-    /**
-     * @var array{'statusCode'?: int, 'headers'?: array<string, string|string[]>, 'body'?: string}
-     */
-    public array $response = [];
+    private ResponseInterface $response;
 
-    private ?string $description = null;
+    private ?string $description;
 
-    private ?string $operationId = null;
+    private string $operationId;
+
+    public function __construct(
+        string $operationId,
+        RequestInterface $request,
+        ResponseInterface $response,
+        ?string $description = null
+    ) {
+        $this->request = $request;
+        $this->response = $response;
+        $this->operationId = $operationId;
+        $this->description = $description;
+    }
 
     public function getDescription(): ?string
     {
@@ -35,14 +41,10 @@ final class OperationTestCaseFixture
 
     public function getExpectedResponse(): ResponseInterface
     {
-        return new Response(
-            $this->response['statusCode'] ?? 0,
-            $this->response['headers'] ?? [],
-            $this->response['body'] ?? ''
-        );
+        return $this->response;
     }
 
-    public function getOperationId(): ?string
+    public function getOperationId(): string
     {
         return $this->operationId;
     }
@@ -52,26 +54,10 @@ final class OperationTestCaseFixture
         $this->operationId = $operationId;
     }
 
-    public function getRequestBody(): ?string
+    public function getRequest(): RequestInterface
     {
-        return $this->request['body'] ?? null;
+        return $this->request;
     }
 
-    /**
-     * @return array<string, string|string[]>
-     */
-    public function getRequestHeaders(): array
-    {
-        return $this->request['headers'] ?? [];
-    }
 
-    public function getMethod(): string
-    {
-        return $this->request['method'] ?? 'get';
-    }
-
-    public function getPath(): string
-    {
-        return $this->request['path'] ?? '';
-    }
 }

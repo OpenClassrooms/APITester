@@ -38,7 +38,9 @@ final class Assert
     }
 
     /**
-     * @return array<array-key, array<array-key, string>>
+     * @return string[][]
+     *
+     * @psalm-return array{statusCode?: array{same: string}}
      */
     private static function assertStatusCode(int $actualStatusCode, int $expectedStatusCode): array
     {
@@ -56,7 +58,9 @@ final class Assert
      * @param array<array-key, array<array-key, string>> $actualHeaders
      * @param array<array-key, array<array-key, string>> $expectedHeaders
      *
-     * @return array<array-key, array<array-key, string>>
+     * @return string[][]
+     *
+     * @psalm-return array{headers?: array<string>}
      */
     private static function assertHeaders(array $actualHeaders, array $expectedHeaders): array
     {
@@ -79,7 +83,9 @@ final class Assert
     }
 
     /**
-     * @return array<array-key, array<array-key, string>>
+     * @return string[][]
+     *
+     * @psalm-return array{body?: array{same: string}}
      */
     private static function assertBody(StreamInterface $actualBody, StreamInterface $expectedBody): array
     {

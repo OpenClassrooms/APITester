@@ -42,7 +42,9 @@ final class TestSuite implements Test
     }
 
     /**
-     * @return string[][]
+     * @return string[][][]
+     *
+     * @psalm-return array<string, array<array<string>>>
      */
     public function getErrors(): array
     {
@@ -62,16 +64,6 @@ final class TestSuite implements Test
             $testCase->launch($requester);
         }
         $this->finishedAt = Carbon::now();
-    }
-
-    public function getFinishedAt(): ?DateTimeInterface
-    {
-        return $this->finishedAt;
-    }
-
-    public function getStartedAt(): ?DateTimeInterface
-    {
-        return $this->startedAt;
     }
 
     private function buildTestCases(): void
