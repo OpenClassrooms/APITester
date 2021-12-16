@@ -16,13 +16,13 @@ use OpenAPITesting\Test;
  */
 final class TestSuite implements Test
 {
-    private ?DateTimeInterface $finishedAt = null;
-
     private string $baseUri;
+
+    private OpenApiTestSuiteFixture $fixture;
 
     private ?DateTimeInterface $startedAt = null;
 
-    private OpenApiTestSuiteFixture $fixture;
+    private ?DateTimeInterface $finishedAt = null;
 
     /**
      * @var TestCase[]
@@ -54,7 +54,6 @@ final class TestSuite implements Test
         }
 
         return $errors;
-//        return array_filter(array_merge(...$errors));
     }
 
     public function launch(Requester $requester): void

@@ -31,13 +31,13 @@ final class TestCase implements Test
      */
     private array $errors = [];
 
-    private ?DateTimeInterface $finishedAt = null;
-
     private OperationTestCaseFixture $fixture;
 
     private TestSuite $parent;
 
     private ?DateTimeInterface $startedAt = null;
+
+    private ?DateTimeInterface $finishedAt = null;
 
     public function __construct(
         TestSuite $parent,
@@ -70,14 +70,13 @@ final class TestCase implements Test
 
     private function getRequest(): ServerRequest
     {
+        $fixtureRequest = $this->fixture->getRequest();
+
         return new ServerRequest(
-            $this->getRequest()
-                ->getMethod(),
-            "{$this->parent->getBaseUri()}/{$this->getRequest()->getUri()}",
-            $this->fixture->getRequest()
-                ->getHeaders(),
-            $this->fixture->getRequest()
-                ->getBody()
+            $fixtureRequest->getMethod(),
+            "{$this->parent->getBaseUri()}/{$fixtureRequest->getUri()}",
+            $fixtureRequest->getHeaders(),
+            $fixtureRequest->getBody()
         );
     }
 }
