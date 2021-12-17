@@ -9,23 +9,23 @@ use Psr\Http\Message\ResponseInterface;
 
 final class OperationTestCaseFixture
 {
-    private RequestInterface $request;
+    private ?RequestInterface $request;
 
-    private ResponseInterface $response;
+    private ?ResponseInterface $response;
 
     private ?string $description;
 
-    private string $operationId;
+    private ?string $operationId;
 
     public function __construct(
-        string $operationId,
-        RequestInterface $request,
-        ResponseInterface $response,
+        ?string $operationId,
+        ?RequestInterface $request,
+        ?ResponseInterface $response,
         ?string $description = null
     ) {
-        $this->request = $request;
-        $this->response = $response;
-        $this->operationId = $operationId;
+        $this->request = $request ?? null;
+        $this->response = $response ?? null;
+        $this->operationId = $operationId ?? null;
         $this->description = $description;
     }
 
@@ -34,17 +34,17 @@ final class OperationTestCaseFixture
         return $this->description;
     }
 
-    public function getExpectedResponse(): ResponseInterface
+    public function getExpectedResponse(): ?ResponseInterface
     {
         return $this->response;
     }
 
-    public function getOperationId(): string
+    public function getOperationId(): ?string
     {
         return $this->operationId;
     }
 
-    public function getRequest(): RequestInterface
+    public function getRequest(): ?RequestInterface
     {
         return $this->request;
     }
