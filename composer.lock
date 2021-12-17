@@ -174,16 +174,16 @@
         },
         {
             "name": "azjezz/psl",
-            "version": "1.6.1",
+            "version": "1.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/azjezz/psl.git",
-                "reference": "60683bf0f79efc8deaeb1069f0c25c3212427411"
+                "reference": "fd4557c70e6d5878807976d68df6407a93952bdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/azjezz/psl/zipball/60683bf0f79efc8deaeb1069f0c25c3212427411",
-                "reference": "60683bf0f79efc8deaeb1069f0c25c3212427411",
+                "url": "https://api.github.com/repos/azjezz/psl/zipball/fd4557c70e6d5878807976d68df6407a93952bdd",
+                "reference": "fd4557c70e6d5878807976d68df6407a93952bdd",
                 "shasum": ""
             },
             "require": {
@@ -192,7 +192,7 @@
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "ext-sodium": "*",
-                "php": "^7.4 || ^8.0"
+                "php": "^7.4 || ~8.0.0 || ~8.1.0"
             },
             "type": "library",
             "extra": {
@@ -225,9 +225,15 @@
             "description": "PHP Standard Library",
             "support": {
                 "issues": "https://github.com/azjezz/psl/issues",
-                "source": "https://github.com/azjezz/psl/tree/1.6.1"
+                "source": "https://github.com/azjezz/psl/tree/1.6.2"
             },
-            "time": "2021-05-19T11:49:49+00:00"
+            "funding": [
+                {
+                    "url": "https://opencollective.com/php-standard-library",
+                    "type": "open_collective"
+                }
+            ],
+            "time": "2021-12-08T09:48:08+00:00"
         },
         {
             "name": "cebe/php-openapi",

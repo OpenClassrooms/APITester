@@ -53,7 +53,7 @@ final class OpenApiExampleFixtureLoader
             $examples = $this->getExamples($requestBody->content['application/json']);
             foreach ($examples as $expectedResponse => $body) {
                 $requests[$expectedResponse] = new Request(
-                    $method,
+                    mb_strtoupper($method),
                     $path . '?1=1',
                     [],
                     Json::encode($body),
@@ -66,10 +66,13 @@ final class OpenApiExampleFixtureLoader
             /** @var array<string, array<string|int>> $examples */
             $examples = $this->getExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
-                if (! isset($requests[$expectedResponse])) {
-                    $requests[$expectedResponse] = new Request($method, $path, []);
+                if (!isset($requests[$expectedResponse])) {
+                    $requests[$expectedResponse] = new Request(
+                        mb_strtoupper($method),
+                        $path . '?1=1'
+                    );
                 }
-                $this->addParameterToRequest(
+                $requests[$expectedResponse] = $this->addParameterToRequest(
                     $requests[$expectedResponse],
                     $parameter,
                     (string) $example[0],
@@ -85,7 +88,7 @@ final class OpenApiExampleFixtureLoader
      */
     private function buildResponses(Operation $operation): array
     {
-        if (! isset($operation->responses)) {
+        if (!isset($operation->responses)) {
             return [];
         }
         $responses = [];
@@ -113,7 +116,7 @@ final class OpenApiExampleFixtureLoader
     }
 
     /**
-     * @param array<string, Request>  $requests
+     * @param array<string, Request> $requests
      * @param array<string, Response> $responses
      *
      * @return OperationTestCaseFixture[]
@@ -140,14 +143,14 @@ final class OpenApiExampleFixtureLoader
         return $testCases;
     }
 
-    private function addParameterToRequest(Request $request, Parameter $parameter, string $example): void
+    private function addParameterToRequest(Request $request, Parameter $parameter, string $example): Request
     {
         if ('query' === $parameter->in) {
-            $request->withUri(
-                new Uri(((string) $request->getUri()) . "&{$parameter->name}={$example}")
+            $newRequest = $request->withUri(
+                new Uri(((string) $request->getUri()) . "&$parameter->name=$example")
             );
         } elseif ('path' === $parameter->in) {
-            $request->withUri(
+            $newRequest = $request->withUri(
                 new Uri(
                     str_replace(
                         sprintf('{%s}', $parameter->name),
@@ -157,8 +160,10 @@ final class OpenApiExampleFixtureLoader
                 )
             );
         } else {
-            $request->withAddedHeader($parameter->name, $example);
+            $newRequest = $request->withAddedHeader($parameter->name, $example);
         }
+
+        return $newRequest;
     }
 
     /**

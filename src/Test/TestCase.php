@@ -34,9 +34,12 @@ final class TestCase implements Test
 
     private ?DateTimeInterface $finishedAt = null;
 
-    public function __construct(OperationTestCaseFixture $operationTestCaseFixture)
+    private Requester $requester;
+
+    public function __construct(Requester $requester, OperationTestCaseFixture $operationTestCaseFixture)
     {
         $this->fixture = $operationTestCaseFixture;
+        $this->requester = $requester;
     }
 
     public function getDescription(): string
@@ -52,10 +55,10 @@ final class TestCase implements Test
     /**
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
-    public function launch(Requester $requester): void
+    public function launch(): void
     {
         $this->startedAt = Carbon::now();
-        $response = $requester->request($this->fixture->getRequest());
+        $response = $this->requester->request($this->fixture->getRequest());
         $this->errors = Assert::assertObjectsEqual($response, $this->fixture->getExpectedResponse());
         $this->finishedAt = Carbon::now();
     }

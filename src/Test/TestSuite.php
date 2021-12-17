@@ -17,8 +17,6 @@ use PHPUnit\Framework\ExpectationFailedException;
  */
 final class TestSuite implements Test
 {
-    private string $baseUri;
-
     private OpenApiTestSuiteFixture $fixture;
 
     private ?DateTimeInterface $startedAt = null;
@@ -30,16 +28,13 @@ final class TestSuite implements Test
      */
     private array $operationTestCases = [];
 
-    public function __construct(string $baseUri, OpenApiTestSuiteFixture $fixture)
+    private Requester $requester;
+
+    public function __construct(Requester $requester, OpenApiTestSuiteFixture $fixture)
     {
-        $this->baseUri = $baseUri;
+        $this->requester = $requester;
         $this->fixture = $fixture;
         $this->buildTestCases();
-    }
-
-    public function getBaseUri(): string
-    {
-        return $this->baseUri;
     }
 
     /**
@@ -57,11 +52,11 @@ final class TestSuite implements Test
         return $errors;
     }
 
-    public function launch(Requester $requester): void
+    public function launch(): void
     {
         $this->startedAt = Carbon::now();
         foreach ($this->operationTestCases as $testCase) {
-            $testCase->launch($requester);
+            $testCase->launch();
         }
         $this->finishedAt = Carbon::now();
     }
@@ -79,7 +74,7 @@ final class TestSuite implements Test
     private function buildTestCases(): void
     {
         foreach ($this->fixture->getOperationTestCaseFixtures() as $testCaseFixture) {
-            $this->operationTestCases[] = new TestCase($testCaseFixture);
+            $this->operationTestCases[] = new TestCase($this->requester, $testCaseFixture);
         }
     }
 }

@@ -30,11 +30,11 @@ final class ExecuteTestPlanTest extends TestCase
     {
         $openApi = (new OpenApiLoader())(FixturesLocation::OPEN_API_PETSTORE_YAML);
         $testSuite = new TestSuite(
-            rtrim($openApi->servers[0]->url, '/'),
+            new HttpRequester(rtrim($openApi->servers[0]->url, '/')),
             (new OpenApiExampleFixtureLoader())($openApi),
         );
 
-        $testSuite->launch(new HttpRequester());
+        $testSuite->launch();
 
         static::assertEmpty($testSuite->getErrors(), Json::encode($testSuite->getErrors()));
     }

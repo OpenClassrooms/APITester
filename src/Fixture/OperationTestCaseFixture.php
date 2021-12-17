@@ -34,11 +34,6 @@ final class OperationTestCaseFixture
         return $this->description;
     }
 
-    public function setDescription(string $description): void
-    {
-        $this->description = $description;
-    }
-
     public function getExpectedResponse(): ResponseInterface
     {
         return $this->response;
@@ -47,11 +42,6 @@ final class OperationTestCaseFixture
     public function getOperationId(): string
     {
         return $this->operationId;
-    }
-
-    public function setOperationId(string $operationId): void
-    {
-        $this->operationId = $operationId;
     }
 
     public function getRequest(): RequestInterface
