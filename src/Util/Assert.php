@@ -24,13 +24,14 @@ final class Assert
      * @param array<string>       $exclude
      *
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws ExpectationFailedException
      */
-    public static function assertObjectsEqual(
+    public static function assertObjectsEqualRejects(
         $expected,
         $actual,
         array $exclude = [],
         string $message = ''
-    ): ?ExpectationFailedException {
+    ): void {
         $serializer = self::getJsonSerializer();
 
         $context = [
@@ -55,12 +56,28 @@ final class Assert
             );
         }
 
+        BaseAssert::assertJsonStringEqualsJsonString(
+            $json[0],
+            $json[1],
+            $message
+        );
+    }
+
+    /**
+     * @param object|array<mixed> $expected
+     * @param object|array<mixed> $actual
+     * @param array<string> $exclude
+     *
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public static function assertObjectsEqual(
+        $expected,
+        $actual,
+        array $exclude = [],
+        string $message = ''
+    ): ?ExpectationFailedException {
         try {
-            BaseAssert::assertJsonStringEqualsJsonString(
-                $json[0],
-                $json[1],
-                $message
-            );
+            self::assertObjectsEqualRejects($expected, $actual, $exclude, $message);
         } catch (ExpectationFailedException $exception) {
             return $exception;
         }

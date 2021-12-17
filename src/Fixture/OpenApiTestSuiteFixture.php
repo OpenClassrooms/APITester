@@ -34,6 +34,13 @@ final class OpenApiTestSuiteFixture
         );
     }
 
+    public function add(OperationTestCaseFixture $fixture): self
+    {
+        $this->operationTestCaseFixtures[] = $fixture;
+
+        return $this;
+    }
+
     /**
      * @param array<OperationTestCaseFixture> $fixtures
      */

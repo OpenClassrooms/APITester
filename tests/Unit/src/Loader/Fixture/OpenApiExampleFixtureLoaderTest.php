@@ -4,72 +4,159 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Unit\src\Loader\Fixture;
 
+use Nyholm\Psr7\Request;
+use Nyholm\Psr7\Response;
+use Nyholm\Psr7\Uri;
 use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
+use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Loader\Fixture\OpenApiExampleFixtureLoader;
 use OpenAPITesting\Loader\OpenApiLoader;
-use PHPUnit\Framework\Assert;
+use OpenAPITesting\Util\Assert;
+use OpenAPITesting\Util\Json;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 final class OpenApiExampleFixtureLoaderTest extends TestCase
 {
-    public const FIXTURE_LOCATION = __DIR__ . '/../../../fixtures/expected.json';
     public const OPENAPI_LOCATION = __DIR__ . '/../../../fixtures/openapi.yaml';
 
-    private Serializer $serializer;
-
     /**
+     * @dataProvider getData
+     *
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
      */
-    public function testInvoke(): void
+    public function testInvoke(OpenApiTestSuiteFixture $expectedFixture): void
     {
         $openApi = (new OpenApiLoader())(self::OPENAPI_LOCATION);
-        /** @var OpenApiTestSuiteFixture $fixture */
-        $fixture = $this->cleanTestSuiteFixture((new OpenApiExampleFixtureLoader())($openApi));
+        $fixture = (new OpenApiExampleFixtureLoader())($openApi);
 
-        $expectedFixtureRaw = file_get_contents(self::FIXTURE_LOCATION);
-        if (false === $expectedFixtureRaw) {
-            throw new \InvalidArgumentException('Couldn\'t read fixtures from file ' . self::FIXTURE_LOCATION);
-        }
-        $expectedFixture = $this->deserializeTestSuiteFixture($expectedFixtureRaw);
-
-        Assert::assertEquals(
+        Assert::assertObjectsEqualRejects(
             $expectedFixture->getOperationTestCaseFixtures(),
-            $fixture->getOperationTestCaseFixtures()
+            $fixture->getOperationTestCaseFixtures(),
+            ['size']
         );
     }
 
-    protected function setUp(): void
+    /**
+     * @return array<array<OpenApiTestSuiteFixture>>
+     */
+    public function getData(): array
     {
-        $this->serializer = new Serializer(
-            [new ObjectNormalizer()],
-            [new JsonEncoder()]
-        );
+        return [
+            [
+                $this->buildTestSuiteFixture([
+                    [
+                        'request' => [
+                            'path' => '/pets?1=1&kind=cat&limit=10',
+                            'method' => 'GET',
+                        ],
+                        'response' => [
+                            'statusCode' => 200,
+                            'body' => [],
+                        ],
+                        'operationId' => 'listPets',
+                        'description' => '200.default',
+                    ],
+                    [
+                        'request' => [
+                            'path' => '/pets?1=1&kind=horse&limit=aaa',
+                            'method' => 'GET',
+                        ],
+                        'response' => [
+                            'statusCode' => 400, // @todo: fix bad response mapping
+                        ],
+                        'operationId' => 'listPets',
+                        'description' => 'default.badRequest',
+                    ],
+                    [
+                        'request' => [
+                            'path' => '/pets?1=1&limit=20',
+                            'method' => 'GET',
+                        ],
+                        'response' => [
+                            'statusCode' => 200,
+                        ],
+                        'operationId' => 'listPets',
+                        'description' => '200.double',
+                    ],
+                    [
+                        'request' => [
+                            'path' => '/pets?1=1',
+                            'method' => 'POST',
+                            'body' => [
+                                'id' => 10,
+                                'name' => 'Jessica Smith',
+                            ],
+                        ],
+                        'response' => [
+                            'statusCode' => 201,
+                        ],
+                        'operationId' => 'createPets',
+                        'description' => '201',
+                    ],
+                    [
+                        'request' => [
+                            'path' => '/pets?1=1',
+                            'method' => 'POST',
+                            'body' => [
+                                'id' => 11,
+                                'name' => 123,
+                            ],
+                        ],
+                        'response' => [
+                            'statusCode' => 400,
+                        ],
+                        'operationId' => 'createPets',
+                        'description' => 'default.badRequest',
+                    ],
+                    [
+                        'request' => [
+                            'path' => '/pets/123?1=1',
+                            'method' => 'GET',
+                        ],
+                        'response' => [
+                            'statusCode' => 200,
+                            'body' => [
+                                'id' => 10,
+                                'name' => 'Jessica Smith',
+                            ],
+                        ],
+                        'operationId' => 'showPetById',
+                        'description' => '200.200',
+                    ],
+                ]),
+            ],
+        ];
     }
 
-    private function cleanTestSuiteFixture(OpenApiTestSuiteFixture $fixture): object
+    /**
+     * @param array<array{'operationId': string|null, 'description': string|null, 'request': array{'method': string, 'path': string, 'headers'?: array<string, string>, 'body'?: array<mixed>}, 'response': array{'statusCode': int, 'headers'?: array<string, string>, 'body'?: array<mixed>}}> $fixturesData
+     */
+    private function buildTestSuiteFixture(array $fixturesData): OpenApiTestSuiteFixture
     {
-        return $this->deserializeTestSuiteFixture(
-            $this->serializer->serialize(
-                $fixture,
-                'json'
-            )
-        );
-    }
+        $testSuiteFixture = new OpenApiTestSuiteFixture();
 
-    private function deserializeTestSuiteFixture(string $json): OpenApiTestSuiteFixture
-    {
-        /** @var OpenApiTestSuiteFixture $result */
-        $result = $this->serializer->deserialize(
-            $json,
-            OpenApiTestSuiteFixture::class,
-            'json'
-        );
+        foreach ($fixturesData as $data) {
+            $testSuiteFixture->add(
+                new OperationTestCaseFixture(
+                    $data['operationId'],
+                    new Request(
+                        $data['request']['method'],
+                        new Uri($data['request']['path']),
+                        $data['request']['headers'] ?? [],
+                        isset($data['request']['body']) ? Json::encode($data['request']['body']) : null
+                    ),
+                    new Response(
+                        $data['response']['statusCode'],
+                        $data['response']['headers'] ?? [],
+                        isset($data['response']['body']) ? Json::encode($data['response']['body']) : null
+                    ),
+                    $data['description']
+                )
+            );
+        }
 
-        return $result;
+        return $testSuiteFixture;
     }
 }
