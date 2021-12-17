@@ -8,7 +8,7 @@ use DateTimeInterface;
 
 interface Test
 {
-    public function launch(): void;
+    public function launch(Requester $requester): void;
 
     public function getStartedAt(): ?DateTimeInterface;
 

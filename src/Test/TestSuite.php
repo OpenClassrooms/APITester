@@ -6,7 +6,6 @@ namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -17,8 +16,6 @@ use PHPUnit\Framework\ExpectationFailedException;
  */
 final class TestSuite implements Test
 {
-    private OpenApiTestSuiteFixture $fixture;
-
     private ?DateTimeInterface $startedAt = null;
 
     private ?DateTimeInterface $finishedAt = null;
@@ -26,15 +23,14 @@ final class TestSuite implements Test
     /**
      * @var TestCase[]
      */
-    private array $operationTestCases = [];
+    private array $testCases;
 
-    private Requester $requester;
-
-    public function __construct(Requester $requester, OpenApiTestSuiteFixture $fixture)
+    /**
+     * @param TestCase[] $testCases
+     */
+    public function __construct(array $testCases)
     {
-        $this->requester = $requester;
-        $this->fixture = $fixture;
-        $this->buildTestCases();
+        $this->testCases = $testCases;
     }
 
     /**
@@ -43,7 +39,7 @@ final class TestSuite implements Test
     public function getErrors(): array
     {
         $errors = [];
-        foreach ($this->operationTestCases as $testCase) {
+        foreach ($this->testCases as $testCase) {
             if (null !== $testCase->getErrors()) {
                 $errors[$testCase->getDescription()] = $testCase->getErrors();
             }
@@ -52,11 +48,11 @@ final class TestSuite implements Test
         return $errors;
     }
 
-    public function launch(): void
+    public function launch(Requester $requester): void
     {
         $this->startedAt = Carbon::now();
-        foreach ($this->operationTestCases as $testCase) {
-            $testCase->launch();
+        foreach ($this->testCases as $testCase) {
+            $testCase->launch($requester);
         }
         $this->finishedAt = Carbon::now();
     }
@@ -69,12 +65,5 @@ final class TestSuite implements Test
     public function getFinishedAt(): ?DateTimeInterface
     {
         return $this->finishedAt;
-    }
-
-    private function buildTestCases(): void
-    {
-        foreach ($this->fixture->getOperationTestCaseFixtures() as $testCaseFixture) {
-            $this->operationTestCases[] = new TestCase($this->requester, $testCaseFixture);
-        }
     }
 }

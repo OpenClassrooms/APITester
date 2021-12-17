@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Loader\Fixture;
+namespace OpenAPITesting\Test\Loader;
 
 use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
@@ -14,15 +14,15 @@ use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Fixture\OpenApiTestSuiteFixture;
-use OpenAPITesting\Fixture\OperationTestCaseFixture;
+use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExampleFixtureLoader
+final class OpenApiExampleTestSuiteLoader
 {
-    public function __invoke(OpenApi $data): OpenApiTestSuiteFixture
+    public function __invoke(OpenApi $data): TestSuite
     {
-        $testPlanFixture = new OpenApiTestSuiteFixture();
+        $testCases = [];
         /** @var string $path */
         foreach ($data->paths as $path => $pathInfo) {
             /** @var string $method */
@@ -32,13 +32,11 @@ final class OpenApiExampleFixtureLoader
                 }
                 $requests = $this->buildRequests($operation, $method, $path);
                 $responses = $this->buildResponses($operation);
-                $testCases = $this->buildTestCases($operation->operationId, $requests, $responses);
-
-                $testPlanFixture->addMany($testCases);
+                $testCases[] = $this->buildTestCases($operation->operationId, $requests, $responses);
             }
         }
 
-        return $testPlanFixture;
+        return new TestSuite(array_merge(...$testCases));
     }
 
     /**
@@ -66,7 +64,7 @@ final class OpenApiExampleFixtureLoader
             /** @var array<string, array<string|int>> $examples */
             $examples = $this->getExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
-                if (!isset($requests[$expectedResponse])) {
+                if (! isset($requests[$expectedResponse])) {
                     $requests[$expectedResponse] = new Request(
                         mb_strtoupper($method),
                         $path . '?1=1'
@@ -88,7 +86,7 @@ final class OpenApiExampleFixtureLoader
      */
     private function buildResponses(Operation $operation): array
     {
-        if (!isset($operation->responses)) {
+        if (! isset($operation->responses)) {
             return [];
         }
         $responses = [];
@@ -116,10 +114,10 @@ final class OpenApiExampleFixtureLoader
     }
 
     /**
-     * @param array<string, Request> $requests
+     * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
      *
-     * @return OperationTestCaseFixture[]
+     * @return TestCase[]
      */
     private function buildTestCases(string $operationId, array $requests, array $responses): array
     {
@@ -131,10 +129,12 @@ final class OpenApiExampleFixtureLoader
             } else {
                 $key = str_replace('expects ', '', $key);
             }
-            $fixture = new OperationTestCaseFixture(
-                $operationId,
+            $fixture = new TestCase(
                 $request,
                 $responses[$key] ?? new Response(),
+                [
+                    $operationId,
+                ],
                 $key,
             );
             $testCases[] = $fixture;
@@ -147,7 +147,7 @@ final class OpenApiExampleFixtureLoader
     {
         if ('query' === $parameter->in) {
             $newRequest = $request->withUri(
-                new Uri(((string) $request->getUri()) . "&$parameter->name=$example")
+                new Uri(((string) $request->getUri()) . "&{$parameter->name}={$example}")
             );
         } elseif ('path' === $parameter->in) {
             $newRequest = $request->withUri(

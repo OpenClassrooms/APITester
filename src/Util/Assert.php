@@ -26,7 +26,7 @@ final class Assert
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @throws ExpectationFailedException
      */
-    public static function assertObjectsEqualRejects(
+    public static function assertObjectsEqual(
         $expected,
         $actual,
         array $exclude = [],
@@ -42,10 +42,12 @@ final class Assert
         $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = $exclude;
 
         $json = [];
-        foreach ([
-            'expected' => $expected,
-            'actual' => $actual,
-        ] as $val) {
+        foreach (
+            [
+                'expected' => $expected,
+                'actual' => $actual,
+            ] as $val
+        ) {
             if ($val instanceof \stdClass) {
                 $val = Object_::toArray($val);
             }
@@ -61,28 +63,6 @@ final class Assert
             $json[1],
             $message
         );
-    }
-
-    /**
-     * @param object|array<mixed> $expected
-     * @param object|array<mixed> $actual
-     * @param array<string> $exclude
-     *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    public static function assertObjectsEqual(
-        $expected,
-        $actual,
-        array $exclude = [],
-        string $message = ''
-    ): ?ExpectationFailedException {
-        try {
-            self::assertObjectsEqualRejects($expected, $actual, $exclude, $message);
-        } catch (ExpectationFailedException $exception) {
-            return $exception;
-        }
-
-        return null;
     }
 
     private static function getJsonSerializer(): Serializer

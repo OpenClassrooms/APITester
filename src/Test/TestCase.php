@@ -6,11 +6,12 @@ namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use DateTimeInterface;
-use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * @internal
@@ -26,25 +27,59 @@ final class TestCase implements Test
 
     public const STATUS_SUCCESS = 'success';
 
-    private ?ExpectationFailedException $errors = null;
+    private RequestInterface $request;
 
-    private OperationTestCaseFixture $fixture;
+    private ResponseInterface $response;
+
+    private ?string $description;
+
+    /**
+     * @var string[]
+     */
+    private array $groups;
+
+    private ?ExpectationFailedException $errors = null;
 
     private ?DateTimeInterface $startedAt = null;
 
     private ?DateTimeInterface $finishedAt = null;
 
-    private Requester $requester;
-
-    public function __construct(Requester $requester, OperationTestCaseFixture $operationTestCaseFixture)
-    {
-        $this->fixture = $operationTestCaseFixture;
-        $this->requester = $requester;
+    /**
+     * @param string[] $groups
+     */
+    public function __construct(
+        RequestInterface $request,
+        ResponseInterface $response,
+        array $groups = [],
+        ?string $description = null
+    ) {
+        $this->groups = $groups;
+        $this->request = $request;
+        $this->response = $response;
+        $this->description = $description;
     }
 
     public function getDescription(): string
     {
-        return ($this->fixture->getOperationId() ?? 'test') . ' > ' . ($this->fixture->getDescription() ?? 'test');
+        return $this->description ?? 'test';
+    }
+
+    public function getExpectedResponse(): ResponseInterface
+    {
+        return $this->response;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
     }
 
     public function getErrors(): ?ExpectationFailedException
@@ -56,15 +91,11 @@ final class TestCase implements Test
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @throws \InvalidArgumentException
      */
-    public function launch(): void
+    public function launch(Requester $requester): void
     {
-        if ($this->fixture->getExpectedResponse() === null || $this->fixture->getRequest() === null) {
-            throw new \InvalidArgumentException('No request or response found for fixture ' . $this->getDescription());
-        }
-
         $this->startedAt = Carbon::now();
-        $response = $this->requester->request($this->fixture->getRequest());
-        $this->errors = Assert::assertObjectsEqual($response, $this->fixture->getExpectedResponse());
+        $response = $requester->request($this->getRequest());
+        $this->errors = $this->assert($this->getExpectedResponse(), $response);
         $this->finishedAt = Carbon::now();
     }
 
@@ -76,5 +107,19 @@ final class TestCase implements Test
     public function getFinishedAt(): ?DateTimeInterface
     {
         return $this->finishedAt;
+    }
+
+    /**
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    private function assert(ResponseInterface $expected, ResponseInterface $actual): ?ExpectationFailedException
+    {
+        try {
+            Assert::assertObjectsEqual($expected, $actual);
+        } catch (ExpectationFailedException $exception) {
+            return $exception;
+        }
+
+        return null;
     }
 }
