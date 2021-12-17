@@ -66,4 +66,12 @@ final class TestSuite implements Test
     {
         return $this->finishedAt;
     }
+
+    /**
+     * @return TestCase[]
+     */
+    public function getTestCases(): array
+    {
+        return $this->testCases;
+    }
 }
