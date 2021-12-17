@@ -92,13 +92,13 @@
       "@phpstan"
     ],
     "test": [
-      "@phpunit"
+      "@unit"
     ],
     "coveralls": [
-      "@phpunit",
-      "vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v"
+      "@unit",
+      "vendor/bin/php-coveralls --coverage_clover=build/coverage/clover.xml -v --json_path build/coverage/coveralls-upload.json"
     ],
-    "phpunit": "vendor/bin/phpunit -c phpunit.xml --ansi",
+    "unit": "vendor/bin/phpunit -c phpunit.xml --testsuite unit",
     "psalm": "vendor/bin/psalm -c psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon --ansi",
     "ecs": "@check-cs"
