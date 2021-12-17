@@ -41,7 +41,7 @@ final class TestCase implements Test
 
     public function getDescription(): string
     {
-        return $this->fixture->getOperationId() . ' > ' . ($this->fixture->getDescription() ?? 'test');
+        return ($this->fixture->getOperationId() ?? 'test') . ' > ' . ($this->fixture->getDescription() ?? 'test');
     }
 
     public function getErrors(): ?ExpectationFailedException
@@ -51,9 +51,14 @@ final class TestCase implements Test
 
     /**
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function launch(Requester $requester): void
     {
+        if ($this->fixture->getExpectedResponse() === null || $this->fixture->getRequest() === null) {
+            throw new \InvalidArgumentException('No request or response found for fixture ' . $this->getDescription());
+        }
+
         $this->startedAt = Carbon::now();
         $response = $requester->request($this->fixture->getRequest());
         $this->errors = Assert::assertObjectsEqual($response, $this->fixture->getExpectedResponse());
