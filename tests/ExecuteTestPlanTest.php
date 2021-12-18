@@ -6,7 +6,7 @@ namespace OpenAPITesting\Tests;
 
 use OpenAPITesting\Loader\OpenApiLoader;
 use OpenAPITesting\Requester\HttpRequester;
-use OpenAPITesting\Test\Loader\OpenApiExampleTestSuiteLoader;
+use OpenAPITesting\Test\Loader\OpenApiExamplesTestSuiteLoader;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use OpenAPITesting\Util\Json;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +28,7 @@ final class ExecuteTestPlanTest extends TestCase
     public function testExecute(): void
     {
         $openApi = (new OpenApiLoader())(FixturesLocation::OPEN_API_PETSTORE_YAML);
-        $testSuite = (new OpenApiExampleTestSuiteLoader())($openApi);
+        $testSuite = (new OpenApiExamplesTestSuiteLoader())($openApi);
         $testSuite->launch(new HttpRequester(rtrim($openApi->servers[0]->url, '/')));
 
         static::assertEmpty($testSuite->getErrors(), Json::encode($testSuite->getErrors()));

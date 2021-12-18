@@ -18,7 +18,7 @@ use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExampleTestSuiteLoader
+final class OpenApiExamplesTestSuiteLoader
 {
     public function __invoke(OpenApi $data): TestSuite
     {
@@ -32,7 +32,7 @@ final class OpenApiExampleTestSuiteLoader
                 }
                 $requests = $this->buildRequests($operation, $method, $path);
                 $responses = $this->buildResponses($operation);
-                $testCases[] = $this->buildTestCases($operation->operationId, $requests, $responses);
+                $testCases[] = $this->buildTestCases($requests, $responses, [$operation->operationId]);
             }
         }
 
@@ -64,12 +64,10 @@ final class OpenApiExampleTestSuiteLoader
             /** @var array<string, array<string|int>> $examples */
             $examples = $this->getExamples($parameter);
             foreach ($examples as $expectedResponse => $example) {
-                if (! isset($requests[$expectedResponse])) {
-                    $requests[$expectedResponse] = new Request(
-                        mb_strtoupper($method),
-                        $path . '?1=1'
-                    );
-                }
+                $requests[$expectedResponse] ??= new Request(
+                    mb_strtoupper($method),
+                    $path . '?1=1'
+                );
                 $requests[$expectedResponse] = $this->addParameterToRequest(
                     $requests[$expectedResponse],
                     $parameter,
@@ -93,11 +91,13 @@ final class OpenApiExampleTestSuiteLoader
         foreach ($operation->responses as $statusCode => $response) {
             /** @var MediaType $content */
             $content = $response->content['application/json'];
-            $examples = $this->getExamples($content, (string) $statusCode);
+            $examples = $this->getExamples($content, (string) $statusCode, false);
             foreach ($examples as $label => $body) {
-                $key = $statusCode . '.' . $label;
+                $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
+                /** @var int $code */
+                $code = $body['code'] ?? 0;
                 $responses[$key] = new Response(
-                    (int) $statusCode,
+                    (int) $statusCode ?: $code,
                     [],
                     Json::encode($body)
                 );
@@ -105,7 +105,7 @@ final class OpenApiExampleTestSuiteLoader
                 foreach ($response->headers as $name => $value) {
                     /** @var string $example */
                     $example = $value->example;
-                    $responses[$key]->withAddedHeader($name, $example);
+                    $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
                 }
             }
         }
@@ -116,12 +116,12 @@ final class OpenApiExampleTestSuiteLoader
     /**
      * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
+     * @param string[]                $groups
      *
      * @return TestCase[]
      */
-    private function buildTestCases(string $operationId, array $requests, array $responses): array
+    private function buildTestCases(array $requests, array $responses, array $groups): array
     {
-        ksort($responses);
         $testCases = [];
         foreach ($requests as $key => $request) {
             if ('default' === $key) {
@@ -131,10 +131,8 @@ final class OpenApiExampleTestSuiteLoader
             }
             $fixture = new TestCase(
                 $request,
-                $responses[$key] ?? new Response(),
-                [
-                    $operationId,
-                ],
+                $responses[$key],
+                $groups,
                 $key,
             );
             $testCases[] = $fixture;
@@ -153,7 +151,7 @@ final class OpenApiExampleTestSuiteLoader
             $newRequest = $request->withUri(
                 new Uri(
                     str_replace(
-                        sprintf('{%s}', $parameter->name),
+                        "%7B{$parameter->name}%7D",
                         $example,
                         (string) $request->getUri()
                     )
@@ -171,15 +169,20 @@ final class OpenApiExampleTestSuiteLoader
      *
      * @return array<string, mixed[]>
      */
-    private function getExamples(object $object, string $defaultKey = 'default'): array
+    private function getExamples(object $object, string $defaultKey = 'default', bool $useSummary = true): array
     {
         $examples = [];
-        if (\is_object($object->example) && isset($object->example->value)) {
-            $examples[$defaultKey] = (array) $object->example->value;
+
+        if (isset($object->example)) {
+            $examples[$defaultKey] = (array) $object->example;
         }
 
         if (isset($object->example)) {
             $examples[$defaultKey] = (array) $object->example;
+        }
+
+        if (\is_object($object->example) && isset($object->example->value)) {
+            $examples[$defaultKey] = (array) $object->example->value;
         }
 
         if (isset($object->schema->example)) {
@@ -187,8 +190,9 @@ final class OpenApiExampleTestSuiteLoader
         }
 
         if (isset($object->examples)) {
-            foreach ($object->examples as $example) {
-                $examples[$example->summary] = (array) $example->value;
+            foreach ($object->examples as $label => $example) {
+                $key = (string) ($useSummary ? $example->summary : $label);
+                $examples[$key] = (array) $example->value;
             }
         }
 

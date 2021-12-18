@@ -21,7 +21,7 @@ final class Json
     /**
      * @param array<mixed, mixed> $data
      */
-    public static function encode(array $data, int $flags = JSON_THROW_ON_ERROR): string
+    public static function encode($data, int $flags = JSON_THROW_ON_ERROR): string
     {
         if (JSON_THROW_ON_ERROR !== $flags) {
             $flags |= JSON_THROW_ON_ERROR;
