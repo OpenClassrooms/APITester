@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\OpenApi;
 use DateTimeInterface;
-use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
+use PHPUnit\Framework\ExpectationFailedException;
 
 /**
  * @internal
@@ -17,56 +16,45 @@ use OpenAPITesting\Test;
  */
 final class TestSuite implements Test
 {
-    private ?DateTimeInterface $finishedAt = null;
-
-    private OpenApi $openApi;
-
     private ?DateTimeInterface $startedAt = null;
 
-    private OpenApiTestPlanFixture $fixture;
+    private ?DateTimeInterface $finishedAt = null;
 
     /**
      * @var TestCase[]
      */
-    private array $operationTestCases = [];
+    private array $testCases;
 
-    public function __construct(OpenApi $openApi, OpenApiTestPlanFixture $fixture)
+    /**
+     * @param TestCase[] $testCases
+     */
+    public function __construct(array $testCases)
     {
-        $this->openApi = $openApi;
-        $this->fixture = $fixture;
-        $this->buildTestCases();
-    }
-
-    public function getBaseUri(): string
-    {
-        return rtrim($this->openApi->servers[0]->url, '/');
+        $this->testCases = $testCases;
     }
 
     /**
-     * @return string[][]
+     * @return array<string, ExpectationFailedException>
      */
     public function getErrors(): array
     {
         $errors = [];
-        foreach ($this->operationTestCases as $testCase) {
-            $errors[] = $testCase->getErrors();
+        foreach ($this->testCases as $testCase) {
+            if (null !== $testCase->getErrors()) {
+                $errors[$testCase->getDescription()] = $testCase->getErrors();
+            }
         }
 
-        return array_filter(array_merge(...$errors));
+        return $errors;
     }
 
     public function launch(Requester $requester): void
     {
         $this->startedAt = Carbon::now();
-        foreach ($this->operationTestCases as $testCase) {
+        foreach ($this->testCases as $testCase) {
             $testCase->launch($requester);
         }
         $this->finishedAt = Carbon::now();
-    }
-
-    public function getFinishedAt(): ?DateTimeInterface
-    {
-        return $this->finishedAt;
     }
 
     public function getStartedAt(): ?DateTimeInterface
@@ -74,20 +62,16 @@ final class TestSuite implements Test
         return $this->startedAt;
     }
 
-    private function buildTestCases(): void
+    public function getFinishedAt(): ?DateTimeInterface
     {
-        foreach ($this->openApi->paths as $pathName => $path) {
-            foreach ($path->getOperations() as $method => $operation) {
-                foreach ($this->fixture->getOperationTestCaseFixtures($operation->operationId) as $testCaseFixture) {
-                    $this->operationTestCases[] = new TestCase(
-                        $operation,
-                        (string) $pathName,
-                        mb_strtoupper((string) $method),
-                        $this,
-                        $testCaseFixture,
-                    );
-                }
-            }
-        }
+        return $this->finishedAt;
+    }
+
+    /**
+     * @return TestCase[]
+     */
+    public function getTestCases(): array
+    {
+        return $this->testCases;
     }
 }

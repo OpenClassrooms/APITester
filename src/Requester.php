@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OpenAPITesting;
 
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
 interface Requester
 {
-    public function request(ServerRequestInterface $request): ResponseInterface;
+    public function request(RequestInterface $request): ResponseInterface;
 }

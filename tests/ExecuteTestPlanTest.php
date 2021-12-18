@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests;
 
-use OpenAPITesting\Loader\Fixture\AliceFixtureLoader;
-use OpenAPITesting\Loader\JsonLoader;
 use OpenAPITesting\Loader\OpenApiLoader;
-use OpenAPITesting\Loader\YamlLoader;
 use OpenAPITesting\Requester\HttpRequester;
-use OpenAPITesting\Test\TestSuite;
+use OpenAPITesting\Test\Loader\OpenApiExamplesTestSuiteLoader;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
+use OpenAPITesting\Util\Json;
 use PHPUnit\Framework\TestCase;
-use function Psl\Json\encode;
 
 /**
  * @internal
@@ -21,24 +18,19 @@ use function Psl\Json\encode;
 final class ExecuteTestPlanTest extends TestCase
 {
     /**
-     * @throws \JsonException
+     * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \Nelmio\Alice\Throwable\LoadingThrowable
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \InvalidArgumentException
      */
     public function testExecute(): void
     {
-        $jsonLoader = new JsonLoader();
-        $yamlLoader = new YamlLoader();
+        $openApi = (new OpenApiLoader())(FixturesLocation::OPEN_API_PETSTORE_YAML);
+        $testSuite = (new OpenApiExamplesTestSuiteLoader())($openApi);
+        $testSuite->launch(new HttpRequester(rtrim($openApi->servers[0]->url, '/')));
 
-        $openApiLoader = new OpenApiLoader();
-
-        $aliceFixtureLoader = new AliceFixtureLoader();
-
-        $testPlan = new TestSuite(
-            $openApiLoader($jsonLoader(FixturesLocation::OPEN_API_PETSTORE_FILE)),
-            $aliceFixtureLoader($yamlLoader(FixturesLocation::FIXTURE_OPERATION_TEST_SUITE_1)),
-        );
-        $testPlan->launch(new HttpRequester());
-        static::assertEmpty($testPlan->getErrors(), encode($testPlan->getErrors(), true));
+        static::assertEmpty($testSuite->getErrors(), Json::encode($testSuite->getErrors()));
     }
 }

@@ -4,92 +4,79 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Util;
 
-use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
-use Webmozart\Assert\Assert as BaseAssert;
+use OpenAPITesting\Util\Normalizer\StreamNormalizer;
+use PHPUnit\Framework\Assert as BaseAssert;
+use PHPUnit\Framework\ExpectationFailedException;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 final class Assert
 {
     /**
-     * @return array<array-key, array<array-key, string>>
-     */
-    public static function assertResponse(ResponseInterface $actual, ResponseInterface $expected): array
-    {
-        $errors = self::assertStatusCode(
-            $actual->getStatusCode(),
-            $expected->getStatusCode(),
-        );
-        $errors = array_merge(
-            $errors,
-            self::assertHeaders(
-                $actual->getHeaders(),
-                $expected->getHeaders(),
-            )
-        );
-
-        return array_merge(
-            $errors,
-            self::assertBody(
-                $actual->getBody(),
-                $expected->getBody()
-            )
-        );
-    }
-
-    /**
-     * @return array<array-key, array<array-key, string>>
-     */
-    private static function assertStatusCode(int $actualStatusCode, int $expectedStatusCode): array
-    {
-        $errors = [];
-        try {
-            BaseAssert::same($actualStatusCode, $expectedStatusCode);
-        } catch (InvalidArgumentException $iae) {
-            $errors['statusCode']['same'] = $iae->getMessage();
-        }
-
-        return $errors;
-    }
-
-    /**
-     * @param array<array-key, array<array-key, string>> $actualHeaders
-     * @param array<array-key, array<array-key, string>> $expectedHeaders
+     * @param object|array<mixed> $expected
+     * @param object|array<mixed> $actual
+     * @param array<string>       $exclude
      *
-     * @return array<array-key, array<array-key, string>>
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws ExpectationFailedException
      */
-    private static function assertHeaders(array $actualHeaders, array $expectedHeaders): array
-    {
-        $errors = [];
-        foreach ($expectedHeaders as $name => $expectedValue) {
-            try {
-                BaseAssert::keyExists($actualHeaders, $name);
-            } catch (InvalidArgumentException $iae) {
-                $errors['headers'][$name] = $iae->getMessage();
-                break;
+    public static function assertObjectsEqual(
+        $expected,
+        $actual,
+        array $exclude = [],
+        string $message = ''
+    ): void {
+        $serializer = self::getJsonSerializer();
+
+        $context = [
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (array $it): string => Json::encode($it),
+            AbstractNormalizer::IGNORED_ATTRIBUTES => $exclude,
+        ];
+
+        $json = [];
+        foreach (
+            [
+                'expected' => $expected,
+                'actual' => $actual,
+            ] as $val
+        ) {
+            if ($val instanceof \stdClass) {
+                $val = Object_::toArray($val);
             }
-            try {
-                BaseAssert::same($actualHeaders[$name], $expectedValue);
-            } catch (InvalidArgumentException $iae) {
-                $errors['headers'][$name] = $iae->getMessage();
-            }
+            $json[] = $serializer->serialize(
+                $val,
+                'json',
+                $context
+            );
         }
 
-        return $errors;
+        BaseAssert::assertJsonStringEqualsJsonString(
+            $json[0],
+            $json[1],
+            $message
+        );
     }
 
-    /**
-     * @return array<array-key, array<array-key, string>>
-     */
-    private static function assertBody(StreamInterface $actualBody, StreamInterface $expectedBody): array
+    private static function getJsonSerializer(): Serializer
     {
-        $errors = [];
-        try {
-            BaseAssert::same($actualBody, $expectedBody);
-        } catch (InvalidArgumentException $iae) {
-            $errors['body']['same'] = $iae->getMessage();
-        }
-
-        return $errors;
+        return new Serializer(
+            [
+                new JsonSerializableNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateTimeNormalizer(),
+                new DateIntervalNormalizer(),
+                new StreamNormalizer(),
+                new PropertyNormalizer(),
+                new ObjectNormalizer(),
+            ],
+            [new JsonEncoder()]
+        );
     }
 }

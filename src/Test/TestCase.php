@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\Operation;
 use DateTimeInterface;
-use GuzzleHttp\Psr7\ServerRequest;
-use OpenAPITesting\Fixture\OperationTestCaseFixture;
 use OpenAPITesting\Requester;
 use OpenAPITesting\Test;
 use OpenAPITesting\Util\Assert;
-use Psr\Http\Message\ServerRequestInterface;
+use PHPUnit\Framework\ExpectationFailedException;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * @internal
@@ -28,99 +27,99 @@ final class TestCase implements Test
 
     public const STATUS_SUCCESS = 'success';
 
+    private RequestInterface $request;
+
+    private ResponseInterface $response;
+
+    private ?string $description;
+
     /**
-     * @var string[][]
+     * @var string[]
      */
-    private array $errors = [];
+    private array $groups;
 
-    private ?DateTimeInterface $finishedAt = null;
-
-    private OperationTestCaseFixture $fixture;
-
-    private Operation $operation;
-
-    private string $method;
-
-    private TestSuite $parent;
-
-    private string $path;
+    private ?ExpectationFailedException $errors = null;
 
     private ?DateTimeInterface $startedAt = null;
 
+    private ?DateTimeInterface $finishedAt = null;
+
+    /**
+     * @param string[] $groups
+     */
     public function __construct(
-        Operation $operation,
-        string $path,
-        string $method,
-        TestSuite $parent,
-        OperationTestCaseFixture $operationTestCaseFixture
+        RequestInterface $request,
+        ResponseInterface $response,
+        array $groups = [],
+        ?string $description = null
     ) {
-        $this->parent = $parent;
-        $this->operation = $operation;
-        $this->path = $path;
-        $this->method = $method;
-        $this->fixture = $operationTestCaseFixture;
+        $this->groups = $groups;
+        $this->request = $request;
+        $this->response = $response;
+        $this->description = $description;
     }
 
     public function getDescription(): string
     {
-        return $this->operation->operationId . ' - ' . ($this->fixture->getDescription() ?? 'test');
+        return $this->description ?? 'test';
+    }
+
+    public function getExpectedResponse(): ResponseInterface
+    {
+        return $this->response;
     }
 
     /**
-     * @return string[][]
+     * @return string[]
      */
-    public function getErrors(): array
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    public function getErrors(): ?ExpectationFailedException
     {
         return $this->errors;
     }
 
+    /**
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \InvalidArgumentException
+     */
     public function launch(Requester $requester): void
     {
         $this->startedAt = Carbon::now();
         $response = $requester->request($this->getRequest());
-        $this->errors = Assert::assertResponse($response, $this->fixture->getExpectedResponse());
+        $this->errors = $this->assert($this->getExpectedResponse(), $response);
         $this->finishedAt = Carbon::now();
     }
 
-    public function getOperation(): Operation
+    public function getStartedAt(): ?DateTimeInterface
     {
-        return $this->operation;
+        return $this->startedAt;
     }
 
-    public function getParent(): TestSuite
+    public function getFinishedAt(): ?DateTimeInterface
     {
-        return $this->parent;
+        return $this->finishedAt;
     }
 
-    public function getStatus(): string
+    /**
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    private function assert(ResponseInterface $expected, ResponseInterface $actual): ?ExpectationFailedException
     {
-        if (null !== $this->finishedAt) {
-            return 0 === \count($this->errors) ? self::STATUS_SUCCESS : self::STATUS_FAILED;
+        try {
+            Assert::assertObjectsEqual($expected, $actual);
+        } catch (ExpectationFailedException $exception) {
+            return $exception;
         }
-        if (null !== $this->startedAt) {
-            return self::STATUS_LAUNCHED;
-        }
 
-        return self::STATUS_NOT_LAUNCHED;
-    }
-
-    public function getMethod(): string
-    {
-        return $this->method;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
-    private function getRequest(): ServerRequestInterface
-    {
-        return new ServerRequest(
-            $this->getMethod(),
-            "{$this->parent->getBaseUri()}/{$this->getPath()}",
-            $this->fixture->getRequestHeaders(),
-            $this->fixture->getRequestBody()
-        );
+        return null;
     }
 }

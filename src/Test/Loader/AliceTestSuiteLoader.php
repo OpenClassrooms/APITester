@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Loader\Fixture;
+namespace OpenAPITesting\Test\Loader;
 
 use Nelmio\Alice\DataLoaderInterface;
 use Nelmio\Alice\Loader\NativeLoader;
-use OpenAPITesting\Fixture\OpenApiTestPlanFixture;
-use OpenAPITesting\Fixture\OperationTestCaseFixture;
+use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Test\TestSuite;
 
-final class AliceFixtureLoader
+final class AliceTestSuiteLoader
 {
     /**
      * @param array<array-key, mixed> $data
      *
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      */
-    public function __invoke(array $data, ?DataLoaderInterface $loader = null): OpenApiTestPlanFixture
+    public function __invoke(array $data, ?DataLoaderInterface $loader = null): TestSuite
     {
         $loader ??= new NativeLoader();
         $data = [
-            OperationTestCaseFixture::class => $data,
+            TestCase::class => $data,
         ];
 
-        $testCaseFixtures = $this->getTestCaseFixtures($loader, $data);
+        $testCases = $this->getTestCaseFixtures($loader, $data);
 
-        return new OpenApiTestPlanFixture($testCaseFixtures);
+        return new TestSuite($testCases);
     }
 
     /**
@@ -34,7 +34,7 @@ final class AliceFixtureLoader
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
      * @psalm-suppress MixedReturnTypeCoercion
      *
-     * @return array<array-key, OperationTestCaseFixture>
+     * @return array<array-key, \OpenAPITesting\Test\TestCase>
      */
     private function getTestCaseFixtures(DataLoaderInterface $loader, array $data): array
     {
