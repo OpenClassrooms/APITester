@@ -1,5 +1,0 @@
-# OpenAPI Testing
-
-## Usage
-
-## Contribution
