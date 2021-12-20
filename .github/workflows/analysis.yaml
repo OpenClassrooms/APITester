@@ -74,3 +74,11 @@ jobs:
                 with:
                     action: check
                     token: ${{ secrets.GITHUB_TOKEN }}
+                if: ${{ github.event_name == 'pull_request' }}
+
+            -   name: Update base coverage
+                uses: OpenClassrooms/coverage-checker@v1.6.0
+                with:
+                    action: check
+                    token: ${{ secrets.GITHUB_TOKEN }}
+                if: ${{ github.event_name == 'push' && github.ref_name == 'polish-finish' }}
