@@ -52,39 +52,3 @@ jobs:
                 with:
                     action: update
                     token: ${{ secrets.GITHUB_TOKEN }}
-
-#
-#    unit-test:
-#        name: PHPUnit & Coverage
-#        runs-on: ubuntu-latest
-#        needs: static-analysis
-#        env:
-#            XDEBUG_MODE: coverage
-#        steps:
-#            -   uses: actions/checkout@v2
-#
-#            -   uses: shivammathur/setup-php@v2
-#                with:
-#                    php-version: 7.4
-#                    coverage: pcov
-#                    tools: composer:v2
-#
-#            -   name: Install dependencies
-#                run: composer install --prefer-dist --no-progress
-#
-#            -   name: PhpUnit
-#                run: composer unit
-#
-#            -   name: Coverage diff
-#                uses: OpenClassrooms/coverage-checker@v1.6.0
-#                if: ${{ github.event_name == 'pull_request' }}
-#                with:
-#                    action: check
-#                    token: ${{ secrets.GITHUB_TOKEN }}
-#
-#            -   name: Coverage update
-#                uses: OpenClassrooms/coverage-checker@v1.6.0
-#                if: ${{ github.event_name == 'push' && github.ref_name == 'polish-finish' }}
-#                with:
-#                    action: update
-#                    token: ${{ secrets.GITHUB_TOKEN }}
