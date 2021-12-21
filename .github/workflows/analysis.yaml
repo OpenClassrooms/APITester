@@ -5,6 +5,7 @@ on:
     push:
         branches:
             - master
+            - lib
 
 jobs:
     code-validation:
@@ -48,7 +49,7 @@ jobs:
 
             -   name: Coverage update
                 uses: OpenClassrooms/coverage-checker@v1.6.0
-                if: ${{ hashFiles('coverage.xml') != '' && github.event_name == 'push' && github.ref_name == 'polish-finish' }}
+                if: ${{ hashFiles('coverage.xml') != '' && github.event_name == 'push' && (github.ref_name == 'lib' || github.ref_name == 'master') }}
                 with:
                     action: update
                     token: ${{ secrets.GITHUB_TOKEN }}
