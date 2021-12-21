@@ -7,7 +7,7 @@ on:
             - master
 
 jobs:
-    static-analysis:
+    code-validation:
         name: ${{ matrix.actions.name }}
         runs-on: ubuntu-latest
         strategy:
@@ -15,13 +15,13 @@ jobs:
             matrix:
                 actions:
                     -   name: PHPStan
-                        run: composer phpstan --ansi
+                        run: composer phpstan
 
                     -   name: Psalm
-                        run: composer psalm --ansi
+                        run: composer psalm
 
                     -   name: Ecs
-                        run: composer check-cs --ansi
+                        run: composer check-cs
 
                     -   name: PHPUnit
                         run: composer unit
