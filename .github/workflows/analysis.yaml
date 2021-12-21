@@ -5,28 +5,27 @@ on:
     push:
         branches:
             - master
+            - lib
 
 jobs:
-    matrix:
+    code-validation:
         name: ${{ matrix.actions.name }}
         runs-on: ubuntu-latest
-        env:
-            COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         strategy:
             fail-fast: false
             matrix:
                 actions:
                     -   name: PHPStan
-                        run: composer phpstan --ansi
+                        run: composer phpstan
 
                     -   name: Psalm
-                        run: composer psalm --ansi
+                        run: composer psalm
 
                     -   name: Ecs
-                        run: composer check-cs --ansi
+                        run: composer check-cs
 
-                    -   name: PhpUnit
-                        run: composer coveralls --ansi
+                    -   name: PHPUnit
+                        run: composer unit
         steps:
             -   uses: actions/checkout@v2
 
@@ -36,18 +35,21 @@ jobs:
                     coverage: pcov
                     tools: composer:v2
 
-            -   name: Get composer cache directory
-                id: composer-cache
-                run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-            -   name: Cache dependencies
-                uses: actions/cache@v2
-                with:
-                    path: ${{ steps.composer-cache.outputs.dir }}
-                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-                    restore-keys: ${{ runner.os }}-composer-
-
             -   name: Install dependencies
                 run: composer install --prefer-dist --no-progress
 
             -   run: ${{ matrix.actions.run }}
+
+            -   name: Coverage diff
+                uses: OpenClassrooms/coverage-checker@v1.6.0
+                if: ${{ hashFiles('coverage.xml') != '' && github.event_name == 'pull_request' }}
+                with:
+                    action: check
+                    token: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Coverage update
+                uses: OpenClassrooms/coverage-checker@v1.6.0
+                if: ${{ hashFiles('coverage.xml') != '' && github.event_name == 'push' && (github.ref_name == 'lib' || github.ref_name == 'master') }}
+                with:
+                    action: update
+                    token: ${{ secrets.GITHUB_TOKEN }}
