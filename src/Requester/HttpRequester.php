@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Requester;
 
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Requester;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpClient\Psr18Client;
@@ -16,11 +15,11 @@ final class HttpRequester implements Requester
 
     public function __construct(string $baseUri = '')
     {
-        $this->baseUri = $baseUri;
+        $this->baseUri = rtrim($baseUri, '/');
     }
 
     /**
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @inheritDoc
      */
     public function request(RequestInterface $request): ResponseInterface
     {

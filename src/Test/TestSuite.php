@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use DateTimeInterface;
-use OpenAPITesting\Requester;
-use OpenAPITesting\Test;
-use PHPUnit\Framework\ExpectationFailedException;
+use cebe\openapi\spec\OpenApi;
+use OpenAPITesting\Requester\Requester;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * @internal
@@ -16,62 +16,66 @@ use PHPUnit\Framework\ExpectationFailedException;
  */
 final class TestSuite implements Test
 {
-    private ?DateTimeInterface $startedAt = null;
+    use TimeBoundTrait;
 
-    private ?DateTimeInterface $finishedAt = null;
-
-    /**
-     * @var TestCase[]
-     */
-    private array $testCases;
+    private OpenApi $openApi;
 
     /**
-     * @param TestCase[] $testCases
+     * @var array<\OpenAPITesting\Test\Preparator\TestCasesPreparator>
      */
-    public function __construct(array $testCases)
-    {
-        $this->testCases = $testCases;
+    private array $preparators;
+
+    /**
+     * @var array<string, TestError>
+     */
+    private array $errors = [];
+
+    private string $title;
+
+    /**
+     * @param array<\OpenAPITesting\Test\Preparator\TestCasesPreparator> $preparators
+     */
+    public function __construct(
+        string $title,
+        OpenApi $openApi,
+        array $preparators
+    ) {
+        $this->title = $title;
+        $this->openApi = $openApi;
+        $this->preparators = $preparators;
     }
 
     /**
-     * @return array<string, ExpectationFailedException>
+     * @inheritDoc
+     */
+    public function launch(Requester $requester, ?LoggerInterface $logger = null): void
+    {
+        $logger ??= new NullLogger();
+        $this->startedAt = Carbon::now();
+        $logger->info("[{$this->startedAt->format('Y-m-d H:i:s')}] suite {$this->getTitle()} started.");
+        $testCases = [];
+        foreach ($this->preparators as $preparator) {
+            $testCases[] = $preparator($this->openApi);
+        }
+        $testCases = array_merge(...$testCases);
+        foreach ($testCases as $testCase) {
+            $testCase->launch($requester, $logger);
+            $this->errors += $testCase->getErrors();
+        }
+        $this->finishedAt = Carbon::now();
+        $logger->info("[{$this->finishedAt->format('Y-m-d H:i:s')}] suite {$this->getTitle()} finished.");
+    }
+
+    /**
+     * @inheritDoc
      */
     public function getErrors(): array
     {
-        $errors = [];
-        foreach ($this->testCases as $testCase) {
-            if (null !== $testCase->getErrors()) {
-                $errors[$testCase->getDescription()] = $testCase->getErrors();
-            }
-        }
-
-        return $errors;
+        return $this->errors;
     }
 
-    public function launch(Requester $requester): void
+    public function getTitle(): string
     {
-        $this->startedAt = Carbon::now();
-        foreach ($this->testCases as $testCase) {
-            $testCase->launch($requester);
-        }
-        $this->finishedAt = Carbon::now();
-    }
-
-    public function getStartedAt(): ?DateTimeInterface
-    {
-        return $this->startedAt;
-    }
-
-    public function getFinishedAt(): ?DateTimeInterface
-    {
-        return $this->finishedAt;
-    }
-
-    /**
-     * @return TestCase[]
-     */
-    public function getTestCases(): array
-    {
-        return $this->testCases;
+        return $this->title;
     }
 }

@@ -2,30 +2,34 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Loader;
+namespace OpenAPITesting\Test\Preparator;
 
 use Nelmio\Alice\DataLoaderInterface;
 use Nelmio\Alice\Loader\NativeLoader;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Test\TestSuite;
 
-final class AliceTestSuiteLoader
+final class AliceTestCasesLoader
 {
     /**
      * @param array<array-key, mixed> $data
      *
      * @throws \Nelmio\Alice\Throwable\LoadingThrowable
+     *
+     * @return TestCase[]
      */
-    public function __invoke(array $data, ?DataLoaderInterface $loader = null): TestSuite
+    public function __invoke(array $data, ?DataLoaderInterface $loader = null): array
     {
         $loader ??= new NativeLoader();
         $data = [
             TestCase::class => $data,
         ];
 
-        $testCases = $this->getTestCaseFixtures($loader, $data);
+        return $this->getTestCaseFixtures($loader, $data);
+    }
 
-        return new TestSuite($testCases);
+    public function getName(): string
+    {
+        return 'fixtures';
     }
 
     /**

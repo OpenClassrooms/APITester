@@ -2,39 +2,34 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Unit\src\Test\Loader;
+namespace OpenAPITesting\Tests\Test\Loader;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Loader\OpenApiLoader;
-use OpenAPITesting\Test\Loader\OpenApiExamplesTestSuiteLoader;
+use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
+use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
 
 /**
  * @internal
- * @covers \OpenAPITesting\Test\Loader\OpenApiExamplesTestSuiteLoader
+ * @covers \OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator
  */
 final class OpenApiExampleTestSuiteLoaderTest extends \PHPUnit\Framework\TestCase
 {
-    public const OPENAPI_LOCATION = __DIR__ . '/../../../fixtures/openapi.yaml';
+    private const OPENAPI_LOCATION = __DIR__ . '/../../Fixtures/OpenAPI/openapi-with-examples.yaml';
 
     /**
      * @dataProvider getExpectedTestSuites
      *
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \InvalidArgumentException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @param TestCase[] $expected
      */
-    public function test(TestSuite $expected): void
+    public function test(array $expected): void
     {
-        $openApi = (new OpenApiLoader())(self::OPENAPI_LOCATION);
-        $testSuite = (new OpenApiExamplesTestSuiteLoader())($openApi);
+        $openApi = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
+        $testSuite = (new OpenApiExamplesTestCasesPreparator())($openApi);
 
         Assert::assertObjectsEqual(
             $expected,
@@ -44,12 +39,12 @@ final class OpenApiExampleTestSuiteLoaderTest extends \PHPUnit\Framework\TestCas
     }
 
     /**
-     * @return iterable<array-key, TestSuite[]>
+     * @return iterable<array-key, TestCase[][]>
      */
     public function getExpectedTestSuites(): iterable
     {
         yield [
-            new TestSuite([
+            [
                 new TestCase(
                     new Request(
                         'GET',
@@ -62,13 +57,16 @@ final class OpenApiExampleTestSuiteLoaderTest extends \PHPUnit\Framework\TestCas
                                 '/toto',
                             ],
                         ],
-                        Json::encode([[
-                            'id' => 12,
-                            'name' => 'aaa',
-                        ], [
-                            'id' => 34,
-                            'name' => 'bbb',
-                        ]]),
+                        Json::encode([
+                            [
+                                'id' => 12,
+                                'name' => 'aaa',
+                            ],
+                            [
+                                'id' => 34,
+                                'name' => 'bbb',
+                            ],
+                        ]),
                     ),
                     ['listPets'],
                     '200.default',
@@ -183,7 +181,7 @@ final class OpenApiExampleTestSuiteLoaderTest extends \PHPUnit\Framework\TestCas
                     ['showPetById'],
                     '200',
                 ),
-            ]),
+            ],
         ];
     }
 }

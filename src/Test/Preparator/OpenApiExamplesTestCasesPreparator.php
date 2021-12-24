@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Loader;
+namespace OpenAPITesting\Test\Preparator;
 
 use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
@@ -15,16 +15,18 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExamplesTestSuiteLoader
+final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
 {
-    public function __invoke(OpenApi $data): TestSuite
+    /**
+     * @return array<TestCase>
+     */
+    public function __invoke(OpenApi $openApi): array
     {
         $testCases = [];
         /** @var string $path */
-        foreach ($data->paths as $path => $pathInfo) {
+        foreach ($openApi->paths as $path => $pathInfo) {
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 if (null === $operation->responses) {
@@ -36,7 +38,12 @@ final class OpenApiExamplesTestSuiteLoader
             }
         }
 
-        return new TestSuite(array_merge(...$testCases));
+        return array_merge(...$testCases);
+    }
+
+    public function getName(): string
+    {
+        return 'examples';
     }
 
     /**

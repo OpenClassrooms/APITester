@@ -6,11 +6,12 @@ namespace OpenAPITesting\Requester;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
-use OpenAPITesting\Requester;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Symfony\Component\HttpClient\Exception\ClientException;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -25,13 +26,17 @@ final class SymfonyKernelRequester implements Requester
     }
 
     /**
-     * @throws \Exception
+     * @inheritDoc
      */
     public function request(RequestInterface $request): ResponseInterface
     {
-        return $this->symfonyToPsrResponse(
-            $this->kernel->handle($this->psrToSymfonyRequest($request))
-        );
+        try {
+            return $this->symfonyToPsrResponse(
+                $this->kernel->handle($this->psrToSymfonyRequest($request))
+            );
+        } catch (\Exception $e) {
+            throw new ClientException(new MockResponse((string) $e));
+        }
     }
 
     private function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface

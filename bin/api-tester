@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use OpenAPITesting\Command\ExecuteTestPlanCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+$application->add(new ExecuteTestPlanCommand());
+$application->run();
