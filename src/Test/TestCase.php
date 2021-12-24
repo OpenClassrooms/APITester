@@ -41,7 +41,7 @@ final class TestCase implements Test
      */
     private array $groups;
 
-    private ?TestError $error = null;
+    private ?Error $error = null;
 
     /**
      * @var string[]
@@ -140,7 +140,7 @@ final class TestCase implements Test
         return $status;
     }
 
-    private function assert(ResponseInterface $expected, ResponseInterface $actual): ?TestError
+    private function assert(ResponseInterface $expected, ResponseInterface $actual): ?Error
     {
         try {
             Assert::assertObjectsEqual($expected, $actual, $this->excludedFields);
@@ -149,7 +149,7 @@ final class TestCase implements Test
             $diff = $exception->getComparisonFailure();
             $message = null !== $diff ? 'Assertion field: ' . $diff->getDiff() : $exception->getMessage();
 
-            return new TestError(str_replace(['\\', '"stream":'], ['', '"body":'], $message));
+            return new Error(str_replace(['\\', '"stream":'], ['', '"body":'], $message));
         }
 
         return null;

@@ -91,7 +91,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
      */
     private function buildResponses(Operation $operation): array
     {
-        if (! isset($operation->responses)) {
+        if (!isset($operation->responses)) {
             return [];
         }
         $responses = [];
@@ -121,9 +121,9 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request>  $requests
+     * @param array<string, Request> $requests
      * @param array<string, Response> $responses
-     * @param string[]                $groups
+     * @param string[] $groups
      *
      * @return TestCase[]
      */

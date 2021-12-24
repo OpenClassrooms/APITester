@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Test;
 
-use OpenAPITesting\Config\TestPlanConfig;
+use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
 use OpenAPITesting\Requester\HttpRequester;
 use OpenAPITesting\Test\Preparator\TestCasesPreparator;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class TestPlan
+final class Plan
 {
     /**
      * @var \OpenAPITesting\Test\Preparator\TestCasesPreparator[]
@@ -24,7 +24,7 @@ final class TestPlan
     private array $loaders;
 
     /**
-     * @var array<string, array<string, \OpenAPITesting\Test\TestError>>
+     * @var array<string, array<string, \OpenAPITesting\Test\Error>>
      */
     private array $errors = [];
 
@@ -32,7 +32,7 @@ final class TestPlan
 
     /**
      * @param \OpenAPITesting\Test\Preparator\TestCasesPreparator[] $preparators
-     * @param DefinitionLoader[]                                    $loaders
+     * @param DefinitionLoader[] $loaders
      */
     public function __construct(array $preparators, array $loaders, ?LoggerInterface $logger = null)
     {
@@ -46,7 +46,7 @@ final class TestPlan
      * @throws \Psr\Http\Client\ClientExceptionInterface
      * @throws \OpenAPITesting\Definition\Loader\DefinitionLoadingException
      */
-    public function execute(TestPlanConfig $testPlanConfig): void
+    public function execute(PlanConfig $testPlanConfig): void
     {
         foreach ($testPlanConfig->getTestSuiteConfigs() as $config) {
             $preparators = $this->getConfiguredPreparators($config->getPreparators());
@@ -59,7 +59,7 @@ final class TestPlan
                 $config->getDefinition()
                     ->getPath()
             );
-            $testSuite = new TestSuite(
+            $testSuite = new Suite(
                 $config->getTitle(),
                 $schema,
                 $preparators,
@@ -70,7 +70,7 @@ final class TestPlan
     }
 
     /**
-     * @return array<string, array<string, \OpenAPITesting\Test\TestError>>
+     * @return array<string, array<string, \OpenAPITesting\Test\Error>>
      */
     public function getErrors(): array
     {
@@ -86,7 +86,7 @@ final class TestPlan
     {
         return array_filter(
             $this->preparators,
-            static fn (TestCasesPreparator $p) => \in_array(
+            static fn(TestCasesPreparator $p) => \in_array(
                 $p->getName(),
                 $preparators,
                 true,

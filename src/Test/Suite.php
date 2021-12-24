@@ -14,7 +14,7 @@ use Psr\Log\NullLogger;
  * @internal
  * @coversNothing
  */
-final class TestSuite implements Test
+final class Suite implements Test
 {
     use TimeBoundTrait;
 
@@ -26,7 +26,7 @@ final class TestSuite implements Test
     private array $preparators;
 
     /**
-     * @var array<string, TestError>
+     * @var array<string, Error>
      */
     private array $errors = [];
 

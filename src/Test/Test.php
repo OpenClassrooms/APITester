@@ -19,7 +19,7 @@ interface Test
     public function getFinishedAt(): ?DateTimeInterface;
 
     /**
-     * @return array<string, TestError>
+     * @return array<string, Error>
      */
     public function getErrors(): array;
 

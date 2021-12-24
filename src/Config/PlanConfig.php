@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Config;
 
-final class TestPlanConfig
+final class PlanConfig
 {
     /**
-     * @var array<TestSuiteConfig>
+     * @var array<SuiteConfig>
      */
     private array $testSuiteConfigs;
 
     /**
-     * @param array<TestSuiteConfig> $testSuiteConfigs
+     * @param array<SuiteConfig> $testSuiteConfigs
      */
     public function __construct(array $testSuiteConfigs)
     {
@@ -20,7 +20,7 @@ final class TestPlanConfig
     }
 
     /**
-     * @return array<TestSuiteConfig>
+     * @return array<SuiteConfig>
      */
     public function getTestSuiteConfigs(): array
     {

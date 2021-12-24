@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Test;
 
-final class TestError implements \JsonSerializable
+final class Error implements \JsonSerializable
 {
     private ?string $code;
 

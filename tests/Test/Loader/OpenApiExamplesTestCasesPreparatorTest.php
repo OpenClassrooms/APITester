@@ -8,7 +8,6 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
-use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
@@ -17,7 +16,7 @@ use OpenAPITesting\Util\Json;
  * @internal
  * @covers \OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator
  */
-final class OpenApiExampleTestSuiteLoaderTest extends \PHPUnit\Framework\TestCase
+final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     private const OPENAPI_LOCATION = __DIR__ . '/../../Fixtures/OpenAPI/openapi-with-examples.yaml';
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Config;
 
-final class TestSuiteConfig
+final class SuiteConfig
 {
     private DefinitionConfig $definition;
 
