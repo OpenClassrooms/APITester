@@ -1,3 +1,6 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
 parameters:
     level: 9
     paths:
@@ -9,7 +12,17 @@ parameters:
         - '/Method .+ has a nullable return type declaration./'
         - '/Method .+ has parameter .+ with a nullable type declaration./'
         - '/Language construct isset\(\) should not be used./'
-        - '/Call to function in_array\(\) with arguments ''json''\|''yaml'', array\{''json'', ''yaml''\} and true will always evaluate to true./'
         - '/PHPDoc tag @var above assignment does not specify variable name./'
         - '/Short ternary operator is not allowed./'
         - '/Cannot cast mixed to string./'
+        - '/Class ".+" is not allowed to extend ".+"./'
+        - {paths: [ tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
+    exceptions:
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
+        uncheckedExceptionClasses:
+            - RuntimeException
+            - LogicException
+            - JsonException
+            - PHPUnit\Framework\Exception

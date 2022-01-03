@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Loader;
+namespace OpenAPITesting\Test\Preparator;
 
 use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
@@ -15,16 +15,18 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Test\TestSuite;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExamplesTestSuiteLoader
+final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
 {
-    public function __invoke(OpenApi $data): TestSuite
+    /**
+     * @return array<TestCase>
+     */
+    public function __invoke(OpenApi $openApi): array
     {
         $testCases = [];
         /** @var string $path */
-        foreach ($data->paths as $path => $pathInfo) {
+        foreach ($openApi->paths as $path => $pathInfo) {
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 if (null === $operation->responses) {
@@ -32,11 +34,20 @@ final class OpenApiExamplesTestSuiteLoader
                 }
                 $requests = $this->buildRequests($operation, $method, $path);
                 $responses = $this->buildResponses($operation);
-                $testCases[] = $this->buildTestCases($requests, $responses, [$operation->operationId]);
+                $testCases[] = $this->buildTestCases(
+                    $requests,
+                    $responses,
+                    [$operation->operationId, $method, ...$operation->tags],
+                );
             }
         }
 
-        return new TestSuite(array_merge(...$testCases));
+        return array_filter(array_merge(...$testCases));
+    }
+
+    public function getName(): string
+    {
+        return 'examples';
     }
 
     /**
@@ -48,14 +59,18 @@ final class OpenApiExamplesTestSuiteLoader
         if (null !== $operation->requestBody) {
             /** @var RequestBody $requestBody */
             $requestBody = $operation->requestBody;
-            $examples = $this->getExamples($requestBody->content['application/json']);
-            foreach ($examples as $expectedResponse => $body) {
-                $requests[$expectedResponse] = new Request(
-                    mb_strtoupper($method),
-                    $path . '?1=1',
-                    [],
-                    Json::encode($body),
-                );
+            foreach ($requestBody->content as $mediaType => $content) {
+                $examples = $this->getExamples($content);
+                foreach ($examples as $expectedResponse => $body) {
+                    $requests[$expectedResponse] = new Request(
+                        mb_strtoupper($method),
+                        $path . '?1=1',
+                        [
+                            'content-type' => $mediaType,
+                        ],
+                        Json::encode($body),
+                    );
+                }
             }
         }
 
@@ -90,22 +105,25 @@ final class OpenApiExamplesTestSuiteLoader
         $responses = [];
         foreach ($operation->responses as $statusCode => $response) {
             /** @var MediaType $content */
-            $content = $response->content['application/json'];
-            $examples = $this->getExamples($content, (string) $statusCode, false);
-            foreach ($examples as $label => $body) {
-                $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
-                /** @var int $code */
-                $code = $body['code'] ?? 0;
-                $responses[$key] = new Response(
-                    (int) $statusCode ?: $code,
-                    [],
-                    Json::encode($body)
-                );
-                /** @var Header $value */
-                foreach ($response->headers as $name => $value) {
-                    /** @var string $example */
-                    $example = $value->example;
-                    $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
+            foreach ($response->content as $mediaType => $content) {
+                $examples = $this->getExamples($content, (string) $statusCode, false);
+                foreach ($examples as $label => $body) {
+                    $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
+                    /** @var int $code */
+                    $code = $body['code'] ?? 0;
+                    $responses[$key] = new Response(
+                        (int) $statusCode ?: $code,
+                        [
+                            'content-type' => $mediaType,
+                        ],
+                        Json::encode($body)
+                    );
+                    /** @var Header $value */
+                    foreach ($response->headers as $name => $value) {
+                        /** @var string $example */
+                        $example = $value->example;
+                        $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
+                    }
                 }
             }
         }
@@ -130,10 +148,10 @@ final class OpenApiExamplesTestSuiteLoader
                 $key = str_replace('expects ', '', $key);
             }
             $fixture = new TestCase(
+                $key,
                 $request,
                 $responses[$key],
                 $groups,
-                $key,
             );
             $testCases[] = $fixture;
         }
@@ -177,11 +195,7 @@ final class OpenApiExamplesTestSuiteLoader
             $examples[$defaultKey] = (array) $object->example;
         }
 
-        if (isset($object->example)) {
-            $examples[$defaultKey] = (array) $object->example;
-        }
-
-        if (\is_object($object->example) && isset($object->example->value)) {
+        if (isset($object->example) && \is_object($object->example) && isset($object->example->value)) {
             $examples[$defaultKey] = (array) $object->example->value;
         }
 

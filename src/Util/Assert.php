@@ -27,7 +27,7 @@ final class Assert
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @throws ExpectationFailedException
      */
-    public static function assertObjectsEqual(
+    public static function objectsEqual(
         $expected,
         $actual,
         array $exclude = [],
@@ -62,6 +62,16 @@ final class Assert
             $json[1],
             $message
         );
+    }
+
+    /**
+     * @param mixed $actual
+     *
+     * @throws ExpectationFailedException
+     */
+    public static function true($actual, string $message = ''): void
+    {
+        BaseAssert::assertTrue($actual, $message);
     }
 
     private static function getJsonSerializer(): Serializer
