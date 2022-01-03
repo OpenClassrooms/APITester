@@ -9,6 +9,9 @@ use cebe\openapi\spec\Operation;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Json;
+use Vural\OpenAPIFaker\Options;
+use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Status404TestCasesPreparator implements TestCasesPreparator
 {
@@ -22,7 +25,7 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
         foreach ($openApi->paths as $path => $pathInfo) {
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
-                if ('get' !== $method || !isset($operation->responses['404'])) {
+                if (!isset($operation->responses['404'])) {
                     continue;
                 }
                 /** @var \cebe\openapi\spec\Response $response */
@@ -32,6 +35,8 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
                     new Request(
                         mb_strtoupper($method),
                         $this->processPath($path, $operation),
+                        [],
+                        $this->generateBody($operation),
                     ),
                     new Response(
                         404,
@@ -61,5 +66,16 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
         }
 
         return $path;
+    }
+
+    private function generateBody(Operation $operation): ?string
+    {
+        if (!isset($operation->requestBody->content) || !isset($operation->requestBody->content['application/json'])) {
+            return null;
+        }
+        /** @var \cebe\openapi\spec\Schema $schema */
+        $schema = $operation->requestBody->content['application/json']->schema;
+
+        return Json::encode((array) (new SchemaFaker($schema, new Options(), true))->generate());
     }
 }

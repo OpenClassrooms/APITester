@@ -43,6 +43,9 @@ final class PlanTest extends TestCase
                         ),
                     ))->exclude([
                         'getUserByName',
+                        'updatePet',
+                        'deleteOrder',
+                        'deleteUser',
                     ]),
                 ],
             ),

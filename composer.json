@@ -27,6 +27,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "cebe/php-openapi": "^1.5",
+    "fakerphp/faker": "^1.17",
     "guzzlehttp/promises": "~1.4.0",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
@@ -44,6 +45,7 @@
     "symfony/serializer": "^4.4"
   },
   "require-dev": {
+    "canvural/php-openapi-faker": "^1.0",
     "ergebnis/phpstan-rules": "^1.0",
     "korbeil/phpstan-generic-rules": "^1.0",
     "orklah/psalm-elvis-begone": "^1.0",

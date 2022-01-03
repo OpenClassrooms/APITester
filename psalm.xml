@@ -41,5 +41,6 @@
         <RedundantConditionGivenDocblockType errorLevel="suppress"/>
         <InternalMethod errorLevel="suppress"/>
         <DuplicateArrayKey errorLevel="suppress"/>
+        <InternalClass errorLevel="suppress"/>
     </issueHandlers>
 </psalm>

@@ -77,7 +77,7 @@ final class TestCase implements Test
         $this->expectedResponse = $expectedResponse;
         $this->name = $name;
         $this->logger = new NullLogger();
-        $this->id = uniqid('testcase_', true);
+        $this->id = uniqid('testcase_', false);
     }
 
     public function getName(): string

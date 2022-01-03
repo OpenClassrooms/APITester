@@ -28,11 +28,11 @@ final class PlanConfigLoader
          *              'callback': ?array{'beforeTestCase': ?string, 'afterTestCase': ?string}
          *              }
          *            >
-         * } $yml
+         * } $data
          */
-        $yml = Yaml::parseFile($path);
+        $data = Yaml::parseFile($path);
         $suiteConfigs = [];
-        foreach ($yml['suites'] as $suiteTitle => $suite) {
+        foreach ($data['suites'] as $suiteTitle => $suite) {
             $callbacks = $this->callableFromConfig($suite['callback'] ?? []);
             $suiteConfigs[] = new SuiteConfig(
                 $suiteTitle,
