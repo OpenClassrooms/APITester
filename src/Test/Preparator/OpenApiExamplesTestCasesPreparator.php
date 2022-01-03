@@ -34,11 +34,15 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
                 }
                 $requests = $this->buildRequests($operation, $method, $path);
                 $responses = $this->buildResponses($operation);
-                $testCases[] = $this->buildTestCases($requests, $responses, [$operation->operationId]);
+                $testCases[] = $this->buildTestCases(
+                    $requests,
+                    $responses,
+                    [$operation->operationId, $method, ...$operation->tags],
+                );
             }
         }
 
-        return array_merge(...$testCases);
+        return array_filter(array_merge(...$testCases));
     }
 
     public function getName(): string
@@ -55,14 +59,18 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
         if (null !== $operation->requestBody) {
             /** @var RequestBody $requestBody */
             $requestBody = $operation->requestBody;
-            $examples = $this->getExamples($requestBody->content['application/json']);
-            foreach ($examples as $expectedResponse => $body) {
-                $requests[$expectedResponse] = new Request(
-                    mb_strtoupper($method),
-                    $path . '?1=1',
-                    [],
-                    Json::encode($body),
-                );
+            foreach ($requestBody->content as $mediaType => $content) {
+                $examples = $this->getExamples($content);
+                foreach ($examples as $expectedResponse => $body) {
+                    $requests[$expectedResponse] = new Request(
+                        mb_strtoupper($method),
+                        $path . '?1=1',
+                        [
+                            'content-type' => $mediaType,
+                        ],
+                        Json::encode($body),
+                    );
+                }
             }
         }
 
@@ -91,28 +99,31 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
      */
     private function buildResponses(Operation $operation): array
     {
-        if (!isset($operation->responses)) {
+        if (! isset($operation->responses)) {
             return [];
         }
         $responses = [];
         foreach ($operation->responses as $statusCode => $response) {
             /** @var MediaType $content */
-            $content = $response->content['application/json'];
-            $examples = $this->getExamples($content, (string) $statusCode, false);
-            foreach ($examples as $label => $body) {
-                $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
-                /** @var int $code */
-                $code = $body['code'] ?? 0;
-                $responses[$key] = new Response(
-                    (int) $statusCode ?: $code,
-                    [],
-                    Json::encode($body)
-                );
-                /** @var Header $value */
-                foreach ($response->headers as $name => $value) {
-                    /** @var string $example */
-                    $example = $value->example;
-                    $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
+            foreach ($response->content as $mediaType => $content) {
+                $examples = $this->getExamples($content, (string) $statusCode, false);
+                foreach ($examples as $label => $body) {
+                    $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
+                    /** @var int $code */
+                    $code = $body['code'] ?? 0;
+                    $responses[$key] = new Response(
+                        (int) $statusCode ?: $code,
+                        [
+                            'content-type' => $mediaType,
+                        ],
+                        Json::encode($body)
+                    );
+                    /** @var Header $value */
+                    foreach ($response->headers as $name => $value) {
+                        /** @var string $example */
+                        $example = $value->example;
+                        $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
+                    }
                 }
             }
         }
@@ -121,9 +132,9 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request> $requests
+     * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
-     * @param string[] $groups
+     * @param string[]                $groups
      *
      * @return TestCase[]
      */
@@ -137,10 +148,10 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
                 $key = str_replace('expects ', '', $key);
             }
             $fixture = new TestCase(
+                $key,
                 $request,
                 $responses[$key],
                 $groups,
-                $key,
             );
             $testCases[] = $fixture;
         }
@@ -184,11 +195,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
             $examples[$defaultKey] = (array) $object->example;
         }
 
-        if (isset($object->example)) {
-            $examples[$defaultKey] = (array) $object->example;
-        }
-
-        if (\is_object($object->example) && isset($object->example->value)) {
+        if (isset($object->example) && \is_object($object->example) && isset($object->example->value)) {
             $examples[$defaultKey] = (array) $object->example->value;
         }
 

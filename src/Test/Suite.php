@@ -26,11 +26,21 @@ final class Suite implements Test
     private array $preparators;
 
     /**
-     * @var array<string, Error>
+     * @var array<string, Result>
      */
-    private array $errors = [];
+    private array $results = [];
 
     private string $title;
+
+    private Filters $filters;
+
+    private Requester $requester;
+
+    private LoggerInterface $logger;
+
+    private ?\Closure $beforeTestCaseCallback = null;
+
+    private ?\Closure $afterTestCaseCallback = null;
 
     /**
      * @param array<\OpenAPITesting\Test\Preparator\TestCasesPreparator> $preparators
@@ -38,44 +48,124 @@ final class Suite implements Test
     public function __construct(
         string $title,
         OpenApi $openApi,
-        array $preparators
+        array $preparators,
+        Requester $requester,
+        ?Filters $filters = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->title = $title;
         $this->openApi = $openApi;
         $this->preparators = $preparators;
+        $this->requester = $requester;
+        $this->logger = $logger ?? new NullLogger();
+        $this->filters = $filters ?? new Filters([], []);
     }
 
     /**
      * @inheritDoc
      */
-    public function launch(Requester $requester, ?LoggerInterface $logger = null): void
+    public function launch(): void
     {
-        $logger ??= new NullLogger();
         $this->startedAt = Carbon::now();
-        $logger->info("[{$this->startedAt->format('Y-m-d H:i:s')}] suite {$this->getTitle()} started.");
-        $testCases = [];
-        foreach ($this->preparators as $preparator) {
-            $testCases[] = $preparator($this->openApi);
-        }
-        $testCases = array_merge(...$testCases);
-        foreach ($testCases as $testCase) {
-            $testCase->launch($requester, $logger);
-            $this->errors += $testCase->getErrors();
-        }
+        $this->logger->info("[{$this->startedAt->format('Y-m-d H:i:s')}] suite {$this->getName()} started.");
+        $testCases = $this->prepareTestCases();
+        $this->launchTestCases($testCases);
+        $this->results = $this->getTestCasesResults($testCases);
         $this->finishedAt = Carbon::now();
-        $logger->info("[{$this->finishedAt->format('Y-m-d H:i:s')}] suite {$this->getTitle()} finished.");
+        $this->logger->info("[{$this->finishedAt->format('Y-m-d H:i:s')}] suite {$this->getName()} finished.");
     }
 
     /**
      * @inheritDoc
      */
-    public function getErrors(): array
+    public function getResult(): array
     {
-        return $this->errors;
+        return $this->results;
     }
 
-    public function getTitle(): string
+    public function getName(): string
     {
         return $this->title;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function setRequester(Requester $requester): void
+    {
+        $this->requester = $requester;
+    }
+
+    public function includes(TestCase $testCase): bool
+    {
+        $include = true;
+        if (\count($this->filters->getIncludedGroups()) > 0) {
+            $include = \count(array_intersect($this->filters->getIncludedGroups(), $testCase->getGroups())) > 0;
+        }
+
+        if (\count(array_intersect($this->filters->getExcludedGroups(), $testCase->getGroups())) > 0) {
+            $include = false;
+        }
+
+        return $include;
+    }
+
+    public function setBeforeTestCaseCallback(?\Closure $beforeTestCaseCallback): void
+    {
+        $this->beforeTestCaseCallback = $beforeTestCaseCallback;
+    }
+
+    public function setAfterTestCaseCallback(?\Closure $afterTestCaseCallback): void
+    {
+        $this->afterTestCaseCallback = $afterTestCaseCallback;
+    }
+
+    /**
+     * @param TestCase[] $testCases
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    private function launchTestCases(array $testCases): void
+    {
+        foreach ($testCases as $testCase) {
+            $testCase->setRequester($this->requester);
+            $testCase->setLogger($this->logger);
+            $testCase->setBeforeCallback($this->beforeTestCaseCallback);
+            $testCase->setAfterCallback($this->afterTestCaseCallback);
+            $testCase->launch();
+        }
+    }
+
+    /**
+     * @param TestCase[] $testCases
+     *
+     * @return array<string, Result>
+     */
+    private function getTestCasesResults(array $testCases): array
+    {
+        $results = [];
+        foreach ($testCases as $testCase) {
+            $results += $testCase->getResult();
+        }
+
+        return $results;
+    }
+
+    /**
+     * @return TestCase[]
+     */
+    private function prepareTestCases(): array
+    {
+        $testCases = [];
+        foreach ($this->preparators as $preparator) {
+            $testCases[] = array_filter(
+                $preparator($this->openApi),
+                [$this, 'includes']
+            );
+        }
+
+        return array_merge(...$testCases);
     }
 }

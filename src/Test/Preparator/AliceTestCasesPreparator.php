@@ -8,7 +8,7 @@ use Nelmio\Alice\DataLoaderInterface;
 use Nelmio\Alice\Loader\NativeLoader;
 use OpenAPITesting\Test\TestCase;
 
-final class AliceTestCasesLoader
+final class AliceTestCasesPreparator
 {
     /**
      * @param array<array-key, mixed> $data

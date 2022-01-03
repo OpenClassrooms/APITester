@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Test;
 
+use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
-use OpenAPITesting\Requester\HttpRequester;
+use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Test\Preparator\TestCasesPreparator;
+use OpenAPITesting\Util\Assert;
+use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -19,24 +22,35 @@ final class Plan
     private array $preparators;
 
     /**
+     * @var \OpenAPITesting\Requester\Requester[]
+     */
+    private array $requesters;
+
+    /**
      * @var DefinitionLoader[]
      */
     private array $loaders;
 
     /**
-     * @var array<string, array<string, \OpenAPITesting\Test\Error>>
+     * @var array<string, array<string, \OpenAPITesting\Test\Result>>
      */
-    private array $errors = [];
+    private array $results = [];
 
     private LoggerInterface $logger;
 
     /**
      * @param \OpenAPITesting\Test\Preparator\TestCasesPreparator[] $preparators
+     * @param \OpenAPITesting\Requester\Requester[] $requesters
      * @param DefinitionLoader[] $loaders
      */
-    public function __construct(array $preparators, array $loaders, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        array $preparators,
+        array $requesters,
+        array $loaders,
+        ?LoggerInterface $logger = null
+    ) {
         $this->preparators = $preparators;
+        $this->requesters = $requesters;
         $this->loaders = $loaders;
         $this->logger = $logger ?? new NullLogger();
     }
@@ -45,6 +59,7 @@ final class Plan
      * @throws \OpenAPITesting\Test\LoaderNotFoundException
      * @throws \Psr\Http\Client\ClientExceptionInterface
      * @throws \OpenAPITesting\Definition\Loader\DefinitionLoadingException
+     * @throws \OpenAPITesting\Test\RequesterNotFoundException
      */
     public function execute(PlanConfig $testPlanConfig): void
     {
@@ -59,22 +74,43 @@ final class Plan
                 $config->getDefinition()
                     ->getPath()
             );
+            $requester = $this->getRequester($config->getRequester());
+            $this->setBaseUri($schema, $requester);
             $testSuite = new Suite(
-                $config->getTitle(),
+                $config->getName(),
                 $schema,
                 $preparators,
+                $requester,
+                $config->getFilters(),
+                $this->logger,
             );
-            $testSuite->launch(new HttpRequester($schema->servers[0]->url), $this->logger);
-            $this->errors[$config->getTitle()] = $testSuite->getErrors();
+            $testSuite->setBeforeTestCaseCallback($config->getBeforeTestCaseCallback());
+            $testSuite->setAfterTestCaseCallback($config->getAfterTestCaseCallback());
+            $testSuite->launch();
+            if (\count($testSuite->getResult()) > 0) {
+                $this->results[$config->getName()] = $testSuite->getResult();
+            }
         }
     }
 
     /**
-     * @return array<string, array<string, \OpenAPITesting\Test\Error>>
+     * @return array<string, array<string, \OpenAPITesting\Test\Result>>
      */
-    public function getErrors(): array
+    public function getResults(): array
     {
-        return $this->errors;
+        return $this->results;
+    }
+
+    /**
+     * @throws ExpectationFailedException
+     */
+    public function assert(): void
+    {
+        foreach ($this->getResults() as $suite) {
+            foreach ($suite as $result) {
+                Assert::true($result->hasSucceeded(), (string) $result);
+            }
+        }
     }
 
     /**
@@ -84,9 +120,13 @@ final class Plan
      */
     private function getConfiguredPreparators(array $preparators): array
     {
+        if (0 === \count($preparators)) {
+            return $this->preparators;
+        }
+
         return array_filter(
             $this->preparators,
-            static fn(TestCasesPreparator $p) => \in_array(
+            static fn (TestCasesPreparator $p) => \in_array(
                 $p->getName(),
                 $preparators,
                 true,
@@ -106,5 +146,25 @@ final class Plan
         }
 
         throw new LoaderNotFoundException($format);
+    }
+
+    /**
+     * @throws \OpenAPITesting\Test\RequesterNotFoundException
+     */
+    private function getRequester(string $name): Requester
+    {
+        foreach ($this->requesters as $requester) {
+            if ($requester->getName() === $name) {
+                return $requester;
+            }
+        }
+
+        throw new RequesterNotFoundException($name);
+    }
+
+    private function setBaseUri(OpenApi $schema, Requester $requester): void
+    {
+        $baseUri = $schema->servers[0]->url;
+        $requester->setBaseUri($baseUri);
     }
 }

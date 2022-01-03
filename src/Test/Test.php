@@ -6,22 +6,27 @@ namespace OpenAPITesting\Test;
 
 use DateTimeInterface;
 use OpenAPITesting\Requester\Requester;
+use Psr\Log\LoggerInterface;
 
 interface Test
 {
     /**
      * @throws \Psr\Http\Client\ClientExceptionInterface
      */
-    public function launch(Requester $requester): void;
+    public function launch(): void;
 
     public function getStartedAt(): ?DateTimeInterface;
 
     public function getFinishedAt(): ?DateTimeInterface;
 
     /**
-     * @return array<string, Error>
+     * @return array<string, Result>
      */
-    public function getErrors(): array;
+    public function getResult(): array;
 
-    public function getTitle(): string;
+    public function getName(): string;
+
+    public function setLogger(LoggerInterface $logger): void;
+
+    public function setRequester(Requester $requester): void;
 }

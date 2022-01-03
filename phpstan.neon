@@ -16,13 +16,11 @@ parameters:
         - '/Short ternary operator is not allowed./'
         - '/Cannot cast mixed to string./'
         - '/Class ".+" is not allowed to extend ".+"./'
-        - { path: tests, message: '/Method .+ throws checked exception .+ but it''s missing/' }
+        - {paths: [ tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
     exceptions:
         check:
             missingCheckedExceptionInThrows: true
             tooWideThrowType: true
-        #        methodWhitelist:
-        #            PHPUnit\Framework\TestCase: '#^(test|(setup|setupbeforeclass|teardown|teardownafterclass)$)#i'
         uncheckedExceptionClasses:
             - RuntimeException
             - LogicException

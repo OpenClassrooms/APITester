@@ -32,16 +32,22 @@ final class TestCase implements Test
 
     private RequestInterface $request;
 
-    private ResponseInterface $response;
+    private ResponseInterface $expectedResponse;
 
-    private ?string $title;
+    private string $name;
 
     /**
      * @var string[]
      */
     private array $groups;
 
-    private ?Error $error = null;
+    private ?Result $result = null;
+
+    private ?Requester $requester = null;
+
+    private LoggerInterface $logger;
+
+    private string $id;
 
     /**
      * @var string[]
@@ -53,61 +59,81 @@ final class TestCase implements Test
         'protocol',
     ];
 
+    private ?\Closure $beforeCallback = null;
+
+    private ?\Closure $afterCallback = null;
+
     /**
      * @param string[] $groups
      */
     public function __construct(
+        string $name,
         RequestInterface $request,
-        ResponseInterface $response,
-        array $groups = [],
-        ?string $title = null
+        ResponseInterface $expectedResponse,
+        array $groups = []
     ) {
         $this->groups = $groups;
         $this->request = $request;
-        $this->response = $response;
-        $this->title = $title;
+        $this->expectedResponse = $expectedResponse;
+        $this->name = $name;
+        $this->logger = new NullLogger();
+        $this->id = uniqid('testcase_', true);
     }
 
-    public function getTitle(): string
+    public function getName(): string
     {
-        return $this->title ?? 'test';
+        return $this->name;
     }
 
     /**
-     * @inheritDoc
+     * @return array<string, Result>
      */
-    public function getErrors(): array
+    public function getResult(): array
     {
-        if (null === $this->error) {
-            return [];
+        /** @var \DateTimeInterface $startedAt */
+        $startedAt = $this->startedAt;
+
+        if (null === $this->result) {
+            $this->assert();
+            $startedAt = $startedAt->format('Y-m-d H:i:s');
+            $this->log("[{$startedAt}] {$this->result}");
         }
 
+        /** @var \OpenAPITesting\Test\Result $result */
+        $result = $this->result;
+
         return [
-            $this->getTitle() => $this->error,
+            $this->getName() => $result,
         ];
     }
 
     /**
      * @inheritDoc
      */
-    public function launch(Requester $requester, ?LoggerInterface $logger = null): void
+    public function launch(): void
     {
-        $logger ??= new NullLogger();
+        if (null === $this->requester) {
+            throw new \RuntimeException("No requester configured for test '{$this->name}'.");
+        }
+        if (null !== $this->beforeCallback) {
+            ($this->beforeCallback)();
+        }
         $this->startedAt = Carbon::now();
-        $response = $requester->request($this->getRequest());
-        $this->error = $this->assert($this->getExpectedResponse(), $response);
+        $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
-        $level = null === $this->error ? LogLevel::INFO : LogLevel::ERROR;
-        $logger->log(
-            $level,
-            "[{$this->startedAt->format('Y-m-d H:i:s')}] {$this->getTitle()} -> {$this->getStatus()}"
-        );
-        $logger->log($level, (string) $this->error);
+        if (null !== $this->afterCallback) {
+            ($this->afterCallback)();
+        }
     }
 
-    public function getExpectedResponse(): ResponseInterface
+    public function setRequester(?Requester $requester): void
     {
-        return $this->response;
+        $this->requester = $requester;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -118,11 +144,6 @@ final class TestCase implements Test
         return $this->groups;
     }
 
-    public function getRequest(): RequestInterface
-    {
-        return $this->request;
-    }
-
     public function getStatus(): string
     {
         $status = self::STATUS_NOT_LAUNCHED;
@@ -130,28 +151,78 @@ final class TestCase implements Test
         if (null !== $this->startedAt) {
             $status = self::STATUS_LAUNCHED;
         }
-        if (null === $this->error && self::STATUS_LAUNCHED === $status) {
-            return self::STATUS_FAILED;
+        if (null === $this->result) {
+            return $status;
         }
-        if (null !== $this->error && self::STATUS_LAUNCHED === $status) {
-            return self::STATUS_FAILED;
+        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
+            return self::STATUS_SUCCESS;
         }
 
-        return $status;
+        return self::STATUS_FAILED;
     }
 
-    private function assert(ResponseInterface $expected, ResponseInterface $actual): ?Error
+    public function setBeforeCallback(?\Closure $beforeCallback): void
     {
+        $this->beforeCallback = $beforeCallback;
+    }
+
+    public function setAfterCallback(?\Closure $afterCallback): void
+    {
+        $this->afterCallback = $afterCallback;
+    }
+
+    /**
+     * @param string[] $excludedFields
+     */
+    public function addExcludedFields(array $excludedFields): self
+    {
+        /** @var string[] excludedFields */
+        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
+
+        return $this;
+    }
+
+    /**
+     * @param string[] $excludedFields
+     */
+    public function setExcludedFields(array $excludedFields): self
+    {
+        $this->excludedFields = $excludedFields;
+
+        return $this;
+    }
+
+    private function assert(): void
+    {
+        if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
+            throw new \RuntimeException("Test {$this->getName()} was not launched.");
+        }
+        /** @var Requester $requester */
+        $requester = $this->requester;
         try {
-            Assert::assertObjectsEqual($expected, $actual, $this->excludedFields);
+            Assert::objectsEqual(
+                $this->expectedResponse,
+                $requester->getResponse($this->id),
+                $this->excludedFields
+            );
         } catch (ExpectationFailedException $exception) {
-            /** @psalm-suppress InternalMethod */
             $diff = $exception->getComparisonFailure();
             $message = null !== $diff ? 'Assertion field: ' . $diff->getDiff() : $exception->getMessage();
+            $this->result = Result::failed(
+                $this->name . ' => ' . $message
+            );
 
-            return new Error(str_replace(['\\', '"stream":'], ['', '"body":'], $message));
+            return;
         }
 
-        return null;
+        $this->result = Result::success("{$this->name} => Succeeded.");
+    }
+
+    private function log(string $msg): void
+    {
+        $this->logger->log(
+            null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
+            $msg
+        );
     }
 }

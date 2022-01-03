@@ -8,13 +8,14 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
+use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
 
 /**
  * @internal
- * @covers \OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator
+ * @coversDefaultClass
  */
 final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -30,10 +31,10 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
         $openApi = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
         $testSuite = (new OpenApiExamplesTestCasesPreparator())($openApi);
 
-        Assert::assertObjectsEqual(
+        Assert::objectsEqual(
             $expected,
             $testSuite,
-            ['size']
+            ['size', 'id', 'headerNames']
         );
     }
 
@@ -45,6 +46,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
         yield [
             [
                 new TestCase(
+                    '200.default',
                     new Request(
                         'GET',
                         new Uri('/pets?1=1&kind=cat&limit=10'),
@@ -52,6 +54,9 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                     new Response(
                         200,
                         [
+                            'content-type' => [
+                                'application/json',
+                            ],
                             'x-next' => [
                                 '/toto',
                             ],
@@ -67,26 +72,30 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             ],
                         ]),
                     ),
-                    ['listPets'],
-                    '200.default',
+                    ['listPets', 'get', 'pets'],
                 ),
                 new TestCase(
+                    'default.badRequest',
                     new Request(
                         'GET',
                         new Uri('/pets?1=1&kind=horse&limit=aaa'),
                     ),
                     new Response(
                         400,
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'code' => 400,
                             'message' => 'Bad request',
                         ])
                     ),
-                    ['listPets'],
-                    'default.badRequest',
+                    ['listPets', 'get', 'pets'],
                 ),
                 new TestCase(
+                    '200.double',
                     new Request(
                         'GET',
                         new Uri('/pets?1=1&limit=20'),
@@ -94,6 +103,9 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                     new Response(
                         200,
                         [
+                            'content-type' => [
+                                'application/json',
+                            ],
                             'x-next' => [
                                 '/toto',
                             ],
@@ -119,14 +131,18 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             ]
                         ),
                     ),
-                    ['listPets'],
-                    '200.double',
+                    ['listPets', 'get', 'pets'],
                 ),
                 new TestCase(
+                    '201',
                     new Request(
                         'POST',
                         new Uri('/pets?1=1'),
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'id' => 10,
                             'name' => 'Jessica Smith',
@@ -134,20 +150,28 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                     ),
                     new Response(
                         201,
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'id' => 10,
                             'name' => 'Jessica Smith',
                         ]),
                     ),
-                    ['createPets'],
-                    '201',
+                    ['createPets', 'post', 'pets'],
                 ),
                 new TestCase(
+                    'default.badRequest',
                     new Request(
                         'POST',
                         new Uri('/pets?1=1'),
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'id' => 11,
                             'name' => 123,
@@ -155,30 +179,37 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                     ),
                     new Response(
                         400,
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'code' => 400,
                             'message' => 'Bad request',
                         ])
                     ),
-                    ['createPets'],
-                    'default.badRequest',
+                    ['createPets', 'post', 'pets'],
                 ),
                 new TestCase(
+                    '200',
                     new Request(
                         'GET',
                         new Uri('/pets/123?1=1')
                     ),
                     new Response(
                         200,
-                        [],
+                        [
+                            'content-type' => [
+                                'application/json',
+                            ],
+                        ],
                         Json::encode([
                             'id' => 10,
                             'name' => 'Jessica Smith',
                         ])
                     ),
-                    ['showPetById'],
-                    '200',
+                    ['showPetById', 'get', 'pets'],
                 ),
             ],
         ];

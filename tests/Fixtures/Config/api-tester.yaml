@@ -4,4 +4,7 @@ suites:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
         preparators: [ 'examples', '404' ]
-        groups: ~
+        requester: 'http-async'
+        filters:
+            include: [ ]
+            exclude: [ 'getUserByName' ]

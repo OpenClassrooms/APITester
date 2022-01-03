@@ -7,13 +7,20 @@ namespace OpenAPITesting\Config\Loader;
 use OpenAPITesting\Config\DefinitionConfig;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Config\SuiteConfig;
+use OpenAPITesting\Test\Filters;
 use Symfony\Component\Yaml\Yaml;
 
 final class PlanConfigLoader
 {
     public function __invoke(string $path): PlanConfig
     {
-        /** @var array{'suites': array<string, array{'definition': array{'path': string, 'format': string}, 'preparators': array<string>, 'groups': ?array<string>}>} $yml */
+        /** @var array{
+         *  'suites': array<string, array{'definition': array{'path': string, 'format': string},
+         *  'preparators': array<string>,
+         *  'requester': string,
+         *  'filters': array{'include': ?string[], 'exclude': ?string[]}}>
+         * } $yml
+         */
         $yml = Yaml::parseFile($path);
         $suiteConfigs = [];
         foreach ($yml['suites'] as $suiteTitle => $suite) {
@@ -24,7 +31,11 @@ final class PlanConfigLoader
                     $suite['definition']['format'],
                 ),
                 $suite['preparators'],
-                $suite['groups'] ?? [],
+                $suite['requester'],
+                new Filters(
+                    $suite['filters']['include'] ?? [],
+                    $suite['filters']['exclude'] ?? [],
+                ),
             );
         }
 

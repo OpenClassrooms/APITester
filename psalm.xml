@@ -20,14 +20,8 @@
         </ignoreFiles>
     </projectFiles>
     <plugins>
-        <pluginClass class="Psl\Psalm\Plugin"/>
         <pluginClass class="Orklah\PsalmInsaneComparison\Plugin"/>
-        <!--        <pluginClass class="Orklah\StrictTypes\Plugin"/>-->
         <pluginClass class="Orklah\StrictEquality\Plugin"/>
-        <!--        <pluginClass class="Orklah\UseConstants\Plugin"/>-->
-        <pluginClass class="AlexS\iter\PsalmPlugin"/>
-        <!--        <pluginClass class="Sfp\Psalm\TypedLocalVariablePlugin\Plugin"/>-->
-        <pluginClass class="Psl\Integration\Psalm\Plugin"/>
         <pluginClass class="Orklah\TypeSetters\Plugin"/>
         <pluginClass class="Orklah\ElvisBegone\Plugin"/>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
@@ -45,5 +39,7 @@
         </MissingConstructor>
         <DocblockTypeContradiction errorLevel="suppress"/>
         <RedundantConditionGivenDocblockType errorLevel="suppress"/>
+        <InternalMethod errorLevel="suppress"/>
+        <DuplicateArrayKey errorLevel="suppress"/>
     </issueHandlers>
 </psalm>
