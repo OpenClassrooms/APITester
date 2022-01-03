@@ -127,7 +127,7 @@ final class Plan
         return array_filter(
             $this->preparators,
             static fn (TestCasesPreparator $p) => \in_array(
-                $p->getName(),
+                $p::getName(),
                 $preparators,
                 true,
             )
@@ -140,7 +140,7 @@ final class Plan
     private function getConfiguredLoader(string $format): DefinitionLoader
     {
         foreach ($this->loaders as $loader) {
-            if ($loader->getFormat() === $format) {
+            if ($loader::getFormat() === $format) {
                 return $loader;
             }
         }
@@ -154,7 +154,7 @@ final class Plan
     private function getRequester(string $name): Requester
     {
         foreach ($this->requesters as $requester) {
-            if ($requester->getName() === $name) {
+            if ($requester::getName() === $name) {
                 return $requester;
             }
         }

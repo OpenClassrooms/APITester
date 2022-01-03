@@ -54,7 +54,7 @@ final class SymfonyKernelRequester implements Requester
         return $this->responses[$id];
     }
 
-    public function getName(): string
+    public static function getName(): string
     {
         return 'kernel';
     }

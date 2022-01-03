@@ -47,7 +47,7 @@ final class HttpAsyncRequester implements Requester
         return $this->responses[$id];
     }
 
-    public function getName(): string
+    public static function getName(): string
     {
         return 'http-async';
     }

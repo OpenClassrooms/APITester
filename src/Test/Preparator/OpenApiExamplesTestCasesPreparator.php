@@ -45,7 +45,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
         return array_filter(array_merge(...$testCases));
     }
 
-    public function getName(): string
+    public static function getName(): string
     {
         return 'examples';
     }
@@ -150,7 +150,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
             $fixture = new TestCase(
                 $key,
                 $request,
-                $responses[$key],
+                $responses[$key] ?? new Response(),
                 $groups,
             );
             $testCases[] = $fixture;

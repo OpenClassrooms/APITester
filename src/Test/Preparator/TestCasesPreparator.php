@@ -13,5 +13,5 @@ interface TestCasesPreparator
      */
     public function __invoke(OpenApi $openApi): array;
 
-    public function getName(): string;
+    public static function getName(): string;
 }

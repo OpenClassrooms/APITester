@@ -31,7 +31,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
     }
 
-    public function getFormat(): string
+    public static function getFormat(): string
     {
         return 'openapi';
     }
