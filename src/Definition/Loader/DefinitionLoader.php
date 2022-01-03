@@ -6,10 +6,10 @@ namespace OpenAPITesting\Definition\Loader;
 
 interface DefinitionLoader
 {
+    public static function getFormat(): string;
+
     /**
      * @throws DefinitionLoadingException
      */
     public function load(string $filePath): object;
-
-    public function getFormat(): string;
 }

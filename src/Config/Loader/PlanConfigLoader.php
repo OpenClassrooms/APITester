@@ -7,6 +7,7 @@ namespace OpenAPITesting\Config\Loader;
 use OpenAPITesting\Config\DefinitionConfig;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Config\SuiteConfig;
+use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Filters;
 use Symfony\Component\Yaml\Yaml;
 
@@ -40,7 +41,7 @@ final class PlanConfigLoader
                     $suite['definition']['format'],
                 ),
                 $suite['preparators'] ?? [],
-                $suite['requester'] ?? 'http-async',
+                $suite['requester'] ?? HttpAsyncRequester::getName(),
                 new Filters(
                     $suite['filters']['include'] ?? [],
                     $suite['filters']['exclude'] ?? [],

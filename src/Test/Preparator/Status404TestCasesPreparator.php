@@ -46,7 +46,7 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
         return $testCases;
     }
 
-    public function getName(): string
+    public static function getName(): string
     {
         return '404';
     }

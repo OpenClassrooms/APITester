@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Config;
 
+use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Filters;
 
 final class SuiteConfig
@@ -32,7 +33,7 @@ final class SuiteConfig
         string $name,
         DefinitionConfig $definition,
         array $preparators = [],
-        string $requester = 'http-async',
+        ?string $requester = null,
         ?Filters $filters = null,
         ?\Closure $beforeTestCaseCallback = null,
         ?\Closure $afterTestCaseCallback = null
@@ -41,7 +42,7 @@ final class SuiteConfig
         $this->definition = $definition;
         $this->preparators = $preparators;
         $this->filters = $filters ?? new Filters([], []);
-        $this->requester = $requester;
+        $this->requester = $requester ?? HttpAsyncRequester::getName();
         $this->beforeTestCaseCallback = $beforeTestCaseCallback;
         $this->afterTestCaseCallback = $afterTestCaseCallback;
     }
