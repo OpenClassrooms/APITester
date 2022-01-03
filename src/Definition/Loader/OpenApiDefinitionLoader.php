@@ -20,7 +20,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
      */
     public function load(string $filePath, string $format = self::FORMAT_YAML): OpenApi
     {
-        if (! \in_array($format, self::FORMATS, true)) {
+        if (!\in_array($format, self::FORMATS, true)) {
             throw new \InvalidArgumentException('Invalid format ' . $format);
         }
 

@@ -22,7 +22,7 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
         foreach ($openApi->paths as $path => $pathInfo) {
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
-                if ('get' !== $method || ! isset($operation->responses['404'])) {
+                if ('get' !== $method || !isset($operation->responses['404'])) {
                     continue;
                 }
                 /** @var \cebe\openapi\spec\Response $response */

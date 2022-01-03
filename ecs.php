@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use PhpCsFixer\Fixer\ArrayNotation\ArraySyntaxFixer;
+use PhpCsFixer\Fixer\CastNotation\CastSpacesFixer;
 use PhpCsFixer\Fixer\Operator\ConcatSpaceFixer;
+use PhpCsFixer\Fixer\Operator\NotOperatorWithSuccessorSpaceFixer;
 use PhpCsFixer\Fixer\Phpdoc\GeneralPhpdocAnnotationRemoveFixer;
 use PhpCsFixer\Fixer\Phpdoc\NoSuperfluousPhpdocTagsFixer;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symplify\CodingStandard\Fixer\LineLength\LineLengthFixer;
 use Symplify\EasyCodingStandard\ValueObject\Option;
 use Symplify\EasyCodingStandard\ValueObject\Set\SetList;
 
@@ -48,7 +51,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             ],
         ])
     ;
-    $services->set(PhpCsFixer\Fixer\CastNotation\CastSpacesFixer::class)
+    $services->set(CastSpacesFixer::class)
         ->call('configure', [
             [
                 'space' => 'single',
@@ -56,10 +59,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ])
     ;
 
-//    $this->lineLength = $configuration[self::LINE_LENGTH] ?? self::DEFAULT_LINE_LENGHT;
-//    $this->breakLongLines = $configuration[self::BREAK_LONG_LINES] ?? \true;
-//    $this->inlineShortLines = $configuration[self::INLINE_SHORT_LINES] ?? \true;
-    $services->set(Symplify\CodingStandard\Fixer\LineLength\LineLengthFixer::class)
+    $services->set(LineLengthFixer::class)
         ->call('configure', [
             [
                 'line_length' => 120,
@@ -68,27 +68,12 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             ],
         ])
     ;
-//    $services->set(GeneralPhpdocAnnotationRemoveFixer::class) //buggy
-//        ->call('configure', [
-//            [
-//                'annotations' => [
-//                    'throw',
-//                    'throws',
-//                    'author',
-//                    'authors',
-//                    'package',
-//                    'group',
-//                    'required',
-//                    'phpstan-ignore-line',
-//                    'phpstan-ignore-next-line',
-//                ],
-//            ],
-//        ]);
 
     $parameters = $containerConfigurator->parameters();
     $parameters->set(Option::PATHS, [__DIR__ . '/src', __DIR__ . '/tests']);
     $parameters->set(Option::PARALLEL, true);
     $parameters->set(Option::SKIP, [
         GeneralPhpdocAnnotationRemoveFixer::class,
+        NotOperatorWithSuccessorSpaceFixer::class,
     ]);
 };

@@ -99,7 +99,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
      */
     private function buildResponses(Operation $operation): array
     {
-        if (! isset($operation->responses)) {
+        if (!isset($operation->responses)) {
             return [];
         }
         $responses = [];
