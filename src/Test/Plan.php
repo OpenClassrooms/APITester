@@ -40,8 +40,8 @@ final class Plan
 
     /**
      * @param \OpenAPITesting\Test\Preparator\TestCasesPreparator[] $preparators
-     * @param \OpenAPITesting\Requester\Requester[] $requesters
-     * @param DefinitionLoader[] $loaders
+     * @param \OpenAPITesting\Requester\Requester[]                 $requesters
+     * @param DefinitionLoader[]                                    $loaders
      */
     public function __construct(
         array $preparators,
