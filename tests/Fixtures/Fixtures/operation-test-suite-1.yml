@@ -1,50 +1,10 @@
 OperationTestCase1:
-    for: [ 'updatePet' ]
-    request:
-        parameters:
-            path:
-                id: 1
-            query:
-                category: 'category test'
-        headers:
-            accept: application/json
-        body: 'Request Body 1'
-    expectedResponse:
-        statusCode: 200
-        headers:
-            accept: application/json
-        body: 'Response Body 1'
-
-OperationTestCase2:
     for: [ 'findPetsByStatus' ]
     request:
         parameters:
-            path:
-                id: 1
             query:
-                category: 'category test'
+                status: 'available'
         headers:
             accept: application/json
-        body: 'Request Body 2'
     expectedResponse:
         statusCode: 200
-        headers:
-            accept: application/json
-        body: 'Response Body 2'
-
-OperationTestCase3:
-    for: [ 'findPetsByStatus' ]
-    request:
-        parameters:
-            path:
-                id: 1
-            query:
-                category: 'category test'
-        headers:
-            accept: application/json
-        body: 'Request Body 3'
-    expectedResponse:
-        statusCode: 200
-        headers:
-            accept: application/json
-        body: 'Response Body 3'

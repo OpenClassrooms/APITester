@@ -23,7 +23,9 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
          * @var array<string,
          *              array{'name': string,
          *                    'for': array<string>,
-         *                    'request': array{'headers'?: array<string>, 'body'?: array<mixed>},
+         *                    'request': array{
+         *                          'parameters'?: array{'path'?: array<string, string>,'query'?: array<string, string>},
+         *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
          *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
          *              }> $fixtures
          */
@@ -49,7 +51,9 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
      * @param array<string,
      *              array{'name': string,
      *                    'for': array<string>,
-     *                    'request': array{'headers'?: array<string>, 'body'?: array<mixed>},
+     *                    'request': array{
+     *                          'parameters'?: array{'path'?: array<string, string>, 'query'?: array<string, string>},
+     *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
      *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
      *              }> $fixtures
      * @param array<string, array{'operation': \cebe\openapi\spec\Operation, 'path': string, 'method': string}> $operations
@@ -69,23 +73,32 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
             $groups = $item['for'];
             foreach ($groups as $group) {
                 if (!isset($operations[$group])) {
-                    throw new PreparatorLoadingException(self::getName(), new \RuntimeException(
-                        "Group {$group} not found."
-                    ));
+                    throw new PreparatorLoadingException(
+                        self::getName(),
+                        new \RuntimeException("Group {$group} not found."),
+                    );
                 }
                 $operation = $operations[$group];
-                $testCases[] = new TestCase(
+                if (isset($item['request']['parameters'])) {
+                    foreach ($item['request']['parameters']['path'] ?? [] as $name => $parameter) {
+                        $operation['path'] = str_replace("{{$name}}", $parameter, $operation['path']);
+                    }
+                    if (isset($item['request']['parameters']['query'])) {
+                        $operation['path'] .= '?' . http_build_query($item['request']['parameters']['query']);
+                    }
+                }
+                $testCase = new TestCase(
                     $key,
                     new Request(
                         mb_strtoupper($operation['method']),
                         new Uri($operation['path']),
                         $item['request']['headers'] ?? [],
-                        Json::encode($item['request']['body'] ?? []),
+                        $this->formatBody($item['request']['body'] ?? []),
                     ),
                     new Response(
                         $item['expectedResponse']['statusCode'] ?? 200,
                         $item['expectedResponse']['headers'] ?? [],
-                        Json::encode($item['expectedResponse']['body'] ?? [])
+                        $this->formatBody($item['expectedResponse']['body'] ?? []),
                     ),
                     [
                         $operation['operation']->operationId,
@@ -93,6 +106,12 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
                         ...$operation['operation']->tags,
                     ]
                 );
+
+                if (!isset($item['expectedResponse']) || !\array_key_exists('body', $item['expectedResponse'])) {
+                    $testCase->addExcludedFields(['stream']);
+                }
+
+                $testCases[] = $testCase;
             }
         }
 
@@ -121,5 +140,17 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
         }
 
         return $indexes;
+    }
+
+    /**
+     * @param array<mixed>|string $body
+     */
+    private function formatBody($body): string
+    {
+        if (\is_array($body)) {
+            return Json::encode($body);
+        }
+
+        return $body;
     }
 }

@@ -6,8 +6,8 @@ suites:
         preparators:
             examples: ~
             404: ~
-        #            fixtures:
-        #                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
+            fixtures:
+                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
         requester: 'http-async'
         filters:
             include: ~

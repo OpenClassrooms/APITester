@@ -163,6 +163,15 @@ final class TestCase implements Test
         $this->afterCallback = $afterCallback;
     }
 
+    /**
+     * @param string[] $excludedFields
+     */
+    public function addExcludedFields(array $excludedFields): void
+    {
+        /** @var string[] excludedFields */
+        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
+    }
+
     private function assert(): void
     {
         if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
