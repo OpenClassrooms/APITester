@@ -22,14 +22,6 @@ final class TestCase implements Test
 {
     use TimeBoundTrait;
 
-    public const STATUS_FAILED = 'failed';
-
-    public const STATUS_LAUNCHED = 'launched';
-
-    public const STATUS_NOT_LAUNCHED = 'not launched';
-
-    public const STATUS_SUCCESS = 'success';
-
     private RequestInterface $request;
 
     private ResponseInterface $expectedResponse;
@@ -169,27 +161,6 @@ final class TestCase implements Test
     public function setAfterCallback(?\Closure $afterCallback): void
     {
         $this->afterCallback = $afterCallback;
-    }
-
-    /**
-     * @param string[] $excludedFields
-     */
-    public function addExcludedFields(array $excludedFields): self
-    {
-        /** @var string[] excludedFields */
-        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
-
-        return $this;
-    }
-
-    /**
-     * @param string[] $excludedFields
-     */
-    public function setExcludedFields(array $excludedFields): self
-    {
-        $this->excludedFields = $excludedFields;
-
-        return $this;
     }
 
     private function assert(): void

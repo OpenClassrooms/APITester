@@ -3,8 +3,16 @@ suites:
         definition:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
-        preparators: [ 'examples', '404' ]
+        preparators:
+            examples: ~
+            404: ~
+        #            fixtures:
+        #                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
         requester: 'http-async'
         filters:
-            include: [ ]
-            exclude: [ 'getUserByName' ]
+            include: ~
+            exclude:
+                - 'getUserByName'
+                - 'updatePet'
+                - 'deleteOrder'
+                - 'deleteUser'

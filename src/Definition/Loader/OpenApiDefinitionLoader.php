@@ -15,9 +15,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     public const FORMATS = [self::FORMAT_JSON, self::FORMAT_YAML];
 
-    /**
-     * @inheritDoc
-     */
     public function load(string $filePath, string $format = self::FORMAT_YAML): OpenApi
     {
         if (!\in_array($format, self::FORMATS, true)) {

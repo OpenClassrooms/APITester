@@ -12,7 +12,7 @@ final class SuiteConfig
     private DefinitionConfig $definition;
 
     /**
-     * @var string[]
+     * @var array<string, array<string, mixed>>
      */
     private array $preparators;
 
@@ -27,7 +27,7 @@ final class SuiteConfig
     private ?\Closure $afterTestCaseCallback;
 
     /**
-     * @param string[] $preparators
+     * @param array<string, array<string, mixed>> $preparators
      */
     public function __construct(
         string $name,
@@ -48,7 +48,7 @@ final class SuiteConfig
     }
 
     /**
-     * @return string[]
+     * @return array<string, array<string, mixed>>
      */
     public function getPreparators(): array
     {

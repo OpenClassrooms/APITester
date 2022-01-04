@@ -38,6 +38,7 @@ final class ExecutePlanCommand extends Command
      * @throws \Psr\Http\Client\ClientExceptionInterface
      * @throws \OpenAPITesting\Definition\Loader\DefinitionLoadingException
      * @throws \OpenAPITesting\Test\RequesterNotFoundException
+     * @throws \OpenAPITesting\Test\Preparator\InvalidPreparatorConfigException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

@@ -50,6 +50,10 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
         return 'examples';
     }
 
+    public function configure(array $config): void
+    {
+    }
+
     /**
      * @return array<string, Request>
      */

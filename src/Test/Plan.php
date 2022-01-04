@@ -8,7 +8,6 @@ use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
 use OpenAPITesting\Requester\Requester;
-use OpenAPITesting\Test\Preparator\TestCasesPreparator;
 use OpenAPITesting\Util\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Log\LoggerInterface;
@@ -60,6 +59,7 @@ final class Plan
      * @throws \Psr\Http\Client\ClientExceptionInterface
      * @throws \OpenAPITesting\Definition\Loader\DefinitionLoadingException
      * @throws \OpenAPITesting\Test\RequesterNotFoundException
+     * @throws \OpenAPITesting\Test\Preparator\InvalidPreparatorConfigException
      */
     public function execute(PlanConfig $testPlanConfig): void
     {
@@ -114,7 +114,9 @@ final class Plan
     }
 
     /**
-     * @param string[] $preparators
+     * @param array<string, array<string, mixed>> $preparators
+     *
+     * @throws \OpenAPITesting\Test\Preparator\InvalidPreparatorConfigException
      *
      * @return \OpenAPITesting\Test\Preparator\TestCasesPreparator[]
      */
@@ -124,14 +126,18 @@ final class Plan
             return $this->preparators;
         }
 
-        return array_filter(
-            $this->preparators,
-            static fn (TestCasesPreparator $p) => \in_array(
-                $p::getName(),
-                $preparators,
-                true,
-            )
-        );
+        $configuredPreparators = [];
+        foreach ($this->preparators as $p) {
+            $config = $preparators[$p::getName()] ?? null;
+            if (null !== $config) {
+                $p->configure($config);
+            }
+            if (\array_key_exists($p::getName(), $preparators)) {
+                $configuredPreparators[] = $p;
+            }
+        }
+
+        return $configuredPreparators;
     }
 
     /**

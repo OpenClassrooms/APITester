@@ -13,4 +13,6 @@ final class FixturesLocation
     public const OPEN_API_INVALID_OPEN_API_FORMAT_FILE = __DIR__ . '/OpenAPI/InvalidOpenAPIFormat.json';
 
     public const OPEN_API_PETSTORE_YAML = __DIR__ . '/OpenAPI/petstore.yaml';
+
+    public const CONFIG_OPENAPI = __DIR__ . '/Config/api-tester.yaml';
 }

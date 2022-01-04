@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests;
 
-use OpenAPITesting\Config\DefinitionConfig;
-use OpenAPITesting\Config\PlanConfig;
-use OpenAPITesting\Config\SuiteConfig;
+use OpenAPITesting\Config\Loader\PlanConfigLoader;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
 use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Plan;
+use OpenAPITesting\Test\Preparator\FixturesTestCasesPreparator;
 use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Test\Preparator\Status404TestCasesPreparator;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
@@ -22,34 +21,25 @@ use PHPUnit\Framework\TestCase;
  */
 final class PlanTest extends TestCase
 {
-    public function testExecute(): void
+    private Plan $testPlan;
+
+    protected function setUp(): void
     {
-        $testPlan = new Plan(
+        $this->testPlan = new Plan(
             [
                 new OpenApiExamplesTestCasesPreparator(),
                 new Status404TestCasesPreparator(),
+                new FixturesTestCasesPreparator(),
             ],
             [new HttpAsyncRequester()],
             [new OpenApiDefinitionLoader()],
         );
-        $testPlan->execute(
-            new PlanConfig(
-                [
-                    (new SuiteConfig(
-                        'test',
-                        new DefinitionConfig(
-                            FixturesLocation::OPEN_API_PETSTORE_YAML,
-                            'openapi'
-                        ),
-                    ))->exclude([
-                        'getUserByName',
-                        'updatePet',
-                        'deleteOrder',
-                        'deleteUser',
-                    ]),
-                ],
-            ),
-        );
-        $testPlan->assert();
+    }
+
+    public function testExecute(): void
+    {
+        $config = (new PlanConfigLoader())(FixturesLocation::CONFIG_OPENAPI);
+        $this->testPlan->execute($config);
+        $this->testPlan->assert();
     }
 }

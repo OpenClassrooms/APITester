@@ -22,10 +22,10 @@ final class PlanConfigLoader
          * @var array{
          *  'suites': array<string, array{
          *              'definition': array{'path': string, 'format': string},
-         *              'preparators': ?array<string>,
-         *              'requester': ?string,
-         *              'filters': ?array{'include': ?string[], 'exclude': ?string[]},
-         *              'callback': ?array{'beforeTestCase': ?string, 'afterTestCase': ?string}
+         *              'preparators'?: ?array<string, array<string, mixed>>,
+         *              'requester'?: ?string,
+         *              'filters'?: ?array{'include': ?string[], 'exclude': ?string[]},
+         *              'callback'?: ?array{'beforeTestCase': ?string, 'afterTestCase': ?string}
          *              }
          *            >
          * } $data

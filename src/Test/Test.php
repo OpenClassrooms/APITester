@@ -10,6 +10,14 @@ use Psr\Log\LoggerInterface;
 
 interface Test
 {
+    public const STATUS_FAILED = 'failed';
+
+    public const STATUS_LAUNCHED = 'launched';
+
+    public const STATUS_NOT_LAUNCHED = 'not launched';
+
+    public const STATUS_SUCCESS = 'success';
+
     /**
      * @throws \Psr\Http\Client\ClientExceptionInterface
      */

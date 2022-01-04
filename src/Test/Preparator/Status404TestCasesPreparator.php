@@ -56,6 +56,10 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
         return '404';
     }
 
+    public function configure(array $config): void
+    {
+    }
+
     private function processPath(string $path, Operation $operation): string
     {
         /** @var \cebe\openapi\spec\Parameter $parameter */
