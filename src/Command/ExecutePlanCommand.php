@@ -9,6 +9,7 @@ use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
 use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Plan;
 use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
+use OpenAPITesting\Test\Preparator\Status401TestCasesPreparator;
 use OpenAPITesting\Test\Preparator\Status404TestCasesPreparator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -45,6 +46,7 @@ final class ExecutePlanCommand extends Command
         $preparators = [
             new OpenApiExamplesTestCasesPreparator(),
             new Status404TestCasesPreparator(),
+            new Status401TestCasesPreparator(),
         ];
         $requesters = [
             new HttpAsyncRequester(),
