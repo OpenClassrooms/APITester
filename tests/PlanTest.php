@@ -24,14 +24,6 @@ final class PlanTest extends TestCase
 {
     private Plan $testPlan;
 
-    public function testExecute(): void
-    {
-        $config = (new PlanConfigLoader())(FixturesLocation::CONFIG_OPENAPI);
-        $this->testPlan->execute($config);
-
-        $this->testPlan->assert();
-    }
-
     protected function setUp(): void
     {
         $this->testPlan = new Plan(
@@ -44,5 +36,12 @@ final class PlanTest extends TestCase
             [new HttpAsyncRequester()],
             [new OpenApiDefinitionLoader()],
         );
+    }
+
+    public function testExecute(): void
+    {
+        $config = (new PlanConfigLoader())(FixturesLocation::CONFIG_OPENAPI);
+        $this->testPlan->execute($config);
+        $this->testPlan->assert();
     }
 }

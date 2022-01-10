@@ -86,7 +86,8 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>setUp</NAME>
+                  <METHOD>true</METHOD>
+                  <NAME>setUp()</NAME>
                   <PROTECTED>true</PROTECTED>
                 </AND>
               </match>
