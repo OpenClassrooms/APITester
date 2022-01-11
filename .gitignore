@@ -4,6 +4,8 @@
 .env.*.local
 /var/
 /vendor/
+composer.lock
+
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
