@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Loader;
+namespace OpenAPITesting\Definition\Loader\Exception;
 
 final class DefinitionLoadingException extends \Exception
 {

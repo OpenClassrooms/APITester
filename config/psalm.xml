@@ -12,15 +12,15 @@
        xmlns="https://getpsalm.org/schema/config"
        xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd">
     <projectFiles>
-        <directory name="src"/>
-        <directory name="tests"/>
+        <directory name="../bin"/>
+        <directory name="../src"/>
+        <directory name="../tests"/>
         <ignoreFiles>
-            <directory name="bin"/>
-            <directory name="vendor"/>
+            <directory name="../vendor"/>
         </ignoreFiles>
     </projectFiles>
     <plugins>
-        <pluginClass class="Orklah\PsalmInsaneComparison\Plugin"/>
+        <!--        <pluginClass class="Orklah\PsalmInsaneComparison\Plugin"/>-->
         <pluginClass class="Orklah\StrictEquality\Plugin"/>
         <pluginClass class="Orklah\TypeSetters\Plugin"/>
         <pluginClass class="Orklah\ElvisBegone\Plugin"/>
@@ -29,12 +29,12 @@
     <issueHandlers>
         <MissingThrowsDocblock>
             <errorLevel type="suppress">
-                <directory name="tests"/>
+                <directory name="../tests"/>
             </errorLevel>
         </MissingThrowsDocblock>
         <MissingConstructor>
             <errorLevel type="suppress">
-                <directory name="tests"/>
+                <directory name="../tests"/>
             </errorLevel>
         </MissingConstructor>
         <DocblockTypeContradiction errorLevel="suppress"/>
@@ -42,5 +42,6 @@
         <InternalMethod errorLevel="suppress"/>
         <DuplicateArrayKey errorLevel="suppress"/>
         <InternalClass errorLevel="suppress"/>
+        <UndefinedConstant errorLevel="suppress"/>
     </issueHandlers>
 </psalm>

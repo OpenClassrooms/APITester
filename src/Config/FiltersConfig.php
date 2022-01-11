@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test;
+namespace OpenAPITesting\Config;
 
-final class Filters
+final class FiltersConfig
 {
     /**
      * @var string[]

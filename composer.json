@@ -34,10 +34,12 @@
     "nesbot/carbon": "^2.55",
     "nyholm/psr7": "1.*",
     "php-http/httplug": "^2.2",
+    "phpunit/phpunit": "^9.5",
     "psr/http-client": "^1.0",
     "psr/http-message": "1.*",
     "roave/you-are-using-it-wrong": "1.7.*",
     "symfony/console": "^4.4",
+    "symfony/dotenv": " ^4.4",
     "symfony/http-client": "^4.4",
     "symfony/http-kernel": "^4.4",
     "symfony/property-access": " ^4.4",
@@ -59,7 +61,6 @@
     "phpstan/phpstan-phpunit": "^1.0",
     "phpstan/phpstan-strict-rules": "^1.1",
     "phpstan/phpstan-symfony": "^1.0",
-    "phpunit/phpunit": "9.5.*",
     "psalm/plugin-phpunit": "^0.16.1",
     "roave/security-advisories": "dev-latest",
     "spaze/phpstan-disallowed-calls": "^2.1",
@@ -82,12 +83,12 @@
       "@parallel test"
     ],
     "check-cs": [
-      "vendor/bin/ecs check --ansi -c ecs.php",
-      "vendor/bin/ecs check-markdown README.md --ansi -c ecs.php"
+      "vendor/bin/ecs check --ansi -c config/ecs.php",
+      "vendor/bin/ecs check-markdown README.md --ansi -c config/ecs.php"
     ],
     "fix-cs": [
-      "vendor/bin/ecs check --fix --ansi -c ecs.php ",
-      "vendor/bin/ecs check-markdown README.md --fix --ansi -c ecs.php"
+      "vendor/bin/ecs check --fix --ansi -c config/ecs.php ",
+      "vendor/bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
     ],
     "check-static": [
       "@psalm",
@@ -96,9 +97,9 @@
     "test": [
       "@unit"
     ],
-    "unit": "vendor/bin/phpunit -c phpunit.xml --coverage-clover coverage.xml",
-    "psalm": "vendor/bin/psalm -c psalm.xml",
-    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon --ansi",
+    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
+    "psalm": "vendor/bin/psalm -c config/psalm.xml",
+    "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"
   }
 }

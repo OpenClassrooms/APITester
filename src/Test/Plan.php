@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use cebe\openapi\spec\OpenApi;
+use OpenAPITesting\Authenticator\Authenticator;
+use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
+use OpenAPITesting\Config\AuthConfig;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
+use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
+use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Assert;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -16,7 +21,7 @@ use Psr\Log\NullLogger;
 final class Plan
 {
     /**
-     * @var \OpenAPITesting\Test\Preparator\TestCasesPreparator[]
+     * @var \OpenAPITesting\Preparator\TestCasesPreparator[]
      */
     private array $preparators;
 
@@ -38,44 +43,61 @@ final class Plan
     private LoggerInterface $logger;
 
     /**
-     * @param \OpenAPITesting\Test\Preparator\TestCasesPreparator[] $preparators
-     * @param \OpenAPITesting\Requester\Requester[]                 $requesters
-     * @param DefinitionLoader[]                                    $loaders
+     * @var \OpenAPITesting\Authenticator\Authenticator[]
+     */
+    private array $authenticators;
+
+    /**
+     * @param \OpenAPITesting\Preparator\TestCasesPreparator[] $preparators
+     * @param \OpenAPITesting\Requester\Requester[]            $requesters
+     * @param DefinitionLoader[]                               $definitionLoaders
+     * @param Authenticator[]                                  $authenticators
      */
     public function __construct(
         array $preparators,
         array $requesters,
-        array $loaders,
+        array $definitionLoaders,
+        array $authenticators = [],
         ?LoggerInterface $logger = null
     ) {
         $this->preparators = $preparators;
         $this->requesters = $requesters;
-        $this->loaders = $loaders;
+        $this->loaders = $definitionLoaders;
+        $this->authenticators = $authenticators;
         $this->logger = $logger ?? new NullLogger();
     }
 
     /**
-     * @throws \OpenAPITesting\Test\LoaderNotFoundException
+     * @throws \OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException
      * @throws \Psr\Http\Client\ClientExceptionInterface
-     * @throws \OpenAPITesting\Definition\Loader\DefinitionLoadingException
-     * @throws \OpenAPITesting\Test\RequesterNotFoundException
-     * @throws \OpenAPITesting\Test\Preparator\InvalidPreparatorConfigException
+     * @throws \OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException
+     * @throws \OpenAPITesting\Requester\Exception\RequesterNotFoundException
+     * @throws \OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException
+     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
+     * @throws \OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException
+     * @throws \OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException
      */
     public function execute(PlanConfig $testPlanConfig): void
     {
         foreach ($testPlanConfig->getTestSuiteConfigs() as $config) {
-            $preparators = $this->getConfiguredPreparators($config->getPreparators());
-            $loader = $this->getConfiguredLoader(
+            $requester = $this->getRequester($config->getRequester());
+            $definitionLoader = $this->getConfiguredLoader(
                 $config->getDefinition()
                     ->getFormat()
             );
             /** @var \cebe\openapi\spec\OpenApi $schema needs replacement by proper domain object */
-            $schema = $loader->load(
+            $schema = $definitionLoader->load(
                 $config->getDefinition()
                     ->getPath()
             );
-            $requester = $this->getRequester($config->getRequester());
             $this->setBaseUri($schema, $requester);
+            $authConfig = $config->getAuth();
+            $token = null;
+            if (null !== $authConfig) {
+                $authenticator = $this->getConfiguredAuthenticator($authConfig);
+                $token = $authenticator->authenticate($authConfig, $schema, $requester);
+            }
+            $preparators = $this->getConfiguredPreparators($config->getPreparators(), $token);
             $testSuite = new Suite(
                 $config->getName(),
                 $schema,
@@ -84,8 +106,8 @@ final class Plan
                 $config->getFilters(),
                 $this->logger,
             );
-            $testSuite->setBeforeTestCaseCallback($config->getBeforeTestCaseCallback());
-            $testSuite->setAfterTestCaseCallback($config->getAfterTestCaseCallback());
+            $testSuite->setBeforeTestCaseCallbacks($config->getBeforeTestCaseCallbacks());
+            $testSuite->setAfterTestCaseCallbacks($config->getAfterTestCaseCallbacks());
             $testSuite->launch();
             if (\count($testSuite->getResult()) > 0) {
                 $this->results[$config->getName()] = $testSuite->getResult();
@@ -116,21 +138,21 @@ final class Plan
     /**
      * @param array<string, array<string, mixed>> $preparators
      *
-     * @throws \OpenAPITesting\Test\Preparator\InvalidPreparatorConfigException
+     * @throws \OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException
      *
-     * @return \OpenAPITesting\Test\Preparator\TestCasesPreparator[]
+     * @return \OpenAPITesting\Preparator\TestCasesPreparator[]
      */
-    private function getConfiguredPreparators(array $preparators): array
+    private function getConfiguredPreparators(array $preparators, ?string $token = null): array
     {
         if (0 === \count($preparators)) {
             return $this->preparators;
         }
-
         $configuredPreparators = [];
         foreach ($this->preparators as $p) {
             $config = $preparators[$p::getName()] ?? null;
             if (null !== $config) {
                 $p->configure($config);
+                $p->setToken($token);
             }
             if (\array_key_exists($p::getName(), $preparators)) {
                 $configuredPreparators[] = $p;
@@ -141,7 +163,7 @@ final class Plan
     }
 
     /**
-     * @throws \OpenAPITesting\Test\LoaderNotFoundException
+     * @throws \OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException
      */
     private function getConfiguredLoader(string $format): DefinitionLoader
     {
@@ -151,11 +173,11 @@ final class Plan
             }
         }
 
-        throw new LoaderNotFoundException($format);
+        throw new DefinitionLoaderNotFoundException($format);
     }
 
     /**
-     * @throws \OpenAPITesting\Test\RequesterNotFoundException
+     * @throws \OpenAPITesting\Requester\Exception\RequesterNotFoundException
      */
     private function getRequester(string $name): Requester
     {
@@ -172,5 +194,19 @@ final class Plan
     {
         $baseUri = $schema->servers[0]->url;
         $requester->setBaseUri($baseUri);
+    }
+
+    /**
+     * @throws \OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException
+     */
+    private function getConfiguredAuthenticator(AuthConfig $config): Authenticator
+    {
+        foreach ($this->authenticators as $authenticator) {
+            if ($authenticator::getName() === $config->getType()) {
+                return $authenticator;
+            }
+        }
+
+        throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
     }
 }

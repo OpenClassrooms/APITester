@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test;
+namespace OpenAPITesting\Definition\Loader\Exception;
 
-final class LoaderNotFoundException extends \Exception
+final class DefinitionLoaderNotFoundException extends \Exception
 {
     public function __construct(string $message, int $code = 0, ?\Throwable $previous = null)
     {

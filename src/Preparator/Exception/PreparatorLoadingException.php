@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Preparator;
+namespace OpenAPITesting\Preparator\Exception;
 
 use Throwable;
 

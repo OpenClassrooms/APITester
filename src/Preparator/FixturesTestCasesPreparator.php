@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Preparator;
+namespace OpenAPITesting\Preparator;
 
 use cebe\openapi\spec\OpenApi;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 use Symfony\Component\Yaml\Yaml;
 
-final class FixturesTestCasesPreparator implements TestCasesPreparator
+final class FixturesTestCasesPreparator extends TestCasesPreparator
 {
     private string $path = '';
 
-    public function __invoke(OpenApi $openApi): array
+    public function prepare(OpenApi $openApi): array
     {
         $operations = $this->getIndexedOperations($openApi);
         /**
@@ -29,7 +31,7 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
          *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
          *              }> $fixtures
          */
-        $fixtures = Yaml::parseFile($this->path);
+        $fixtures = Yaml::parseFile(PROJECT_DIR . '/' . $this->path);
 
         return $this->generateTestCases($fixtures, $operations);
     }
@@ -100,11 +102,10 @@ final class FixturesTestCasesPreparator implements TestCasesPreparator
                         $item['expectedResponse']['headers'] ?? [],
                         $this->formatBody($item['expectedResponse']['body'] ?? []),
                     ),
-                    [
-                        $operation['operation']->operationId,
-                        $operation['method'],
-                        ...$operation['operation']->tags,
-                    ]
+                    $this->getGroups(
+                        $operation['operation'],
+                        $operation['method']
+                    ),
                 );
 
                 if (!isset($item['expectedResponse']) || !\array_key_exists('body', $item['expectedResponse'])) {

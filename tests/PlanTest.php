@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests;
 
-use OpenAPITesting\Config\Loader\PlanConfigLoader;
+use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
+use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
+use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
+use OpenAPITesting\Preparator\ErrorsTestCasesPreparator;
+use OpenAPITesting\Preparator\FixturesTestCasesPreparator;
+use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Plan;
-use OpenAPITesting\Test\Preparator\FixturesTestCasesPreparator;
-use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
-use OpenAPITesting\Test\Preparator\Status404TestCasesPreparator;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 
@@ -28,17 +30,18 @@ final class PlanTest extends TestCase
         $this->testPlan = new Plan(
             [
                 new OpenApiExamplesTestCasesPreparator(),
-                new Status404TestCasesPreparator(),
+                new ErrorsTestCasesPreparator(),
                 new FixturesTestCasesPreparator(),
             ],
             [new HttpAsyncRequester()],
             [new OpenApiDefinitionLoader()],
+            [new OAuth2PasswordAuthenticator(), new OAuth2ImplicitAuthenticator()]
         );
     }
 
     public function testExecute(): void
     {
-        $config = (new PlanConfigLoader())(FixturesLocation::CONFIG_OPENAPI);
+        $config = new PlanConfig(FixturesLocation::CONFIG_OPENAPI);
         $this->testPlan->execute($config);
         $this->testPlan->assert();
     }

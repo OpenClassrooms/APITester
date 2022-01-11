@@ -3,16 +3,23 @@ suites:
         definition:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
+        requester: 'http-async'
         preparators:
             examples: ~
-            404: ~
             fixtures:
                 path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
-        requester: 'http-async'
+            errors:
+                # todo handle include exclude (exclude only 404 for example)
+                include: [ 404, 400, 403 ]
         filters:
-            include: ~
+            #            include:
+            #                - 'oc_api_student_cirr_status_get'
             exclude:
                 - 'getUserByName'
                 - 'updatePet'
                 - 'deleteOrder'
                 - 'deleteUser'
+        auth:
+            type: 'oauth2:implicit'
+            headers:
+                Authorization: '%ENV(CLIENT_BASIC)%'

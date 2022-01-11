@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace OpenAPITesting\Config;
 
 use OpenAPITesting\Requester\HttpAsyncRequester;
-use OpenAPITesting\Test\Filters;
 
 final class SuiteConfig
 {
     private DefinitionConfig $definition;
+
+    private ?AuthConfig $auth;
 
     /**
      * @var array<string, array<string, mixed>>
@@ -18,15 +19,23 @@ final class SuiteConfig
 
     private string $requester;
 
-    private Filters $filters;
+    private FiltersConfig $filters;
 
     private string $name;
 
-    private ?\Closure $beforeTestCaseCallback;
-
-    private ?\Closure $afterTestCaseCallback;
+    /**
+     * @var \Closure[]
+     */
+    private array $beforeTestCaseCallbacks;
 
     /**
+     * @var \Closure[]
+     */
+    private array $afterTestCaseCallbacks;
+
+    /**
+     * @param \Closure[]                          $beforeTestCaseCallbacks
+     * @param \Closure[]                          $afterTestCaseCallbacks
      * @param array<string, array<string, mixed>> $preparators
      */
     public function __construct(
@@ -34,17 +43,19 @@ final class SuiteConfig
         DefinitionConfig $definition,
         array $preparators = [],
         ?string $requester = null,
-        ?Filters $filters = null,
-        ?\Closure $beforeTestCaseCallback = null,
-        ?\Closure $afterTestCaseCallback = null
+        ?AuthConfig $auth = null,
+        ?FiltersConfig $filters = null,
+        array $beforeTestCaseCallbacks = [],
+        array $afterTestCaseCallbacks = []
     ) {
         $this->name = $name;
         $this->definition = $definition;
         $this->preparators = $preparators;
-        $this->filters = $filters ?? new Filters([], []);
+        $this->auth = $auth;
+        $this->filters = $filters ?? new FiltersConfig([], []);
         $this->requester = $requester ?? HttpAsyncRequester::getName();
-        $this->beforeTestCaseCallback = $beforeTestCaseCallback;
-        $this->afterTestCaseCallback = $afterTestCaseCallback;
+        $this->beforeTestCaseCallbacks = $beforeTestCaseCallbacks;
+        $this->afterTestCaseCallbacks = $afterTestCaseCallbacks;
     }
 
     /**
@@ -65,7 +76,7 @@ final class SuiteConfig
         return $this->name;
     }
 
-    public function getFilters(): Filters
+    public function getFilters(): FiltersConfig
     {
         return $this->filters;
     }
@@ -95,23 +106,40 @@ final class SuiteConfig
         return $this->requester;
     }
 
-    public function getBeforeTestCaseCallback(): ?\Closure
+    /**
+     * @return \Closure[]
+     */
+    public function getBeforeTestCaseCallbacks(): array
     {
-        return $this->beforeTestCaseCallback;
+        return $this->beforeTestCaseCallbacks;
     }
 
-    public function setBeforeTestCaseCallback(?\Closure $beforeTestCaseCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeTestCaseCallbacks(array $callbacks): void
     {
-        $this->beforeTestCaseCallback = $beforeTestCaseCallback;
+        $this->beforeTestCaseCallbacks = $callbacks;
     }
 
-    public function getAfterTestCaseCallback(): ?\Closure
+    /**
+     * @return \Closure[]
+     */
+    public function getAfterTestCaseCallbacks(): array
     {
-        return $this->afterTestCaseCallback;
+        return $this->afterTestCaseCallbacks;
     }
 
-    public function setAfterTestCaseCallback(?\Closure $afterTestCaseCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterTestCaseCallbacks(array $callbacks): void
     {
-        $this->afterTestCaseCallback = $afterTestCaseCallback;
+        $this->afterTestCaseCallbacks = $callbacks;
+    }
+
+    public function getAuth(): ?AuthConfig
+    {
+        return $this->auth;
     }
 }

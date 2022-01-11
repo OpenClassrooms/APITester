@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Preparator;
+namespace OpenAPITesting\Preparator;
 
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
@@ -13,12 +13,12 @@ use OpenAPITesting\Util\Json;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
-final class Status404TestCasesPreparator implements TestCasesPreparator
+final class ErrorsTestCasesPreparator extends TestCasesPreparator
 {
     /**
      * @inheritDoc
      */
-    public function __invoke(OpenApi $openApi): array
+    public function prepare(OpenApi $openApi): array
     {
         $testCases = [];
         /** @var string $path */
@@ -43,7 +43,7 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
                         [],
                         $response->description
                     ),
-                    [$operation->operationId, $method, ...$operation->tags],
+                    $this->getGroups($operation, $method),
                 );
             }
         }
@@ -53,11 +53,7 @@ final class Status404TestCasesPreparator implements TestCasesPreparator
 
     public static function getName(): string
     {
-        return '404';
-    }
-
-    public function configure(array $config): void
-    {
+        return 'errors';
     }
 
     private function processPath(string $path, Operation $operation): string
