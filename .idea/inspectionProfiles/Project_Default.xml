@@ -197,7 +197,6 @@
           <option value="phpspec/phpspec" />
           <option value="phpspec/prophecy" />
           <option value="phpstan/phpstan" />
-          <option value="phpunit/phpunit" />
           <option value="povils/phpmnd" />
           <option value="roave/security-advisories" />
           <option value="satooshi/php-coveralls" />

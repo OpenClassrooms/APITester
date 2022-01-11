@@ -44,7 +44,8 @@
     "symfony/http-kernel": "^4.4",
     "symfony/property-access": " ^4.4",
     "symfony/psr-http-message-bridge": "2.*",
-    "symfony/serializer": "^4.4"
+    "symfony/serializer": "^4.4",
+    "symfony/yaml": " ^4.4"
   },
   "require-dev": {
     "canvural/php-openapi-faker": "^1.0",
@@ -64,8 +65,7 @@
     "psalm/plugin-phpunit": "^0.16.1",
     "roave/security-advisories": "dev-latest",
     "spaze/phpstan-disallowed-calls": "^2.1",
-    "symfony/var-dumper": "^4.2",
-    "symfony/yaml": "^4.2",
+    "symfony/var-dumper": "^4.4",
     "symplify/easy-coding-standard": "^9.4",
     "thecodingmachine/phpstan-strict-rules": "^1.0",
     "veewee/composer-run-parallel": "^1.1",
