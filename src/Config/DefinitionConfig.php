@@ -12,6 +12,9 @@ final class DefinitionConfig
 
     public function __construct(string $path, string $format)
     {
+        if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
+            $path = PROJECT_DIR . '/' . trim($path, '/');
+        }
         $this->path = $path;
         $this->format = $format;
     }

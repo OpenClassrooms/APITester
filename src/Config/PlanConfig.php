@@ -47,7 +47,7 @@ final class PlanConfig
             $this->testSuiteConfigs[] = new SuiteConfig(
                 $suiteTitle,
                 new DefinitionConfig(
-                    PROJECT_DIR . '/' . trim($suite['definition']['path'], '/'),
+                    $suite['definition']['path'],
                     $suite['definition']['format'],
                 ),
                 $suite['preparators'] ?? [],
