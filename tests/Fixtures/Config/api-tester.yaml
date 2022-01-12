@@ -1,25 +1,25 @@
 suites:
-  all:
-    definition:
-      path: 'tests/Fixtures/OpenAPI/petstore.yaml'
-      format: 'openapi'
-    requester: 'http-async'
-    preparators:
-      examples: ~
-      fixtures:
-        path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
-      errors:
-        # todo handle include exclude (exclude only 404 for example)
-        include: [ 404, 400, 403 ]
-    filters:
-      #            include:
-      #                - 'oc_api_student_cirr_status_get'
-      exclude:
-        - 'getUserByName'
-        - 'updatePet'
-        - 'deleteOrder'
-        - 'deleteUser'
-    auth:
-      type: 'oauth2:implicit'
-      headers:
-        Authorization: '%ENV(CLIENT_BASIC)%'
+    all:
+        definition:
+            path: 'tests/Fixtures/OpenAPI/petstore.yaml'
+            format: 'openapi'
+        requester: 'http-async'
+        preparators:
+            examples: ~
+            fixtures:
+                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
+            errors:
+                # todo handle include exclude (exclude only 404 for example)
+                include: [ 404, 400, 401, 403 ]
+        filters:
+            #            include:
+            #                - 'oc_api_student_cirr_status_get'
+            exclude:
+                - 'getUserByName'
+                - 'updatePet'
+                - 'deleteOrder'
+                - 'deleteUser'
+        auth:
+            type: 'oauth2:implicit'
+            headers:
+                Authorization: '%ENV(CLIENT_BASIC)%'

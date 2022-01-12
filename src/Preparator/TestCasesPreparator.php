@@ -18,12 +18,12 @@ abstract class TestCasesPreparator
     /**
      * @throws PreparatorLoadingException
      *
-     * @return array<\OpenAPITesting\Test\TestCase>
+     * @return list<\OpenAPITesting\Test\TestCase|null>
      */
     abstract public function prepare(OpenApi $openApi): array;
 
     /**
-     * @param array<string, mixed> $config
+     * @param array<array-key, mixed> $config
      *
      * @throws \OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException
      */
