@@ -6,7 +6,9 @@ namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
 use cebe\openapi\spec\OpenApi;
+use OpenAPITesting\Config\FiltersConfig;
 use OpenAPITesting\Requester\Requester;
+use OpenAPITesting\Util\Traits\TimeBoundTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -21,7 +23,7 @@ final class Suite implements Test
     private OpenApi $openApi;
 
     /**
-     * @var array<\OpenAPITesting\Test\Preparator\TestCasesPreparator>
+     * @var array<\OpenAPITesting\Preparator\TestCasesPreparator>
      */
     private array $preparators;
 
@@ -32,25 +34,31 @@ final class Suite implements Test
 
     private string $title;
 
-    private Filters $filters;
+    private FiltersConfig $filters;
 
     private Requester $requester;
 
     private LoggerInterface $logger;
 
-    private ?\Closure $beforeTestCaseCallback = null;
-
-    private ?\Closure $afterTestCaseCallback = null;
+    /**
+     * @var \Closure[]
+     */
+    private array $beforeTestCaseCallbacks = [];
 
     /**
-     * @param array<\OpenAPITesting\Test\Preparator\TestCasesPreparator> $preparators
+     * @var \Closure[]
+     */
+    private array $afterTestCaseCallbacks = [];
+
+    /**
+     * @param array<\OpenAPITesting\Preparator\TestCasesPreparator> $preparators
      */
     public function __construct(
         string $title,
         OpenApi $openApi,
         array $preparators,
         Requester $requester,
-        ?Filters $filters = null,
+        ?FiltersConfig $filters = null,
         ?LoggerInterface $logger = null
     ) {
         $this->title = $title;
@@ -58,12 +66,9 @@ final class Suite implements Test
         $this->preparators = $preparators;
         $this->requester = $requester;
         $this->logger = $logger ?? new NullLogger();
-        $this->filters = $filters ?? new Filters([], []);
+        $this->filters = $filters ?? new FiltersConfig([], []);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function launch(): void
     {
         $this->startedAt = Carbon::now();
@@ -112,19 +117,26 @@ final class Suite implements Test
         return $include;
     }
 
-    public function setBeforeTestCaseCallback(?\Closure $beforeTestCaseCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeTestCaseCallbacks(array $callbacks): void
     {
-        $this->beforeTestCaseCallback = $beforeTestCaseCallback;
+        $this->beforeTestCaseCallbacks = $callbacks;
     }
 
-    public function setAfterTestCaseCallback(?\Closure $afterTestCaseCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterTestCaseCallbacks(array $callbacks): void
     {
-        $this->afterTestCaseCallback = $afterTestCaseCallback;
+        $this->afterTestCaseCallbacks = $callbacks;
     }
 
     /**
      * @param TestCase[] $testCases
      *
+     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
      * @throws \Psr\Http\Client\ClientExceptionInterface
      */
     private function launchTestCases(array $testCases): void
@@ -132,8 +144,8 @@ final class Suite implements Test
         foreach ($testCases as $testCase) {
             $testCase->setRequester($this->requester);
             $testCase->setLogger($this->logger);
-            $testCase->setBeforeCallback($this->beforeTestCaseCallback);
-            $testCase->setAfterCallback($this->afterTestCaseCallback);
+            $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
+            $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
             $testCase->launch();
         }
     }
@@ -154,6 +166,8 @@ final class Suite implements Test
     }
 
     /**
+     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
+     *
      * @return TestCase[]
      */
     private function prepareTestCases(): array
@@ -161,7 +175,7 @@ final class Suite implements Test
         $testCases = [];
         foreach ($this->preparators as $preparator) {
             $testCases[] = array_filter(
-                $preparator($this->openApi),
+                $preparator->prepare($this->openApi),
                 [$this, 'includes']
             );
         }

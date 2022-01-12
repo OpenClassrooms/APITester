@@ -20,6 +20,7 @@ interface Test
 
     /**
      * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
      */
     public function launch(): void;
 

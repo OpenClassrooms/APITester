@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Preparator;
+namespace OpenAPITesting\Preparator;
 
 use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
@@ -17,12 +17,12 @@ use Nyholm\Psr7\Uri;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
+final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
 {
     /**
      * @return array<TestCase>
      */
-    public function __invoke(OpenApi $openApi): array
+    public function prepare(OpenApi $openApi): array
     {
         $testCases = [];
         /** @var string $path */
@@ -37,7 +37,7 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
                 $testCases[] = $this->buildTestCases(
                     $requests,
                     $responses,
-                    [$operation->operationId, $method, ...$operation->tags],
+                    $this->getGroups($operation, $method),
                 );
             }
         }
@@ -50,15 +50,14 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
         return 'examples';
     }
 
-    public function configure(array $config): void
-    {
-    }
-
     /**
      * @return array<string, Request>
      */
     private function buildRequests(Operation $operation, string $method, string $path): array
     {
+        $defaultHeaders = null !== $this->token ? [
+            'authorization' => "Bearer {$this->token}",
+        ] : [];
         $requests = [];
         if (null !== $operation->requestBody) {
             /** @var RequestBody $requestBody */
@@ -69,9 +68,12 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
                     $requests[$expectedResponse] = new Request(
                         mb_strtoupper($method),
                         $path . '?1=1',
-                        [
-                            'content-type' => $mediaType,
-                        ],
+                        array_merge(
+                            [
+                                'content-type' => $mediaType,
+                            ],
+                            $defaultHeaders
+                        ),
                         Json::encode($body),
                     );
                 }
@@ -85,7 +87,8 @@ final class OpenApiExamplesTestCasesPreparator implements TestCasesPreparator
             foreach ($examples as $expectedResponse => $example) {
                 $requests[$expectedResponse] ??= new Request(
                     mb_strtoupper($method),
-                    $path . '?1=1'
+                    $path . '?1=1',
+                    $defaultHeaders,
                 );
                 $requests[$expectedResponse] = $this->addParameterToRequest(
                     $requests[$expectedResponse],

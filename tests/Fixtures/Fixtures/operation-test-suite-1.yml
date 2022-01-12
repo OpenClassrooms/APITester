@@ -1,5 +1,23 @@
+#todo handle imports (to split into multiple files)
+
 OperationTestCase1:
+    #todo add description
+    description: 'test test'
+
     for: [ 'findPetsByStatus' ]
+
+    #todo handle data loaders
+    dataLoad:
+        pre: [ '!git:pre.sql', 'group.alice' ]
+        post: [ 'post.sql' ]
+
+    #todo handle auth
+    #    auth:
+    #        type:
+    #        token:
+    #        uu
+
+    #todo same format as open api examples
     request:
         parameters:
             query:
@@ -8,3 +26,5 @@ OperationTestCase1:
             accept: application/json
     expectedResponse:
         statusCode: 200
+    expectedData:
+        - 'operation-1-checks.sql'

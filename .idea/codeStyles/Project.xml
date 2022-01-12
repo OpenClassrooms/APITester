@@ -87,7 +87,7 @@
               <match>
                 <AND>
                   <METHOD>true</METHOD>
-                  <NAME>setUp()</NAME>
+                  <NAME>setUp</NAME>
                   <PROTECTED>true</PROTECTED>
                 </AND>
               </match>

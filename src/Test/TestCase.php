@@ -7,6 +7,7 @@ namespace OpenAPITesting\Test;
 use Carbon\Carbon;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Assert;
+use OpenAPITesting\Util\Traits\TimeBoundTrait;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -51,9 +52,15 @@ final class TestCase implements Test
         'protocol',
     ];
 
-    private ?\Closure $beforeCallback = null;
+    /**
+     * @var \Closure[]
+     */
+    private array $beforeCallbacks = [];
 
-    private ?\Closure $afterCallback = null;
+    /**
+     * @var \Closure[]
+     */
+    private array $afterCallbacks = [];
 
     /**
      * @param string[] $groups
@@ -107,14 +114,14 @@ final class TestCase implements Test
         if (null === $this->requester) {
             throw new \RuntimeException("No requester configured for test '{$this->name}'.");
         }
-        if (null !== $this->beforeCallback) {
-            ($this->beforeCallback)();
+        foreach ($this->beforeCallbacks as $callback) {
+            ($callback)();
         }
         $this->startedAt = Carbon::now();
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
-        if (null !== $this->afterCallback) {
-            ($this->afterCallback)();
+        foreach ($this->afterCallbacks as $callback) {
+            ($callback)();
         }
     }
 
@@ -153,14 +160,20 @@ final class TestCase implements Test
         return self::STATUS_FAILED;
     }
 
-    public function setBeforeCallback(?\Closure $beforeCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
     {
-        $this->beforeCallback = $beforeCallback;
+        $this->beforeCallbacks = $callbacks;
     }
 
-    public function setAfterCallback(?\Closure $afterCallback): void
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
     {
-        $this->afterCallback = $afterCallback;
+        $this->afterCallbacks = $callbacks;
     }
 
     /**

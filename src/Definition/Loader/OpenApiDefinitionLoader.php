@@ -6,6 +6,7 @@ namespace OpenAPITesting\Definition\Loader;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 
 final class OpenApiDefinitionLoader implements DefinitionLoader
 {

@@ -8,7 +8,7 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
-use OpenAPITesting\Test\Preparator\OpenApiExamplesTestCasesPreparator;
+use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
@@ -29,7 +29,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
     public function test(array $expected): void
     {
         $openApi = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
-        $testSuite = (new OpenApiExamplesTestCasesPreparator())($openApi);
+        $testSuite = (new OpenApiExamplesTestCasesPreparator())->prepare($openApi);
 
         Assert::objectsEqual(
             $expected,
@@ -72,7 +72,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             ],
                         ]),
                     ),
-                    ['listPets', 'get', 'pets'],
+                    ['listPets', 'get', 'pets', 'preparator_examples'],
                 ),
                 new TestCase(
                     'default.badRequest',
@@ -92,7 +92,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             'message' => 'Bad request',
                         ])
                     ),
-                    ['listPets', 'get', 'pets'],
+                    ['listPets', 'get', 'pets', 'preparator_examples'],
                 ),
                 new TestCase(
                     '200.double',
@@ -131,7 +131,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             ]
                         ),
                     ),
-                    ['listPets', 'get', 'pets'],
+                    ['listPets', 'get', 'pets', 'preparator_examples'],
                 ),
                 new TestCase(
                     '201',
@@ -160,7 +160,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             'name' => 'Jessica Smith',
                         ]),
                     ),
-                    ['createPets', 'post', 'pets'],
+                    ['createPets', 'post', 'pets', 'preparator_examples'],
                 ),
                 new TestCase(
                     'default.badRequest',
@@ -189,7 +189,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             'message' => 'Bad request',
                         ])
                     ),
-                    ['createPets', 'post', 'pets'],
+                    ['createPets', 'post', 'pets', 'preparator_examples'],
                 ),
                 new TestCase(
                     '200',
@@ -209,7 +209,7 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
                             'name' => 'Jessica Smith',
                         ])
                     ),
-                    ['showPetById', 'get', 'pets'],
+                    ['showPetById', 'get', 'pets', 'preparator_examples'],
                 ),
             ],
         ];
