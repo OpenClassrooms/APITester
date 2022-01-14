@@ -18,7 +18,7 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class ErrorsTestCasesPreparator extends TestCasesPreparator
 {
-    public const AVAILABLE_ERRORS = [404, 401];
+    public const SUPPORTED_ERRORS = [404, 401];
 
     /**
      * @var array<array-key, int>
@@ -56,12 +56,12 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     {
         parent::configure($config);
 
-        $this->handledErrors = self::AVAILABLE_ERRORS;
+        $this->handledErrors = self::SUPPORTED_ERRORS;
 
         if (!empty($config['include'])) {
             $this->handledErrors = array_filter(
                 $config['include'],
-                static fn (int $it) => in_array($it, self::AVAILABLE_ERRORS, true)
+                static fn (int $it) => in_array($it, self::SUPPORTED_ERRORS, true)
             );
         }
 
@@ -75,13 +75,15 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
 
     private function prepare401(string $path, string $method, Operation $operation): TestCase
     {
+        dd($this->generateFakeAuthHeader($operation));
+
         return new TestCase(
             $operation->operationId,
             new Request(
                 mb_strtoupper($method),
                 $path,
                 [
-                    'Authorization' => 'Bearer ' . JWT::encode(['test' => 1234], 'abcd'),
+                    'Authorization' => $this->generateFakeAuthHeader($operation),
                 ],
             ),
             new Response(401),
@@ -113,7 +115,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
 
     private function prepareError(int $error, string $path, string $method, Operation $operation): ?TestCase
     {
-        if (!in_array($error, self::AVAILABLE_ERRORS)) {
+        if (!in_array($error, self::SUPPORTED_ERRORS)) {
             throw new \InvalidArgumentException(sprintf('Error %d is not handled in the %s class.', $error, __CLASS__));
         }
 
@@ -141,5 +143,14 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         $schema = $operation->requestBody->content['application/json']->schema;
 
         return Json::encode((array) (new SchemaFaker($schema, new Options(), true))->generate());
+    }
+
+    private function generateFakeAuthHeader(Operation $operation)
+    {
+        if (in_array('OAuth2', $operation->tags)) {
+            return 'Basic ' . base64_encode('aaaa:bbbbb');
+        }
+
+        return 'Bearer ' . JWT::encode(['test' => 1234], 'abcd');
     }
 }
