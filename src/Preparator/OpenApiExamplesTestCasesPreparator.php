@@ -20,7 +20,7 @@ use OpenAPITesting\Util\Json;
 final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
 {
     /**
-     * @return array<TestCase>
+     * @return TestCase[]
      */
     public function prepare(OpenApi $openApi): array
     {
@@ -139,9 +139,9 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request>  $requests
+     * @param array<string, Request> $requests
      * @param array<string, Response> $responses
-     * @param string[]                $groups
+     * @param string[] $groups
      *
      * @return TestCase[]
      */

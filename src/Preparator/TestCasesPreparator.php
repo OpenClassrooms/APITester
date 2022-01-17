@@ -8,6 +8,7 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
+use OpenAPITesting\Test\TestCase;
 
 abstract class TestCasesPreparator
 {
@@ -18,14 +19,14 @@ abstract class TestCasesPreparator
     /**
      * @throws PreparatorLoadingException
      *
-     * @return list<\OpenAPITesting\Test\TestCase|null>
+     * @return TestCase[]
      */
     abstract public function prepare(OpenApi $openApi): array;
 
     /**
      * @param array<array-key, mixed> $config
      *
-     * @throws \OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException
+     * @throws InvalidPreparatorConfigException
      */
     public function configure(array $config): void
     {

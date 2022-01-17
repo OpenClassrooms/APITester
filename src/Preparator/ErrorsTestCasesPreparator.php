@@ -20,7 +20,6 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class ErrorsTestCasesPreparator extends TestCasesPreparator
 {
-    public const SUPPORTED_ERRORS = [404, 401];
     public const HTTP_AUTH_TYPE = 'http';
     public const OAUTH2_AUTH_TYPE = 'oauth2';
     public const API_KEY_AUTH_TYPE = 'apikey';
@@ -33,6 +32,8 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
      */
     private array $handledErrors = [];
 
+    private ?OpenApi $openApi = null;
+
     public static function getName(): string
     {
         return 'errors';
@@ -43,40 +44,48 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
      */
     public function prepare(OpenApi $openApi): array
     {
+        $this->openApi = $openApi;
+
         $testCases = [];
         /** @var string $path */
-        foreach ($openApi->paths as $path => $pathInfo) {
+        foreach ($this->openApi->paths as $path => $pathInfo) {
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 foreach ($this->handledErrors as $error) {
                     if (!isset($operation->responses[$error])) {
                         continue;
                     }
-                    $testCases[] = $this->prepareError($error, $path, $method, $operation, $openApi);
+                    $testCases[] = $this->prepareError($error, $path, $method, $operation);
                 }
             }
         }
 
-        return $testCases;
+        return array_filter($testCases);
     }
 
     public function configure(array $config): void
     {
         parent::configure($config);
 
-        $this->handledErrors = self::SUPPORTED_ERRORS;
+        $this->handledErrors = $this->getSupportedErrors();
 
-        if (!empty($config['include'])) {
+        /** @var list<int> $include */
+        $include = $config['include'] ?? [];
+
+        if ([] !== $include) {
             $this->handledErrors = array_filter(
-                $config['include'],
-                static fn (int $it) => in_array($it, self::SUPPORTED_ERRORS, true)
+                $include,
+                fn (int $it) => in_array($it, $this->handledErrors, true)
             );
         }
 
-        if (!empty($config['exclude'])) {
+        /** @var list<int> $exclude */
+        $exclude = $config['exclude'] ?? [];
+
+        if ([] !== $exclude) {
             $this->handledErrors = array_diff(
                 $this->handledErrors,
-                $config['exclude']
+                $exclude
             );
         }
     }
@@ -85,18 +94,17 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         int $error,
         string $path,
         string $method,
-        Operation $operation,
-        OpenApi $openApi
+        Operation $operation
     ): ?TestCase {
-        if (!in_array($error, self::SUPPORTED_ERRORS)) {
-            throw new \InvalidArgumentException(sprintf('Error %d is not handled in the %s class.', $error, __CLASS__));
-        }
-
-        return $this->{'prepare' . $error}($path, $method, $operation, $openApi);
+        return $this->getErrorPreparator($error)($path, $method, $operation);
     }
 
-    private function prepare404(string $path, string $method, Operation $operation, OpenApi $openApi): TestCase
+    private function prepare404(string $path, string $method, Operation $operation): ?TestCase
     {
+        if (!isset($operation->responses) || !isset($operation->responses['404'])) {
+            return null;
+        }
+
         /** @var \cebe\openapi\spec\Response $response */
         $response = $operation->responses['404'];
 
@@ -117,14 +125,18 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         );
     }
 
-    private function prepare401(string $path, string $method, Operation $operation, OpenApi $openApi): TestCase
+    private function prepare401(string $path, string $method, Operation $operation): ?TestCase
     {
+        if (!isset($operation->responses) || !isset($operation->responses['401'])) {
+            return null;
+        }
+
         $request = new Request(
             mb_strtoupper($method),
             $path . '?1=1'
         );
 
-        $security = $this->getSecurity($operation, $openApi);
+        $security = $this->getSecurity($operation);
 
         if ($this->needsBasicCredentials($security)) {
             $request = $this->addFakeBasicHeader($request);
@@ -135,7 +147,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         }
 
         $apiKey = $this->getNeededApiKey($security);
-        if ($apiKey) {
+        if (null !== $apiKey) {
             $request = $this->addFakeApiKeyToRequest($apiKey, $request);
         }
 
@@ -173,15 +185,19 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         return Json::encode((array) (new SchemaFaker($schema, new Options(), true))->generate());
     }
 
-    private function getSecurity(Operation $operation, OpenApi $openApi): array
+    /**
+     * @return array<array-key, SecurityScheme>
+     */
+    private function getSecurity(Operation $operation): array
     {
         $formattedSecurity = [];
 
-        if (empty($openApi->components->securitySchemes)) {
+        if (!isset($this->openApi->components->securitySchemes)) {
             return $formattedSecurity;
         }
 
-        foreach ($openApi->components->securitySchemes as $name => $scheme) {
+        /** @var SecurityScheme $scheme */
+        foreach ($this->openApi->components->securitySchemes as $name => $scheme) {
             foreach ($operation->security as $security) {
                 if (isset($security->$name)) {
                     $formattedSecurity[$name] = $scheme;
@@ -192,32 +208,46 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         return $formattedSecurity;
     }
 
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
     private function needsBasicCredentials(array $security): bool
     {
         return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BASIC_AUTH_SCHEME);
     }
 
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
     private function needsBearerToken(array $security): bool
     {
         return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BEARER_AUTH_SCHEME);
     }
 
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
     private function needsOAuth2Token(array $security): bool
     {
         return null !== $this->getNeededAuth($security, self::OAUTH2_AUTH_TYPE);
     }
 
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
     private function getNeededApiKey(array $security): ?SecurityScheme
     {
         return $this->getNeededAuth($security, self::API_KEY_AUTH_TYPE);
     }
 
+    /**
+     * @param array<array-key, SecurityScheme> $securityConfig
+     */
     private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
     {
-        /** @var \cebe\openapi\spec\SecurityScheme $security */
         foreach ($securityConfig as $security) {
-            if ($type === strtolower($security->type)) {
-                if (null === $scheme || $scheme === strtolower($security->scheme)) {
+            if ($type === mb_strtolower($security->type)) {
+                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
                     return $security;
                 }
             }
@@ -256,5 +286,40 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     private function addFakeOAuth2Token(Request $request): Request
     {
         return $this->addFakeBearerToken($request);
+    }
+
+    /**
+     * @param int $error
+     *
+     * @return callable(string,string,Operation):?TestCase
+     */
+    private function getErrorPreparator(int $error): callable
+    {
+        $errorPreparators = $this->getErrorPreparators();
+
+        if (!array_key_exists($error, $errorPreparators)) {
+            throw new \InvalidArgumentException(sprintf('Error %d is not handled in the %s class.', $error, __CLASS__));
+        }
+
+        return $errorPreparators[$error];
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getSupportedErrors(): array
+    {
+        return array_keys($this->getErrorPreparators());
+    }
+
+    /**
+     * @return array<int, callable(string,string,Operation):?TestCase>
+     */
+    private function getErrorPreparators(): array
+    {
+        return [
+            404 => [$this, 'prepare404'],
+            401 => [$this, 'prepare401'],
+        ];
     }
 }

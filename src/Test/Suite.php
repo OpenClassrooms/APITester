@@ -7,6 +7,7 @@ namespace OpenAPITesting\Test;
 use Carbon\Carbon;
 use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Config\FiltersConfig;
+use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Traits\TimeBoundTrait;
 use Psr\Log\LoggerInterface;
@@ -23,7 +24,7 @@ final class Suite implements Test
     private OpenApi $openApi;
 
     /**
-     * @var array<\OpenAPITesting\Preparator\TestCasesPreparator>
+     * @var array<TestCasesPreparator>
      */
     private array $preparators;
 
@@ -51,7 +52,7 @@ final class Suite implements Test
     private array $afterTestCaseCallbacks = [];
 
     /**
-     * @param array<\OpenAPITesting\Preparator\TestCasesPreparator> $preparators
+     * @param array<TestCasesPreparator> $preparators
      */
     public function __construct(
         string $title,

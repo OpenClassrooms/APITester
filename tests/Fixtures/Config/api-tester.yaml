@@ -11,6 +11,7 @@ suites:
             errors:
                 # todo handle include exclude (exclude only 404 for example)
                 include: [ 404, 400, 401, 403 ]
+        #                exclude: [ 401 ]
         filters:
             #            include:
             #                - 'oc_api_student_cirr_status_get'
