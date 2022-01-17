@@ -25,13 +25,6 @@ final class PlanTest extends TestCase
 {
     private Plan $testPlan;
 
-    public function testExecute(): void
-    {
-        $config = new PlanConfig(FixturesLocation::CONFIG_OPENAPI);
-        $this->testPlan->execute($config);
-        $this->testPlan->assert();
-    }
-
     protected function setUp(): void
     {
         $this->testPlan = new Plan(
@@ -44,5 +37,12 @@ final class PlanTest extends TestCase
             [new OpenApiDefinitionLoader()],
             [new OAuth2PasswordAuthenticator(), new OAuth2ImplicitAuthenticator()]
         );
+    }
+
+    public function testExecute(): void
+    {
+        $config = new PlanConfig(FixturesLocation::CONFIG_OPENAPI);
+        $this->testPlan->execute($config);
+        $this->testPlan->assert();
     }
 }

@@ -75,7 +75,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         if ([] !== $include) {
             $this->handledErrors = array_filter(
                 $include,
-                fn (int $it) => in_array($it, $this->handledErrors, true)
+                fn (int $it) => \in_array($it, $this->handledErrors, true)
             );
         }
 
@@ -199,7 +199,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         /** @var SecurityScheme $scheme */
         foreach ($this->openApi->components->securitySchemes as $name => $scheme) {
             foreach ($operation->security as $security) {
-                if (isset($security->$name)) {
+                if (isset($security->{$name})) {
                     $formattedSecurity[$name] = $scheme;
                 }
             }
@@ -280,7 +280,9 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
 
     private function addFakeBearerToken(Request $request): Request
     {
-        return $request->withAddedHeader('Authorization', 'Bearer ' . JWT::encode(['test' => 1234], 'abcd'));
+        return $request->withAddedHeader('Authorization', 'Bearer ' . JWT::encode([
+            'test' => 1234,
+        ], 'abcd'));
     }
 
     private function addFakeOAuth2Token(Request $request): Request
@@ -289,15 +291,13 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param int $error
-     *
      * @return callable(string,string,Operation):?TestCase
      */
     private function getErrorPreparator(int $error): callable
     {
         $errorPreparators = $this->getErrorPreparators();
 
-        if (!array_key_exists($error, $errorPreparators)) {
+        if (!\array_key_exists($error, $errorPreparators)) {
             throw new \InvalidArgumentException(sprintf('Error %d is not handled in the %s class.', $error, __CLASS__));
         }
 

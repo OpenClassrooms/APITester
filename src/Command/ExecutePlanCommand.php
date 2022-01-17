@@ -113,6 +113,7 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'config file',
                 'api-tester.yaml'
-            );
+            )
+        ;
     }
 }
