@@ -280,9 +280,12 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
 
     private function addFakeBearerToken(Request $request): Request
     {
-        return $request->withAddedHeader('Authorization', 'Bearer ' . JWT::encode([
-            'test' => 1234,
-        ], 'abcd'));
+        return $request->withAddedHeader(
+            'Authorization',
+            'Bearer ' . JWT::encode([
+                'test' => 1234,
+            ], 'abcd')
+        );
     }
 
     private function addFakeOAuth2Token(Request $request): Request
