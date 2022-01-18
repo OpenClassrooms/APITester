@@ -9,6 +9,8 @@ use PhpCsFixer\Fixer\Operator\ConcatSpaceFixer;
 use PhpCsFixer\Fixer\Operator\NotOperatorWithSuccessorSpaceFixer;
 use PhpCsFixer\Fixer\Phpdoc\GeneralPhpdocAnnotationRemoveFixer;
 use PhpCsFixer\Fixer\Phpdoc\NoSuperfluousPhpdocTagsFixer;
+use PhpCsFixer\Fixer\PhpUnit\PhpUnitInternalClassFixer;
+use PhpCsFixer\Fixer\PhpUnit\PhpUnitTestClassRequiresCoversFixer;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symplify\CodingStandard\Fixer\LineLength\LineLengthFixer;
 use Symplify\EasyCodingStandard\ValueObject\Option;
@@ -77,5 +79,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         GeneralPhpdocAnnotationRemoveFixer::class,
         NotOperatorWithSuccessorSpaceFixer::class,
         SingleLineThrowFixer::class,
+        PhpUnitTestClassRequiresCoversFixer::class,
+        PhpUnitInternalClassFixer::class,
     ]);
 };

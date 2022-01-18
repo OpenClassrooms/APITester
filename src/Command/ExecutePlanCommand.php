@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Command;
 
+use OpenAPITesting\Authenticator\Authenticator;
+use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
+use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
 use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
+use OpenAPITesting\Config\Exception\ConfigurationException;
 use OpenAPITesting\Config\PlanConfig;
+use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
+use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
 use OpenAPITesting\Preparator\ErrorsTestCasesPreparator;
+use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
+use OpenAPITesting\Preparator\TestCasesPreparator;
+use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Plan;
+use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,22 +34,22 @@ final class ExecutePlanCommand extends Command
     protected static $defaultName = 'launch';
 
     /**
-     * @var \OpenAPITesting\Preparator\TestCasesPreparator[]
+     * @var TestCasesPreparator[]
      */
     private array $preparators;
 
     /**
-     * @var \OpenAPITesting\Requester\HttpAsyncRequester[]
+     * @var HttpAsyncRequester[]
      */
     private array $requesters;
 
     /**
-     * @var \OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader[]
+     * @var OpenApiDefinitionLoader[]
      */
     private array $loaders;
 
     /**
-     * @var \OpenAPITesting\Authenticator\Authenticator[]
+     * @var Authenticator[]
      */
     private array $authenticators;
 
@@ -62,15 +73,15 @@ final class ExecutePlanCommand extends Command
     }
 
     /**
-     * @throws \OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException
-     * @throws \OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException
-     * @throws \OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException
-     * @throws \OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
-     * @throws \OpenAPITesting\Requester\Exception\RequesterNotFoundException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     * @throws \OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException
-     * @throws \OpenAPITesting\Config\Exception\ConfigurationException
+     * @throws AuthenticatorNotFoundException
+     * @throws DefinitionLoaderNotFoundException
+     * @throws DefinitionLoadingException
+     * @throws InvalidPreparatorConfigException
+     * @throws PreparatorLoadingException
+     * @throws RequesterNotFoundException
+     * @throws ClientExceptionInterface
+     * @throws AuthenticationLoadingException
+     * @throws ConfigurationException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
