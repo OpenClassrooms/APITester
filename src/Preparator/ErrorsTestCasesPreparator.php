@@ -26,11 +26,27 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     public const BASIC_AUTH_SCHEME = 'basic';
     public const BEARER_AUTH_SCHEME = 'bearer';
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
+    public const PREPARATOR_PATH_LEVEL = 'path';
+    public const PREPARATOR_OPERATION_LEVEL = 'operation';
+    public const SUPPORTED_HTTP_METHODS = [
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'head',
+        'options',
+        'trace',
+        'connect',
+    ];
 
     /**
-     * @var array<array-key, int>
+     * @var array<string, array<int>>
      */
-    private array $handledErrors = [];
+    private array $handledErrors = [
+        self::PREPARATOR_PATH_LEVEL => [],
+        self::PREPARATOR_OPERATION_LEVEL => [],
+    ];
 
     private ?OpenApi $openApi = null;
 
@@ -49,13 +65,20 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         $testCases = [];
         /** @var string $path */
         foreach ($this->openApi->paths as $path => $pathInfo) {
+            if ([] !== $this->handledErrors[self::PREPARATOR_PATH_LEVEL]) {
+                foreach ($this->handledErrors[self::PREPARATOR_PATH_LEVEL] as $error) {
+                    $testCases[] = $this->preparePathError($error, $path, $pathInfo->getOperations());
+                }
+                $testCases = array_merge(...$testCases);
+            }
+
             /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
-                foreach ($this->handledErrors as $error) {
+                foreach ($this->handledErrors[self::PREPARATOR_OPERATION_LEVEL] as $error) {
                     if (!isset($operation->responses[$error])) {
                         continue;
                     }
-                    $testCases[] = $this->prepareError($error, $path, $method, $operation);
+                    $testCases[] = $this->prepareOperationError($error, $path, $method, $operation);
                 }
             }
         }
@@ -67,36 +90,42 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     {
         parent::configure($config);
 
-        $this->handledErrors = $this->getSupportedErrors();
-
         /** @var list<int> $include */
         $include = $config['include'] ?? [];
-
-        if ([] !== $include) {
-            $this->handledErrors = array_filter(
-                $include,
-                fn (int $it) => \in_array($it, $this->handledErrors, true)
-            );
-        }
-
         /** @var list<int> $exclude */
         $exclude = $config['exclude'] ?? [];
 
-        if ([] !== $exclude) {
-            $this->handledErrors = array_diff(
-                $this->handledErrors,
-                $exclude
-            );
+        foreach ($this->getErrorPreparators() as $errorCode => $error) {
+            if ([] !== $include && !\in_array($errorCode, $include, true)) {
+                continue;
+            }
+            if ([] !== $exclude && \in_array($errorCode, $exclude, true)) {
+                continue;
+            }
+            $this->handledErrors[$error['on']][] = $errorCode;
         }
     }
 
-    private function prepareError(
+    private function prepareOperationError(
         int $error,
         string $path,
         string $method,
         Operation $operation
     ): ?TestCase {
         return $this->getErrorPreparator($error)($path, $method, $operation);
+    }
+
+    /**
+     * @param Operation[] $operations
+     *
+     * @return TestCase[]
+     */
+    private function preparePathError(
+        int $error,
+        string $path,
+        array $operations
+    ): array {
+        return $this->getErrorPreparator($error)($path, $operations);
     }
 
     private function prepare404(string $path, string $method, Operation $operation): ?TestCase
@@ -160,6 +189,29 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
             new Response(401, [], $response->description),
             $this->getGroups($operation, $method),
         );
+    }
+
+    /**
+     * @param Operation[] $operations
+     *
+     * @return TestCase[]
+     */
+    private function prepare405(string $path, array $operations): array
+    {
+        $testCases = [];
+        $unallowedMethods = array_diff(self::SUPPORTED_HTTP_METHODS, array_keys($operations));
+        foreach ($unallowedMethods as $unallowedMethod) {
+            $testCases[] = new TestCase(
+                "{$unallowedMethod}_{$path}",
+                new Request(
+                    $unallowedMethod,
+                    $path
+                ),
+                new Response(405)
+            );
+        }
+
+        return $testCases;
     }
 
     private function processPath(string $path, Operation $operation): string
@@ -304,7 +356,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
             throw new \InvalidArgumentException(sprintf('Error %d is not handled in the %s class.', $error, __CLASS__));
         }
 
-        return $errorPreparators[$error];
+        return $errorPreparators[$error]['preparator'];
     }
 
     /**
@@ -316,13 +368,23 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return array<int, callable(string,string,Operation):?TestCase>
+     * @return array{int, array{'preparator':callable(string,string,Operation):?TestCase,'on':string}}
      */
     private function getErrorPreparators(): array
     {
         return [
-            404 => [$this, 'prepare404'],
-            401 => [$this, 'prepare401'],
+            401 => [
+                'preparator' => [$this, 'prepare401'],
+                'on' => self::PREPARATOR_OPERATION_LEVEL,
+            ],
+            404 => [
+                'preparator' => [$this, 'prepare404'],
+                'on' => self::PREPARATOR_OPERATION_LEVEL,
+            ],
+            405 => [
+                'preparator' => [$this, 'prepare405'],
+                'on' => self::PREPARATOR_PATH_LEVEL,
+            ],
         ];
     }
 }
