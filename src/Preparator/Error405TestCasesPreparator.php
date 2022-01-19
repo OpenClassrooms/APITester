@@ -34,6 +34,7 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
     public function prepare(OpenApi $openApi): array
     {
         $testCases = [];
+        /** @var string $path */
         foreach ($openApi->paths as $path => $pathInfo) {
             $disallowedMethods = array_diff(self::SUPPORTED_HTTP_METHODS, array_keys($pathInfo->getOperations()));
             foreach ($disallowedMethods as $disallowedMethod) {

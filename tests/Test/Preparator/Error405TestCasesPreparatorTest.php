@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Tests\Test\Preparator;
 
 use cebe\openapi\spec\OpenApi;
@@ -9,7 +11,7 @@ use OpenAPITesting\Preparator\Error405TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 
-class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
+final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getData
@@ -29,7 +31,7 @@ class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<array-key, \OpenAPITesting\Test\TestCase[][]>
+     * @return iterable<int, array{OpenApi, array<TestCase>}>
      */
     public function getData(): iterable
     {

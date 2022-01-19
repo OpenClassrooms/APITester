@@ -17,6 +17,7 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
+     * @param array<array-key, mixed>         $config
      * @param \OpenAPITesting\Test\TestCase[] $expected
      */
     public function test(array $config, OpenApi $openApi, array $expected): void
@@ -32,7 +33,7 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<array-key, TestCase[][]>
+     * @return iterable<int, array{array<array-key,mixed>, OpenApi, array<TestCase>}>
      */
     public function getData(): iterable
     {
@@ -175,8 +176,8 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/oauth2?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)
@@ -229,8 +230,8 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/bearer?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)

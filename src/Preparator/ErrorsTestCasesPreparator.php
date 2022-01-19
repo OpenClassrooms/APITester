@@ -27,6 +27,9 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     public const BEARER_AUTH_SCHEME = 'bearer';
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
 
+    /**
+     * @var array<int, callable(string,string,Operation):?TestCase>
+     */
     private array $handledErrors = [];
 
     private ?OpenApi $openApi = null;
@@ -268,7 +271,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return array<int,callable(string,string,Operation):array<array-key,TestCase|null>>
+     * @return array<int,callable(string,string,Operation):?TestCase>
      */
     private function getErrorPreparators(): array
     {
@@ -281,7 +284,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     /**
      * @param Operation[] $operations
      *
-     * @return TestCase[]
+     * @return list<TestCase|null>
      */
     private function prepareErrors(string $path, array $operations): array
     {
