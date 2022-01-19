@@ -25,7 +25,7 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
 
     public static function getName(): string
     {
-        return 'error_405';
+        return '405';
     }
 
     /**

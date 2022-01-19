@@ -8,22 +8,21 @@ use cebe\openapi\spec\OpenApi;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Preparator\ErrorsTestCasesPreparator;
+use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 
-final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
+final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getData
      *
-     * @param array<array-key, mixed>         $config
      * @param \OpenAPITesting\Test\TestCase[] $expected
      */
-    public function test(array $config, OpenApi $openApi, array $expected): void
+    public function test(OpenApi $openApi, array $expected): void
     {
-        $preparator = new ErrorsTestCasesPreparator();
-        $preparator->configure($config);
+        $preparator = new Error401TestCasesPreparator();
+        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,
@@ -33,14 +32,11 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<int, array{array<array-key,mixed>, OpenApi, array<TestCase>}>
+     * @return iterable<int, array{OpenApi, array<TestCase>}>
      */
     public function getData(): iterable
     {
         yield [
-            [
-                'include' => [401],
-            ],
             new OpenApi([
                 'openapi' => '3.0.2',
                 'info' => [
@@ -176,8 +172,8 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/oauth2?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                'test' => 1234,
-                            ], 'abcd'),
+                                    'test' => 1234,
+                                ], 'abcd'),
                         ]
                     ),
                     new Response(401)
@@ -188,7 +184,7 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         'GET',
                         '/test/api/key/header?1=1',
                         [
-                            'api_key' => ErrorsTestCasesPreparator::FAKE_API_KEY,
+                            'api_key' => Error401TestCasesPreparator::FAKE_API_KEY,
                         ]
                     ),
                     new Response(401)
@@ -199,7 +195,7 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         'GET',
                         '/test/api/key/cookie?1=1',
                         [
-                            'Cookie' => 'api_key=' . ErrorsTestCasesPreparator::FAKE_API_KEY,
+                            'Cookie' => 'api_key=' . Error401TestCasesPreparator::FAKE_API_KEY,
                         ]
                     ),
                     new Response(401)
@@ -208,7 +204,7 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     'test',
                     new Request(
                         'GET',
-                        '/test/api/key/query?1=1&api_key=' . ErrorsTestCasesPreparator::FAKE_API_KEY
+                        '/test/api/key/query?1=1&api_key=' . Error401TestCasesPreparator::FAKE_API_KEY
                     ),
                     new Response(401)
                 ),
@@ -230,8 +226,8 @@ final class ErrorsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/bearer?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                'test' => 1234,
-                            ], 'abcd'),
+                                    'test' => 1234,
+                                ], 'abcd'),
                         ]
                     ),
                     new Response(401)
