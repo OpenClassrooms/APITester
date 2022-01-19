@@ -26,30 +26,8 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     public const BASIC_AUTH_SCHEME = 'basic';
     public const BEARER_AUTH_SCHEME = 'bearer';
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
-    public const PREPARATOR_PATH_LEVEL = 'path';
-    public const PREPARATOR_OPERATION_LEVEL = 'operation';
-    public const SUPPORTED_HTTP_METHODS = [
-        'get',
-        'post',
-        'put',
-        'patch',
-        'delete',
-        'head',
-        'options',
-        'trace',
-        'connect',
-    ];
 
-    /**
-     * @var array{
-     *     'path':array<int,callable(string,Operation[]):array<array-key,TestCase|null>>,
-     *     'operation':array<int,callable(string,string,Operation):array<array-key,TestCase|null>>
-     * }
-     */
-    private array $handledErrors = [
-        self::PREPARATOR_PATH_LEVEL => [],
-        self::PREPARATOR_OPERATION_LEVEL => [],
-    ];
+    private array $handledErrors = [];
 
     private ?OpenApi $openApi = null;
 
@@ -69,8 +47,7 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         $testCases = [];
         /** @var string $path */
         foreach ($this->openApi->paths as $path => $pathInfo) {
-            $testCases[] = $this->preparePathLevelErrors($path, $pathInfo->getOperations());
-            $testCases[] = $this->prepareOperationLevelErrors($path, $pathInfo->getOperations());
+            $testCases[] = $this->prepareErrors($path, $pathInfo->getOperations());
         }
 
         return array_filter(array_merge(...$testCases));
@@ -85,16 +62,14 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
         /** @var list<int> $exclude */
         $exclude = $config['exclude'] ?? [];
 
-        foreach ($this->getErrorPreparators() as $type => $preparators) {
-            foreach ($preparators as $errorCode => $preparator) {
-                if ([] !== $include && !\in_array($errorCode, $include, true)) {
-                    continue;
-                }
-                if ([] !== $exclude && \in_array($errorCode, $exclude, true)) {
-                    continue;
-                }
-                $this->handledErrors[$type][$errorCode] = $preparator;
+        foreach ($this->getErrorPreparators() as $errorCode => $preparator) {
+            if ([] !== $include && !\in_array($errorCode, $include, true)) {
+                continue;
             }
+            if ([] !== $exclude && \in_array($errorCode, $exclude, true)) {
+                continue;
+            }
+            $this->handledErrors[$errorCode] = $preparator;
         }
     }
 
@@ -159,29 +134,6 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
             new Response(401, [], $response->description),
             $this->getGroups($operation, $method),
         );
-    }
-
-    /**
-     * @param Operation[] $operations
-     *
-     * @return TestCase[]
-     */
-    private function prepare405(string $path, array $operations): array
-    {
-        $testCases = [];
-        $unallowedMethods = array_diff(self::SUPPORTED_HTTP_METHODS, array_keys($operations));
-        foreach ($unallowedMethods as $unallowedMethod) {
-            $testCases[] = new TestCase(
-                "{$unallowedMethod}_{$path}",
-                new Request(
-                    $unallowedMethod,
-                    $path
-                ),
-                new Response(405)
-            );
-        }
-
-        return $testCases;
     }
 
     private function processPath(string $path, Operation $operation): string
@@ -316,21 +268,13 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return array{
-     *     path:array<int,callable(string,Operation[]):array<array-key,TestCase|null>>,
-     *     operation:array<int,callable(string,string,Operation):array<array-key,TestCase|null>>
-     * }
+     * @return array<int,callable(string,string,Operation):array<array-key,TestCase|null>>
      */
     private function getErrorPreparators(): array
     {
         return [
-            self::PREPARATOR_OPERATION_LEVEL => [
-                401 => [$this, 'prepare401'],
-                404 => [$this, 'prepare404'],
-            ],
-            self::PREPARATOR_PATH_LEVEL => [
-                405 => [$this, 'prepare405'],
-            ],
+            401 => [$this, 'prepare401'],
+            404 => [$this, 'prepare404'],
         ];
     }
 
@@ -339,37 +283,16 @@ final class ErrorsTestCasesPreparator extends TestCasesPreparator
      *
      * @return TestCase[]
      */
-    private function preparePathLevelErrors(string $path, array $operations): array
+    private function prepareErrors(string $path, array $operations): array
     {
-        $pathLevelPreparators = $this->handledErrors[self::PREPARATOR_PATH_LEVEL];
-        if ([] === $pathLevelPreparators) {
-            return [];
-        }
-
-        $testCases = [];
-        foreach ($pathLevelPreparators as $preparator) {
-            $testCases[] = $preparator($path, $operations);
-        }
-
-        return array_merge(...$testCases);
-    }
-
-    /**
-     * @param Operation[] $operations
-     *
-     * @return TestCase[]
-     */
-    private function prepareOperationLevelErrors(string $path, array $operations): array
-    {
-        $operationLevelPreparators = $this->handledErrors[self::PREPARATOR_OPERATION_LEVEL];
-        if ([] === $operationLevelPreparators) {
+        if ([] === $this->handledErrors) {
             return [];
         }
 
         $testCases = [];
         /** @var string $method */
         foreach ($operations as $method => $operation) {
-            foreach ($operationLevelPreparators as $errorCode => $preparator) {
+            foreach ($this->handledErrors as $errorCode => $preparator) {
                 if (!isset($operation->responses[$errorCode])) {
                     continue;
                 }

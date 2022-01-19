@@ -8,9 +8,10 @@ suites:
             examples: ~
             fixtures:
                 path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
+            error_405: ~
             errors:
                 # todo handle include exclude (exclude only 404 for example)
-                include: [ 400, 401, 403, 404, 405 ]
+                include: [ 400, 401, 403, 404 ]
         #                exclude: [ 401 ]
         filters:
             #            include:
