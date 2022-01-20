@@ -488,13 +488,6 @@ paths:
                     required: false
                     schema:
                         type: string
-            #            security:
-            #                -   petstore_auth:
-            #                        - write:pets
-            #                        - read:pets
-            #                -   api_key_query: [ ]
-            #                -   basic: [ ]
-            #                -   bearer: [ ]
             responses:
                 "200":
                     description: successful operation
@@ -518,8 +511,6 @@ paths:
                                 type: string
                 "400":
                     description: Invalid username/password supplied
-    #                "401":
-    #                    description: Invalid username/password supplied
     /user/logout:
         get:
             tags:
@@ -808,21 +799,3 @@ components:
             type: apiKey
             name: api_key
             in: header
-#        api_key_header:
-#            type: apiKey
-#            name: api_key
-#            in: header
-#        api_key_cookie:
-#            type: apiKey
-#            name: api_key
-#            in: cookie
-#        api_key_query:
-#            type: apiKey
-#            name: api_key
-#            in: query
-#        basic:
-#            type: http
-#            scheme: basic
-#        bearer:
-#            type: http
-#            scheme: bearer
