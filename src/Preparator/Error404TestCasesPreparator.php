@@ -17,7 +17,6 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Error404TestCasesPreparator extends TestCasesPreparator
 {
-
     public static function getName(): string
     {
         return '404';
@@ -82,5 +81,4 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
 
         return Json::encode((array) (new SchemaFaker($schema, new Options(), true))->generate());
     }
-
 }

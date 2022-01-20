@@ -14,7 +14,9 @@ use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
-use OpenAPITesting\Preparator\ErrorsTestCasesPreparator;
+use OpenAPITesting\Preparator\Error401TestCasesPreparator;
+use OpenAPITesting\Preparator\Error404TestCasesPreparator;
+use OpenAPITesting\Preparator\Error405TestCasesPreparator;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
@@ -58,7 +60,9 @@ final class ExecutePlanCommand extends Command
         parent::__construct($name);
         $this->preparators = [
             new OpenApiExamplesTestCasesPreparator(),
-            new ErrorsTestCasesPreparator(),
+            new Error401TestCasesPreparator(),
+            new Error404TestCasesPreparator(),
+            new Error405TestCasesPreparator(),
         ];
         $this->requesters = [
             new HttpAsyncRequester(),

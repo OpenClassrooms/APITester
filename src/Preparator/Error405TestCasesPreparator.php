@@ -41,7 +41,7 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
                 $testCases[] = new TestCase(
                     "{$disallowedMethod}_{$path}",
                     new Request(
-                        $disallowedMethod,
+                        mb_strtoupper($disallowedMethod),
                         $path
                     ),
                     new Response(405)

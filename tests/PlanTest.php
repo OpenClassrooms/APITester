@@ -8,7 +8,9 @@ use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
 use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
-use OpenAPITesting\Preparator\ErrorsTestCasesPreparator;
+use OpenAPITesting\Preparator\Error401TestCasesPreparator;
+use OpenAPITesting\Preparator\Error404TestCasesPreparator;
+use OpenAPITesting\Preparator\Error405TestCasesPreparator;
 use OpenAPITesting\Preparator\FixturesTestCasesPreparator;
 use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Requester\HttpAsyncRequester;
@@ -30,7 +32,9 @@ final class PlanTest extends TestCase
         $this->testPlan = new Plan(
             [
                 new OpenApiExamplesTestCasesPreparator(),
-                new ErrorsTestCasesPreparator(),
+                new Error401TestCasesPreparator(),
+                new Error404TestCasesPreparator(),
+                new Error405TestCasesPreparator(),
                 new FixturesTestCasesPreparator(),
             ],
             [new HttpAsyncRequester()],

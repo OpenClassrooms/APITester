@@ -32,10 +32,10 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
      */
     public function prepare(OpenApi $openApi): array
     {
-        /** @var TestCase[][] $testCases */
         $testCases = [];
         /** @var string $path */
         foreach ($openApi->paths as $path => $pathInfo) {
+            /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 if (!isset($operation->responses) || !isset($operation->responses['401'])) {
                     continue;

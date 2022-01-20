@@ -172,8 +172,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/oauth2?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)
@@ -226,8 +226,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/bearer?1=1',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)

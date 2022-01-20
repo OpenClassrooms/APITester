@@ -56,42 +56,42 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     'post_/test',
-                    new Request('post', '/test'),
+                    new Request('POST', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'put_/test',
-                    new Request('put', '/test'),
+                    new Request('PUT', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'patch_/test',
-                    new Request('patch', '/test'),
+                    new Request('PATCH', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'delete_/test',
-                    new Request('delete', '/test'),
+                    new Request('DELETE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'head_/test',
-                    new Request('head', '/test'),
+                    new Request('HEAD', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'options_/test',
-                    new Request('options', '/test'),
+                    new Request('OPTIONS', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'trace_/test',
-                    new Request('trace', '/test'),
+                    new Request('TRACE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
                     'connect_/test',
-                    new Request('connect', '/test'),
+                    new Request('CONNECT', '/test'),
                     new Response(405)
                 ),
             ],

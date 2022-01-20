@@ -97,7 +97,9 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
                 new TestCase(
                     'postTest',
-                    new Request('POST', '/test', [], Json::encode(['name' => 'aaa'])),
+                    new Request('POST', '/test', [], Json::encode([
+                        'name' => 'aaa',
+                    ])),
                     // Body not verified since it is random
                     new Response(404, [], 'description test')
                 ),
