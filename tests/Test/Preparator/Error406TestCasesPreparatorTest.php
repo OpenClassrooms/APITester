@@ -26,7 +26,7 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($openApi),
-            ['size', 'id', 'headerNames', 'groups', 'headers']
+            ['size', 'id', 'headerNames', 'groups', 'headers', 'name']
         );
     }
 
@@ -68,8 +68,10 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ]),
             [
                 new TestCase(
-                    'get_/test_200',
-                    new Request('POST', '/test'),
+                    'test',
+                    new Request('GET', '/test', [
+                        'Accept' => 'test',
+                    ]),
                     new Response(406)
                 ),
             ],

@@ -61,6 +61,25 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             ],
                         ],
                     ],
+                ],
+            ]),
+            [
+                new TestCase(
+                    'getTest',
+                    new Request('GET', '/test/-9999'),
+                    new Response(404, [], 'description test')
+                ),
+            ],
+        ];
+
+        yield [
+            new OpenApi([
+                'openapi' => '3.0.2',
+                'info' => [
+                    'title' => 'Test API',
+                    'version' => '1.0.0',
+                ],
+                'paths' => [
                     '/test' => [
                         'post' => [
                             'operationId' => 'postTest',
@@ -91,16 +110,15 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ]),
             [
                 new TestCase(
-                    'getTest',
-                    new Request('GET', '/test/-9999'),
-                    new Response(404, [], 'description test')
-                ),
-                new TestCase(
                     'postTest',
-                    new Request('POST', '/test', [], Json::encode([
-                        'name' => 'aaa',
-                    ])),
-                    // Body not verified since it is random
+                    new Request(
+                        'POST',
+                        '/test',
+                        [],
+                        Json::encode([
+                            'name' => 'aaa',
+                        ])
+                    ),
                     new Response(404, [], 'description test')
                 ),
             ],

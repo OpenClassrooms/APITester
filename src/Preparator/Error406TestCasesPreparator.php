@@ -12,8 +12,6 @@ use OpenAPITesting\Util\Mime;
 
 final class Error406TestCasesPreparator extends TestCasesPreparator
 {
-    private const INVALID_TEST_CASES_NUMBER = 5;
-
     public static function getName(): string
     {
         return '405';
@@ -28,24 +26,26 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
 
         /** @var string $path */
         foreach ($openApi->paths as $path => $pathInfo) {
+            /** @var string $method */
             foreach ($pathInfo->getOperations() as $method => $operation) {
+                if (null === $operation->responses) {
+                    continue;
+                }
                 foreach ($operation->responses as $statusCode => $response) {
                     $acceptTypes = array_keys($response->content);
                     $disallowedTypes = array_diff(Mime::TYPES, $acceptTypes);
-                    foreach (array_rand($disallowedTypes, self::INVALID_TEST_CASES_NUMBER) as $key) {
-                        $disallowedType = $disallowedTypes[$key];
-                        $testCases[] = new TestCase(
-                            "{$disallowedType}_{$statusCode}_{$method}_{$path}",
-                            new Request(
-                                mb_strtoupper($method),
-                                $path,
-                                [
-                                    'Accept' => $disallowedType,
-                                ]
-                            ),
-                            new Response(406)
-                        );
-                    }
+                    $disallowedType = $disallowedTypes[array_rand($disallowedTypes)];
+                    $testCases[] = new TestCase(
+                        "{$disallowedType}_{$statusCode}_{$method}_{$path}",
+                        new Request(
+                            mb_strtoupper($method),
+                            $path,
+                            [
+                                'Accept' => $disallowedType,
+                            ]
+                        ),
+                        new Response(406)
+                    );
                 }
             }
         }
