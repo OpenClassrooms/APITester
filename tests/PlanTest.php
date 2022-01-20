@@ -10,7 +10,6 @@ use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
 use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Preparator\Error404TestCasesPreparator;
-use OpenAPITesting\Preparator\Error405TestCasesPreparator;
 use OpenAPITesting\Preparator\FixturesTestCasesPreparator;
 use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
 use OpenAPITesting\Requester\HttpAsyncRequester;
@@ -34,7 +33,7 @@ final class PlanTest extends TestCase
                 new OpenApiExamplesTestCasesPreparator(),
                 new Error401TestCasesPreparator(),
                 new Error404TestCasesPreparator(),
-                new Error405TestCasesPreparator(),
+                //                new Error405TestCasesPreparator(),
                 new FixturesTestCasesPreparator(),
             ],
             [new HttpAsyncRequester()],

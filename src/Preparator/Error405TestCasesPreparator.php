@@ -8,6 +8,7 @@ use cebe\openapi\spec\OpenApi;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Json;
 
 final class Error405TestCasesPreparator extends TestCasesPreparator
 {
@@ -22,6 +23,11 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
         'trace',
         'connect',
     ];
+
+    /**
+     * @var array<array-key, mixed>
+     */
+    private array $responseBody = [];
 
     public static function getName(): string
     {
@@ -44,11 +50,23 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
                         mb_strtoupper($disallowedMethod),
                         $path
                     ),
-                    new Response(405)
+                    new Response(405, [], [] !== $this->responseBody ? Json::encode($this->responseBody) : null)
                 );
             }
         }
 
         return $testCases;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function configure(array $config): void
+    {
+        parent::configure($config);
+
+        if (isset($config['responseBody']) && \is_array($config['responseBody'])) {
+            $this->responseBody = $config['responseBody'];
+        }
     }
 }
