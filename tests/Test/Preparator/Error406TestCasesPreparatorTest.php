@@ -74,6 +74,20 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     ]),
                     new Response(406)
                 ),
+                new TestCase(
+                    'test',
+                    new Request('GET', '/test', [
+                        'Accept' => 'test',
+                    ]),
+                    new Response(406)
+                ),
+                new TestCase(
+                    'test',
+                    new Request('GET', '/test', [
+                        'Accept' => 'test',
+                    ]),
+                    new Response(406)
+                ),
             ],
         ];
     }
