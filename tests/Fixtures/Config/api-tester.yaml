@@ -14,6 +14,7 @@ suites:
                 responseBody:
                     code: 405
                     message: 'HTTP 405 Method Not Allowed'
+            406: ~
         filters:
             #            include:
             #                - 'oc_api_student_cirr_status_get'
