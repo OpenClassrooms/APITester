@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests;
+namespace OpenAPITesting\Tests\Test;
 
 use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
 use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;

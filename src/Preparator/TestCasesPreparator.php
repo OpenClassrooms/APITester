@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Operation;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
@@ -21,7 +21,7 @@ abstract class TestCasesPreparator
      *
      * @return TestCase[]
      */
-    abstract public function prepare(OpenApi $openApi): array;
+    abstract public function prepare(Api $api): array;
 
     /**
      * @param array<array-key, mixed> $config
@@ -43,12 +43,12 @@ abstract class TestCasesPreparator
     /**
      * @return string[]
      */
-    protected function getGroups(Operation $operation, string $method): array
+    protected function getGroups(Operation $operation): array
     {
         return [
-            $operation->operationId,
-            $method,
-            ...$operation->tags,
+            $operation->getId(),
+            $operation->getMethod(),
+            ...$operation->getTags()->toArray(),
             'preparator_' . static::getName(),
         ];
     }

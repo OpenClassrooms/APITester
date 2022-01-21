@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
+use cebe\openapi\spec\OpenApi;
+use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\SecurityScheme;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Security;
 use OpenAPITesting\Test\TestCase;
 
-final class Error401TestCasesPreparator extends TestCasesPreparator
+final class Error403TestCasesPreparator extends TestCasesPreparator
 {
     public const HTTP_AUTH_TYPE = 'http';
     public const OAUTH2_AUTH_TYPE = 'oauth2';
@@ -22,37 +22,77 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
     public const BEARER_AUTH_SCHEME = 'bearer';
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
 
+    private ?OpenApi $openApi = null;
+
     public static function getName(): string
     {
-        return '401';
+        return '403';
     }
 
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): array
+    public function prepare(OpenApi $api): array
     {
+        $this->openApi = $api;
+
         $testCases = [];
-        foreach ($api->getOperations(['status' => 401]) as $operation) {
-            $request = new Request(
-                $operation->getMethod(),
-                $operation->getPath() . '?1=1'
-            );
+        /** @var string $path */
+        foreach ($this->openApi->paths as $path => $pathInfo) {
+            /** @var string $method */
+            foreach ($pathInfo->getOperations() as $method => $operation) {
+                if (!isset($operation->responses) || !isset($operation->responses['403'])) {
+                    continue;
+                }
 
-            $request = $this->setAuthentication($request, $operation->getSecurity());
+                /** @var \cebe\openapi\spec\Response $response */
+                $response = $operation->responses['403'];
 
-            /** @var \cebe\openapi\spec\Response $response */
-            $response = $operation->getResponses(['status' => 401]);
+                $request = new Request(
+                    mb_strtoupper($method),
+                    $path . '?1=1'
+                );
 
-            $testCases[] = new TestCase(
-                $operation->getId(),
-                $request,
-                new Response(401, [], $response->description),
-                $this->getGroups($operation),
-            );
+                $security = $this->getSecurity($operation);
+
+
+                $testCases[] = new TestCase(
+                    $operation->operationId,
+                    $request,
+                    new Response(401, [], $response->description),
+                    $this->getGroups($operation, $method),
+                );
+            }
         }
 
-        return $testCases;
+        return array_filter($testCases);
+    }
+
+    public function configure(array $config): void
+    {
+    }
+
+    /**
+     * @return array<array-key, SecurityScheme>
+     */
+    private function getSecurity(Operation $operation): array
+    {
+        $formattedSecurity = [];
+
+        if (!isset($this->openApi->components->securitySchemes)) {
+            return $formattedSecurity;
+        }
+
+        /** @var SecurityScheme $scheme */
+        foreach ($this->openApi->components->securitySchemes as $name => $scheme) {
+            foreach ($operation->security as $security) {
+                if (isset($security->{$name})) {
+                    $formattedSecurity[$name] = $scheme;
+                }
+            }
+        }
+
+        return $formattedSecurity;
     }
 
     /**
@@ -138,26 +178,5 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
     private function addFakeOAuth2Token(Request $request): Request
     {
         return $this->addFakeBearerToken($request);
-    }
-
-    /**
-     * @param SecurityScheme[] $security
-     */
-    private function setAuthentication(Request $request, Security $security): Request
-    {
-        if ($this->needsBasicCredentials($security)) {
-            $request = $this->addFakeBasicHeader($request);
-        } elseif ($this->needsBearerToken($security)) {
-            $request = $this->addFakeBearerToken($request);
-        } elseif ($this->needsOAuth2Token($security)) {
-            $request = $this->addFakeOAuth2Token($request);
-        }
-
-        $apiKey = $this->getNeededApiKey($security);
-        if (null !== $apiKey) {
-            $request = $this->addFakeApiKeyToRequest($apiKey, $request);
-        }
-
-        return $request;
     }
 }

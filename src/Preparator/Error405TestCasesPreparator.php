@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\OpenApi;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
@@ -37,11 +37,11 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(OpenApi $openApi): array
+    public function prepare(Api $api): array
     {
         $testCases = [];
         /** @var string $path */
-        foreach ($openApi->paths as $path => $pathInfo) {
+        foreach ($api->paths as $path => $pathInfo) {
             $disallowedMethods = array_diff(self::SUPPORTED_HTTP_METHODS, array_keys($pathInfo->getOperations()));
             foreach ($disallowedMethods as $disallowedMethod) {
                 $testCases[] = new TestCase(

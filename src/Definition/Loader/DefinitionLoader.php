@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Loader;
 
+use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 
 interface DefinitionLoader
@@ -13,5 +14,5 @@ interface DefinitionLoader
     /**
      * @throws DefinitionLoadingException
      */
-    public function load(string $filePath): object;
+    public function load(string $filePath): Api;
 }

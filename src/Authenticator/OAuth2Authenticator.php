@@ -5,29 +5,28 @@ declare(strict_types=1);
 namespace OpenAPITesting\Authenticator;
 
 use cebe\openapi\spec\OAuthFlow;
-use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Config\AuthConfig;
+use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Requester\Requester;
+use Psr\Http\Client\ClientExceptionInterface;
 
 abstract class OAuth2Authenticator implements Authenticator
 {
-    public function authenticate(AuthConfig $config, OpenApi $schema, Requester $requester): ?string
+    public function authenticate(AuthConfig $config, Api $api, Requester $requester): ?string
     {
         [$authType, $flowType] = explode(':', $config->getType());
-        /** @var \cebe\openapi\spec\SecurityScheme[] $securitySchemes */
-        $securitySchemes = $schema->components->securitySchemes ?? [];
-        if (0 === \count($securitySchemes)) {
+        if (0 === \count($api->securitySchemes)) {
             throw new \RuntimeException('Auth configured but no security schemes present in api definition');
         }
-        foreach ($securitySchemes as $scheme) {
+        foreach ($api->securitySchemes as $scheme) {
             if ($scheme->type === $authType) {
                 if (null === $scheme->flows) {
                     throw new \RuntimeException(
                         'Auth configured but no security schemes flows present in api definition'
                     );
                 }
-                /** @var \cebe\openapi\spec\OAuthFlow|null $flow */
+                /** @var OAuthFlow|null $flow */
                 $flow = $scheme->flows->{$flowType} ?? null;
                 if (null === $flow) {
                     throw new AuthenticationLoadingException(
@@ -43,7 +42,7 @@ abstract class OAuth2Authenticator implements Authenticator
     }
 
     /**
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     abstract protected function handleFlow(OAuthFlow $flow, AuthConfig $config, Requester $requester): ?string;
 }

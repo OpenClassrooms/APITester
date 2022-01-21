@@ -1,20 +1,3 @@
-###> symfony/framework-bundle ###
-.env.local
-.env.local.php
-.env.*.local
-/var/
-/vendor/
-composer.lock
-
-###< symfony/framework-bundle ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-.phpunit.result.cache
-build
-###< phpunit/phpunit ###
-
-
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 !.idea/
@@ -88,5 +71,9 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-!phpunit.xml
-coverage.xml
+.env.local
+.env.local.php
+.env.*.local
+/vendor/
+/build/
+composer.lock

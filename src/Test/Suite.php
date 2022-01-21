@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\OpenApi;
 use OpenAPITesting\Config\FiltersConfig;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Traits\TimeBoundTrait;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -21,7 +23,7 @@ final class Suite implements Test
 {
     use TimeBoundTrait;
 
-    private OpenApi $openApi;
+    private Api $api;
 
     /**
      * @var array<TestCasesPreparator>
@@ -56,14 +58,14 @@ final class Suite implements Test
      */
     public function __construct(
         string $title,
-        OpenApi $openApi,
+        Api $api,
         array $preparators,
         Requester $requester,
         ?FiltersConfig $filters = null,
         ?LoggerInterface $logger = null
     ) {
         $this->title = $title;
-        $this->openApi = $openApi;
+        $this->api = $api;
         $this->preparators = $preparators;
         $this->requester = $requester;
         $this->logger = $logger ?? new NullLogger();
@@ -137,8 +139,8 @@ final class Suite implements Test
     /**
      * @param TestCase[] $testCases
      *
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws PreparatorLoadingException
+     * @throws ClientExceptionInterface
      */
     private function launchTestCases(array $testCases): void
     {
@@ -167,7 +169,7 @@ final class Suite implements Test
     }
 
     /**
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
+     * @throws PreparatorLoadingException
      *
      * @return TestCase[]
      */
@@ -176,7 +178,7 @@ final class Suite implements Test
         $testCases = [];
         foreach ($this->preparators as $preparator) {
             $testCases[] = array_filter(
-                $preparator->prepare($this->openApi),
+                $preparator->prepare($this->api),
                 [$this, 'includes']
             );
         }
