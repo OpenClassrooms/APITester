@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Response as OpenApiResponse;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Responses;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Array_;
 use OpenAPITesting\Util\Mime;
 
 final class Error406TestCasesPreparator extends TestCasesPreparator
@@ -23,32 +24,27 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(OpenApi $openApi): array
+    public function prepare(Api $api): array
     {
         $testCases = [];
-
-        /** @var string $path */
-        foreach ($openApi->paths as $path => $pathInfo) {
-            /** @var string $method */
-            foreach ($pathInfo->getOperations() as $method => $operation) {
-                if (null === $operation->responses) {
-                    continue;
-                }
-                foreach ($operation->responses as $statusCode => $response) {
-                    $disallowedTypes = $this->pickDisallowedTypes($response, self::INVALID_TEST_CASES_NUMBER);
-                    foreach ($disallowedTypes as $type) {
-                        $testCases[] = new TestCase(
-                            "{$type}_{$statusCode}_{$method}_{$path}",
-                            new Request(
-                                mb_strtoupper($method),
-                                $path,
-                                [
-                                    'Accept' => $type,
-                                ]
-                            ),
-                            new Response(406)
-                        );
-                    }
+        foreach ($api->getOperations() as $operation) {
+            $disallowedTypes = $this->pickDisallowedTypes(
+                $operation->getResponses(),
+                self::INVALID_TEST_CASES_NUMBER
+            );
+            foreach ($disallowedTypes as $status => $types) {
+                foreach ($types as $type) {
+                    $testCases[] = new TestCase(
+                        "{$type}_{$status}_{$operation->getId()}",
+                        new Request(
+                            $operation->getMethod(),
+                            $operation->getPath(),
+                            [
+                                'Accept' => $type,
+                            ]
+                        ),
+                        new Response(406)
+                    );
                 }
             }
         }
@@ -57,25 +53,21 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return string[]
+     * @return array<int, array<string, string>>
      */
-    private function pickDisallowedTypes(OpenApiResponse $response, int $num = 3): array
+    private function pickDisallowedTypes(Responses $responses, int $count = 3): array
     {
-        $acceptTypes = array_keys($response->content);
-
-        $disallowedTypes = array_diff(Mime::TYPES, $acceptTypes);
-
-        if ([] === $disallowedTypes) {
-            return [];
+        $disallowedTypes = [];
+        $statusCodes = $responses->getStatusCodes();
+        foreach ($statusCodes as $statusCode) {
+            $acceptTypes = $responses->getMediaTypes($statusCode);
+            $notSupportedTypes = array_diff(Mime::TYPES, $acceptTypes);
+            if (count($notSupportedTypes) === 0) {
+                continue;
+            }
+            $disallowedTypes[$statusCode] = Array_::pickRandomItems($notSupportedTypes, $count);
         }
 
-        /** @var int[] $randomTypesKeys */
-        $randomTypesKeys = array_rand($disallowedTypes, $num);
-
-        return array_filter(
-            $disallowedTypes,
-            static fn ($key) => \in_array($key, $randomTypesKeys, true),
-            ARRAY_FILTER_USE_KEY
-        );
+        return $disallowedTypes;
     }
 }

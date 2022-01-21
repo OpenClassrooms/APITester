@@ -96,7 +96,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
             foreach ($response->getExamples() as $example) {
                 $index = $example->getName();
                 $responses[$index] = new Response(
-                    $response->getStatus(),
+                    $response->getStatusCode(),
                     [
                         'content-type' => $response->getMediaType(),
                     ],

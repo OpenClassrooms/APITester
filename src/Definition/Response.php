@@ -10,32 +10,27 @@ use OpenAPITesting\Definition\Collection\Headers;
 
 final class Response
 {
-    private string $mediaType;
+    private string $mediaType = 'application/json';
 
-    private int $status;
+    private int $statusCode = 200;
 
     private Headers $headers;
 
-    private ?Schema $body;
+    private ?Schema $body = null;
 
     private Examples $examples;
 
-    private string $description;
+    private string $description = '';
 
-    public function __construct(
-        string $mediaType,
-        int $status,
-        Headers $headers,
-        ?Schema $body,
-        string $description,
-        ?Examples $examples = null
-    ) {
-        $this->mediaType = $mediaType;
-        $this->status = $status;
-        $this->headers = $headers;
-        $this->body = $body;
-        $this->description = $description;
-        $this->examples = $examples ?? new Examples();
+    public function __construct()
+    {
+        $this->headers = new Headers();
+        $this->examples = new Examples();
+    }
+
+    public static function create(): self
+    {
+        return new self();
     }
 
     public function getMediaType(): string
@@ -43,9 +38,16 @@ final class Response
         return $this->mediaType;
     }
 
-    public function getStatus(): int
+    public function setMediaType(string $mediaType): Response
     {
-        return $this->status;
+        $this->mediaType = $mediaType;
+
+        return $this;
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
     }
 
     public function getHeaders(): Headers
@@ -53,14 +55,35 @@ final class Response
         return $this->headers;
     }
 
+    public function setHeaders(Headers $headers): Response
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
     public function getBody(): ?Schema
     {
         return $this->body;
     }
 
+    public function setBody(Schema $body): Response
+    {
+        $this->body = $body;
+
+        return $this;
+    }
+
     public function getExamples(): Examples
     {
         return $this->examples;
+    }
+
+    public function setExamples(Examples $examples): Response
+    {
+        $this->examples = $examples;
+
+        return $this;
     }
 
     public function getDescription(): string

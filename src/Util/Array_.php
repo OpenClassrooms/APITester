@@ -33,4 +33,23 @@ final class Array_
 
         return $merged;
     }
+
+    /**
+     * @template T
+     *
+     * @param array<T> $items
+     *
+     * @return array<T>
+     */
+    public static function pickRandomItems(array $items, int $count): array
+    {
+        /** @var int[] $randomIndexes */
+        $randomIndexes = array_rand($items, $count);
+
+        return array_filter(
+            $items,
+            static fn ($i) => \in_array($i, $randomIndexes, true),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
 }

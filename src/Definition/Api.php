@@ -11,36 +11,31 @@ use OpenAPITesting\Definition\Collection\Tags;
 
 final class Api
 {
-    public ?string $title;
+    private ?string $title;
 
-    public ?string $description;
+    private ?string $description;
 
-    public ?string $version;
+    private ?string $version;
 
-    public Operations $operations;
+    private Operations $operations;
 
-    public SecuritySchemes $securitySchemes;
+    private SecuritySchemes $securitySchemes;
 
     private Servers $servers;
 
     private Tags $tags;
 
-    public function __construct(
-        Operations $operations,
-        Servers $servers,
-        Tags $tags,
-        SecuritySchemes $securitySchemes,
-        ?string $title = null,
-        ?string $description = null,
-        ?string $version = null
-    ) {
-        $this->operations = $operations;
-        $this->title = $title;
-        $this->description = $description;
-        $this->version = $version;
-        $this->servers = $servers;
-        $this->tags = $tags;
-        $this->securitySchemes = $securitySchemes;
+    public function __construct()
+    {
+        $this->operations = new Operations();
+        $this->servers = new Servers();
+        $this->tags = new Tags();
+        $this->securitySchemes = new SecuritySchemes();
+    }
+
+    public static function create(): self
+    {
+        return new self();
     }
 
     public function getVersion(): ?string
@@ -48,9 +43,28 @@ final class Api
         return $this->version;
     }
 
-    public function getOperations(array $filters = []): Operations
+    public function setVersion(?string $version): void
+    {
+        $this->version = $version;
+    }
+
+    public function getOperations(): Operations
     {
         return $this->operations;
+    }
+
+    public function setOperations(Operations $operations): Api
+    {
+        $this->operations = $operations;
+
+        return $this;
+    }
+
+    public function addOperation(Operation $operation): self
+    {
+        $this->operations->add($operation);
+
+        return $this;
     }
 
     public function getTitle(): ?string
@@ -58,9 +72,19 @@ final class Api
         return $this->title;
     }
 
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
+    }
+
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
     }
 
     public function getServers(): Servers
@@ -68,14 +92,35 @@ final class Api
         return $this->servers;
     }
 
+    public function setServers(Servers $servers): Api
+    {
+        $this->servers = $servers;
+
+        return $this;
+    }
+
     public function getTags(): Tags
     {
         return $this->tags;
     }
 
+    public function setTags(Tags $tags): Api
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
     public function getSecuritySchemes(): SecuritySchemes
     {
         return $this->securitySchemes;
+    }
+
+    public function setSecuritySchemes(SecuritySchemes $securitySchemes): Api
+    {
+        $this->securitySchemes = $securitySchemes;
+
+        return $this;
     }
 
     /**

@@ -42,6 +42,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
      */
     public function load(string $filePath, string $format = self::FORMAT_YAML): Api
     {
+        $api = Api::create();
         if (!\in_array($format, self::FORMATS, true)) {
             throw new \InvalidArgumentException('Invalid format ' . $format);
         }
@@ -62,16 +63,18 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var \cebe\openapi\spec\Responses|null $responses */
                 $responses = $operation->responses;
 
-                $collection[$method] = new Operation(
-                    $operation->operationId,
-                    $operation->summary ?? '',
-                    $operation->description ?? '',
-                    $path,
-                    $method,
-                    $this->getParameters($parameters),
-                    $this->getRequests($requestBody),
-                    $this->getResponses($responses),
-                    $this->getTags($operation->tags),
+                $api->addOperation(
+                    Operation::create(
+                        $operation->operationId,
+                        $path
+                    )
+                        ->setMethod($method)
+                        ->setSummary($operation->summary ?? '')
+                        ->setDescription($operation->description ?? '')
+                        ->setParameters($this->getParameters($parameters))
+                        ->setRequests($this->getRequests($requestBody))
+                        ->setResponses($this->getResponses($responses))
+                        ->setTags($this->getTags($operation->tags))
                 );
             }
         }
@@ -79,12 +82,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         /** @var null|\cebe\openapi\spec\SecurityScheme[] $securitySchemes */
         $securitySchemes = $openApi->components !== null ? $openApi->components->securitySchemes : null;
 
-        return new Api(
-            new Operations($collection),
-            $this->getServers($openApi->servers),
-            $this->getTags($openApi->tags),
-            $this->getSecuritySchemes($securitySchemes),
-        );
+        return $api
+            ->setOperations(new Operations($collection))
+            ->setServers($this->getServers($openApi->servers))
+            ->setTags($this->getTags($openApi->tags))
+            ->setSecuritySchemes($this->getSecuritySchemes($securitySchemes))
+        ;
     }
 
     public static function getFormat(): string
