@@ -173,6 +173,30 @@ final class Operation
         return $this;
     }
 
+    public function findParameters(string $name, string $in): Parameters
+    {
+        $parameters = [];
+        foreach ($this->parameters as $parameter) {
+            if ($name === $parameter->getName() && $in === $parameter->getIn()) {
+                $parameters[] = $parameter;
+            }
+        }
+
+        return new Parameters($parameters);
+    }
+
+    public function findParameter(string $name, string $in): ?Parameter
+    {
+        return $this->findParameters($name, $in)[0] ?? null;
+    }
+
+    public function addParameter(Parameter $parameter): self
+    {
+        $this->parameters->add($parameter);
+
+        return $this;
+    }
+
     public function getResponses(): Responses
     {
         return $this->responses;
