@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Loader;
+namespace OpenAPITesting\Tests\Test\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;

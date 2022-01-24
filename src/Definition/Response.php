@@ -10,6 +10,8 @@ use OpenAPITesting\Definition\Collection\Headers;
 
 final class Response
 {
+    private Operation $operation;
+
     private string $mediaType = 'application/json';
 
     private int $statusCode = 200;
@@ -38,7 +40,7 @@ final class Response
         return $this->mediaType;
     }
 
-    public function setMediaType(string $mediaType): Response
+    public function setMediaType(string $mediaType): self
     {
         $this->mediaType = $mediaType;
 
@@ -50,12 +52,19 @@ final class Response
         return $this->statusCode;
     }
 
+    public function setStatusCode(int $statusCode): Response
+    {
+        $this->statusCode = $statusCode;
+
+        return $this;
+    }
+
     public function getHeaders(): Headers
     {
         return $this->headers;
     }
 
-    public function setHeaders(Headers $headers): Response
+    public function setHeaders(Headers $headers): self
     {
         $this->headers = $headers;
 
@@ -67,7 +76,7 @@ final class Response
         return $this->body;
     }
 
-    public function setBody(Schema $body): Response
+    public function setBody(?Schema $body): self
     {
         $this->body = $body;
 
@@ -79,7 +88,7 @@ final class Response
         return $this->examples;
     }
 
-    public function setExamples(Examples $examples): Response
+    public function setExamples(Examples $examples): self
     {
         $this->examples = $examples;
 
@@ -89,5 +98,22 @@ final class Response
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getOperation(): Operation
+    {
+        return $this->operation;
+    }
+
+    public function setOperation(Operation $operation): void
+    {
+        $this->operation = $operation;
     }
 }

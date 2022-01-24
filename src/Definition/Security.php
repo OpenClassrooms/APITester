@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
-class Security
+final class Security
 {
-
 }

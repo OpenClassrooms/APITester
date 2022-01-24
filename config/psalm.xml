@@ -50,5 +50,6 @@
         <MixedArgumentTypeCoercion errorLevel="suppress"/>
         <UndefinedDocblockClass errorLevel="suppress"/>
         <UnnecessaryVarAnnotation errorLevel="suppress"/>
+        <PropertyNotSetInConstructor errorLevel="suppress"/>
     </issueHandlers>
 </psalm>

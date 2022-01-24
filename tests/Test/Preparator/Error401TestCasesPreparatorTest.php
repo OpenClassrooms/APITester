@@ -8,6 +8,7 @@ use cebe\openapi\spec\OpenApi;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -17,9 +18,9 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param \OpenAPITesting\Test\TestCase[] $expected
+     * @param TestCase[] $expected
      */
-    public function test(OpenApi $openApi, array $expected): void
+    public function test(Api $openApi, array $expected): void
     {
         $preparator = new Error401TestCasesPreparator();
         $preparator->configure([]);
@@ -37,133 +38,135 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function getData(): iterable
     {
         yield [
-            new OpenApi([
-                'openapi' => '3.0.2',
-                'info' => [
-                    'title' => 'Test API',
-                    'version' => '1.0.0',
-                ],
-                'paths' => [
-                    '/test/oauth2' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'oauth2_test' => ['write:pets'],
+            Api::create(
+                [
+                    'openapi' => '3.0.2',
+                    'info' => [
+                        'title' => 'Test API',
+                        'version' => '1.0.0',
+                    ],
+                    'paths' => [
+                        '/test/oauth2' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'oauth2_test' => ['write:pets'],
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    '/test/api/key/header' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_header' => [],
+                        '/test/api/key/header' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'api_key_header' => [],
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    '/test/api/key/cookie' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_cookie' => [],
+                        '/test/api/key/cookie' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'api_key_cookie' => [],
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    '/test/api/key/query' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_query' => [],
+                        '/test/api/key/query' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'api_key_query' => [],
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    '/test/basic' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'basic_test' => [],
+                        '/test/basic' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'basic_test' => [],
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                    '/test/bearer' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'bearer_test' => [
+                        '/test/bearer' => [
+                            'get' => [
+                                'operationId' => 'test',
+                                'responses' => [
+                                    '401' => [],
+                                ],
+                                'security' => [
+                                    [
+                                        'bearer_test' => [
+                                        ],
                                     ],
                                 ],
                             ],
                         ],
                     ],
-                ],
-                'components' => [
-                    'securitySchemes' => [
-                        'oauth2_test' => [
-                            'type' => 'oauth2',
-                            'flows' => [
-                                'implicit' => [
-                                    'authorizationUrl' => 'https://petstore3.swagger.io/oauth/authorize',
-                                    'scopes' => [
-                                        'write:pets' => 'modify pets in your account',
-                                        'read:pets' => 'read your pets',
+                    'components' => [
+                        'securitySchemes' => [
+                            'oauth2_test' => [
+                                'type' => 'oauth2',
+                                'flows' => [
+                                    'implicit' => [
+                                        'authorizationUrl' => 'https://petstore3.swagger.io/oauth/authorize',
+                                        'scopes' => [
+                                            'write:pets' => 'modify pets in your account',
+                                            'read:pets' => 'read your pets',
+                                        ],
                                     ],
                                 ],
                             ],
-                        ],
-                        'api_key_header' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'header',
-                        ],
-                        'api_key_cookie' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'cookie',
-                        ],
-                        'api_key_query' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'query',
-                        ],
-                        'basic_test' => [
-                            'type' => 'http',
-                            'scheme' => 'basic',
-                        ],
-                        'bearer_test' => [
-                            'type' => 'http',
-                            'scheme' => 'bearer',
+                            'api_key_header' => [
+                                'type' => 'apiKey',
+                                'name' => 'api_key',
+                                'in' => 'header',
+                            ],
+                            'api_key_cookie' => [
+                                'type' => 'apiKey',
+                                'name' => 'api_key',
+                                'in' => 'cookie',
+                            ],
+                            'api_key_query' => [
+                                'type' => 'apiKey',
+                                'name' => 'api_key',
+                                'in' => 'query',
+                            ],
+                            'basic_test' => [
+                                'type' => 'http',
+                                'scheme' => 'basic',
+                            ],
+                            'bearer_test' => [
+                                'type' => 'http',
+                                'scheme' => 'bearer',
+                            ],
                         ],
                     ],
-                ],
-            ]),
+                ]
+            ),
             [
                 new TestCase(
                     'test',

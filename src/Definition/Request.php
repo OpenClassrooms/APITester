@@ -9,23 +9,29 @@ use OpenAPITesting\Definition\Collection\Examples;
 
 final class Request
 {
-    public string $mediaType;
+    private Operation $operation;
 
-    private ?Schema $body;
+    private string $mediaType;
 
-    private bool $required;
+    private Schema $body;
+
+    private bool $required = true;
 
     private Examples $examples;
 
-    public function __construct(?Schema $body, string $mediaType, bool $required = true, ?Examples $examples = null)
+    public function __construct(string $mediaType, Schema $body)
     {
         $this->body = $body;
         $this->mediaType = $mediaType;
-        $this->required = $required;
-        $this->examples = $examples ?? new Examples();
+        $this->examples = new Examples();
     }
 
-    public function getBody(): ?Schema
+    public static function create(string $mediaType, Schema $body): self
+    {
+        return new self($mediaType, $body);
+    }
+
+    public function getBody(): Schema
     {
         return $this->body;
     }
@@ -33,6 +39,13 @@ final class Request
     public function isRequired(): bool
     {
         return $this->required;
+    }
+
+    public function setRequired(bool $required = true): Request
+    {
+        $this->required = $required;
+
+        return $this;
     }
 
     public function getMediaType(): string
@@ -43,5 +56,17 @@ final class Request
     public function getExamples(): Examples
     {
         return $this->examples;
+    }
+
+    public function getOperation(): Operation
+    {
+        return $this->operation;
+    }
+
+    public function setOperation(Operation $operation): self
+    {
+        $this->operation = $operation;
+
+        return $this;
     }
 }

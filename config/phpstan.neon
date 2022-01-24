@@ -3,11 +3,14 @@ includes:
 
 parameters:
     bootstrapFiles:
-        - ../tests/bootstrap.php
+        - constants.php
     level: 9
     paths:
         - ../src
         - ../tests
+    excludePaths:
+        - ../src/Util/Collection.php
+        - ../src/Util/functions.php
     ignoreErrors:
         - '/Constructor in .+ has parameter .+ with default value./'
         - '/Method .+ has parameter .+ with null as default value./'
@@ -15,12 +18,10 @@ parameters:
         - '/Method .+ has parameter .+ with a nullable type declaration./'
         - '/Language construct isset\(\) should not be used./'
         - '/PHPDoc tag @var above assignment does not specify variable name./'
-        - '/Short ternary operator is not allowed./'
         - '/Cannot cast mixed to string./'
         - '/Class ".+" is not allowed to extend ".+"./'
         - '/Variable property access on .+./'
         - '/Method .+ is not final, but since the containing class is abstract, it should be./'
-        - 'In method ".+", caught ".+" must be rethrown.'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
     exceptions:
         check:

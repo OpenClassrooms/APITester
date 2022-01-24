@@ -9,20 +9,23 @@ use OpenAPITesting\Definition\Collection\Examples;
 
 final class Parameter
 {
+    private Operation $operation;
+
     private string $name;
 
-    private string $in;
-
-    private ?Schema $schema;
+    private ?Schema $schema = null;
 
     private Examples $examples;
 
-    public function __construct(string $name, string $in, ?Schema $schema, ?Examples $examples = null)
+    public function __construct(string $name)
     {
         $this->name = $name;
-        $this->schema = $schema;
-        $this->in = $in;
-        $this->examples = $examples ?? new Examples();
+        $this->examples = new Examples();
+    }
+
+    public static function create(string $name): self
+    {
+        return new self($name);
     }
 
     public function getName(): string
@@ -35,13 +38,27 @@ final class Parameter
         return $this->schema;
     }
 
-    public function getIn(): string
+    public function setSchema(?Schema $schema): self
     {
-        return $this->in;
+        $this->schema = $schema;
+
+        return $this;
     }
 
     public function getExamples(): Examples
     {
         return $this->examples;
+    }
+
+    public function getOperation(): Operation
+    {
+        return $this->operation;
+    }
+
+    public function setOperation(Operation $operation): self
+    {
+        $this->operation = $operation;
+
+        return $this;
     }
 }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Test\Preparator;
 
-use cebe\openapi\spec\OpenApi;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Preparator\Error405TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -16,81 +18,68 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param \OpenAPITesting\Test\TestCase[] $expected
+     * @param TestCase[] $expected
      */
-    public function test(OpenApi $openApi, array $expected): void
+    public function test(Api $api, array $expected): void
     {
         $preparator = new Error405TestCasesPreparator();
         $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($openApi),
+            $preparator->prepare($api),
             ['size', 'id', 'headerNames', 'groups']
         );
     }
 
     /**
-     * @return iterable<int, array{OpenApi, array<TestCase>}>
+     * @return iterable<int, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {
         yield [
-            new OpenApi([
-                'openapi' => '3.0.2',
-                'info' => [
-                    'title' => 'Test API',
-                    'version' => '1.0.0',
-                ],
-                'paths' => [
-                    '/test' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '200' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ]),
+            Api::create()->addOperation(
+                Operation::create('test', '/test')
+                    ->addResponse(DefinitionResponse::create())
+            ),
             [
                 new TestCase(
-                    'post_/test',
+                    'POST_/test',
                     new Request('POST', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'put_/test',
+                    'PUT_/test',
                     new Request('PUT', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'patch_/test',
+                    'PATCH_/test',
                     new Request('PATCH', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'delete_/test',
+                    'DELETE_/test',
                     new Request('DELETE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'head_/test',
+                    'HEAD_/test',
                     new Request('HEAD', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'options_/test',
+                    'OPTIONS_/test',
                     new Request('OPTIONS', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'trace_/test',
+                    'TRACE_/test',
                     new Request('TRACE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'connect_/test',
+                    'CONNECT_/test',
                     new Request('CONNECT', '/test'),
                     new Response(405)
                 ),

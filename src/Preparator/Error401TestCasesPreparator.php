@@ -10,6 +10,8 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Responses;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\Security;
 use OpenAPITesting\Test\TestCase;
 
@@ -30,114 +32,37 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): array
+    public function prepare(Api $api): iterable
     {
-        $testCases = [];
-        foreach ($api->getOperations(['status' => 401]) as $operation) {
-            $request = new Request(
+        /** @var Responses $responses */
+        $responses = $api->getOperations()
+            ->select('responses.*')
+            ->flatten()
+            ->where('statusCode', 401)
+            ->values();
+
+        return $responses
+            ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+        ;
+    }
+
+    private function prepareTestCase(DefinitionResponse $response): TestCase
+    {
+        $operation = $response->getOperation();
+        $request = $this->setAuthentication(
+            new Request(
                 $operation->getMethod(),
-                $operation->getPath() . '?1=1'
-            );
-
-            $request = $this->setAuthentication($request, $operation->getSecurity());
-
-            /** @var \cebe\openapi\spec\Response $response */
-            $response = $operation->getResponses(['status' => 401]);
-
-            $testCases[] = new TestCase(
-                $operation->getId(),
-                $request,
-                new Response(401, [], $response->description),
-                $this->getGroups($operation),
-            );
-        }
-
-        return $testCases;
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsBasicCredentials(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BASIC_AUTH_SCHEME);
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsBearerToken(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BEARER_AUTH_SCHEME);
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsOAuth2Token(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::OAUTH2_AUTH_TYPE);
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function getNeededApiKey(array $security): ?SecurityScheme
-    {
-        return $this->getNeededAuth($security, self::API_KEY_AUTH_TYPE);
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $securityConfig
-     */
-    private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
-    {
-        foreach ($securityConfig as $security) {
-            if ($type === mb_strtolower($security->type)) {
-                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
-                    return $security;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private function addFakeApiKeyToRequest(SecurityScheme $security, Request $request): Request
-    {
-        $newRequest = $request;
-
-        if ('header' === $security->in) {
-            $newRequest = $request->withAddedHeader($security->name, self::FAKE_API_KEY);
-        } elseif ('cookie' === $security->in) {
-            $newRequest = $request->withAddedHeader('Cookie', $security->name . '=' . self::FAKE_API_KEY);
-        } elseif ('query' === $security->in) {
-            $newRequest = $request->withUri(
-                new Uri(((string) $request->getUri()) . sprintf('&%s=%s', $security->name, self::FAKE_API_KEY))
-            );
-        }
-
-        return $newRequest;
-    }
-
-    private function addFakeBasicHeader(Request $request): Request
-    {
-        return $request->withAddedHeader('Authorization', 'Basic ' . base64_encode('aaaa:bbbbb'));
-    }
-
-    private function addFakeBearerToken(Request $request): Request
-    {
-        return $request->withAddedHeader(
-            'Authorization',
-            'Bearer ' . JWT::encode([
-                'test' => 1234,
-            ], 'abcd')
+                $operation->getPath()
+            ),
+            $operation->getSecurity()
         );
-    }
 
-    private function addFakeOAuth2Token(Request $request): Request
-    {
-        return $this->addFakeBearerToken($request);
+        return new TestCase(
+            $operation->getId(),
+            $request,
+            new Response(401, [], $response->getDescription()),
+            $this->getGroups($operation),
+        );
     }
 
     /**
@@ -159,5 +84,90 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
         }
 
         return $request;
+    }
+
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
+    private function needsBasicCredentials(array $security): bool
+    {
+        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BASIC_AUTH_SCHEME);
+    }
+
+    private function addFakeBasicHeader(Request $request): Request
+    {
+        return $request->withAddedHeader('Authorization', 'Basic ' . base64_encode('aaaa:bbbbb'));
+    }
+
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
+    private function needsBearerToken(array $security): bool
+    {
+        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BEARER_AUTH_SCHEME);
+    }
+
+    private function addFakeBearerToken(Request $request): Request
+    {
+        return $request->withAddedHeader(
+            'Authorization',
+            'Bearer ' . JWT::encode([
+                'test' => 1234,
+            ], 'abcd')
+        );
+    }
+
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
+    private function needsOAuth2Token(array $security): bool
+    {
+        return null !== $this->getNeededAuth($security, self::OAUTH2_AUTH_TYPE);
+    }
+
+    private function addFakeOAuth2Token(Request $request): Request
+    {
+        return $this->addFakeBearerToken($request);
+    }
+
+    /**
+     * @param array<array-key, SecurityScheme> $security
+     */
+    private function getNeededApiKey(array $security): ?SecurityScheme
+    {
+        return $this->getNeededAuth($security, self::API_KEY_AUTH_TYPE);
+    }
+
+    private function addFakeApiKeyToRequest(SecurityScheme $security, Request $request): Request
+    {
+        $newRequest = $request;
+
+        if ('header' === $security->in) {
+            $newRequest = $request->withAddedHeader($security->name, self::FAKE_API_KEY);
+        } elseif ('cookie' === $security->in) {
+            $newRequest = $request->withAddedHeader('Cookie', $security->name . '=' . self::FAKE_API_KEY);
+        } elseif ('query' === $security->in) {
+            $newRequest = $request->withUri(
+                new Uri(((string) $request->getUri()) . sprintf('&%s=%s', $security->name, self::FAKE_API_KEY))
+            );
+        }
+
+        return $newRequest;
+    }
+
+    /**
+     * @param array<array-key, SecurityScheme> $securityConfig
+     */
+    private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
+    {
+        foreach ($securityConfig as $security) {
+            if ($type === mb_strtolower($security->type)) {
+                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
+                    return $security;
+                }
+            }
+        }
+
+        return null;
     }
 }

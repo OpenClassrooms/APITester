@@ -19,9 +19,9 @@ abstract class TestCasesPreparator
     /**
      * @throws PreparatorLoadingException
      *
-     * @return TestCase[]
+     * @return iterable<TestCase>
      */
-    abstract public function prepare(Api $api): array;
+    abstract public function prepare(Api $api): iterable;
 
     /**
      * @param array<array-key, mixed> $config
@@ -48,7 +48,9 @@ abstract class TestCasesPreparator
         return [
             $operation->getId(),
             $operation->getMethod(),
-            ...$operation->getTags()->toArray(),
+            ...$operation->getTags()
+                ->select('name')
+                ->toArray(),
             'preparator_' . static::getName(),
         ];
     }

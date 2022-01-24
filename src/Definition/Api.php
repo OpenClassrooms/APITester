@@ -53,7 +53,7 @@ final class Api
         return $this->operations;
     }
 
-    public function setOperations(Operations $operations): Api
+    public function setOperations(Operations $operations): self
     {
         $this->operations = $operations;
 
@@ -92,7 +92,7 @@ final class Api
         return $this->servers;
     }
 
-    public function setServers(Servers $servers): Api
+    public function setServers(Servers $servers): self
     {
         $this->servers = $servers;
 
@@ -104,7 +104,7 @@ final class Api
         return $this->tags;
     }
 
-    public function setTags(Tags $tags): Api
+    public function setTags(Tags $tags): self
     {
         $this->tags = $tags;
 
@@ -116,7 +116,7 @@ final class Api
         return $this->securitySchemes;
     }
 
-    public function setSecuritySchemes(SecuritySchemes $securitySchemes): Api
+    public function setSecuritySchemes(SecuritySchemes $securitySchemes): self
     {
         $this->securitySchemes = $securitySchemes;
 

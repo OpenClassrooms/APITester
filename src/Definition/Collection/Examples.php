@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use OpenAPITesting\Definition\Example;
+use OpenAPITesting\Util\Collection;
 
 /**
- * @psalm-suppress ImplementedReturnTypeMismatch
  * @method Example[] getIterator()
+ * @implements Collection<TKey, TValue>
  */
-final class Examples extends ArrayCollection
+final class Examples extends Collection
 {
 }

@@ -15,9 +15,11 @@ final class Operation
 
     private string $path;
 
-    private string $method;
+    private ?string $method = null;
 
-    private Parameters $parameters;
+    private Parameters $pathParameters;
+
+    private Parameters $queryParameters;
 
     private Requests $requests;
 
@@ -35,8 +37,8 @@ final class Operation
     ) {
         $this->id = $id;
         $this->path = $path;
-        $this->method = 'GET';
-        $this->parameters = new Parameters();
+        $this->pathParameters = new Parameters();
+        $this->queryParameters = new Parameters();
         $this->requests = new Requests();
         $this->responses = new Responses();
         $this->tags = new Tags();
@@ -52,20 +54,64 @@ final class Operation
         return $this->id;
     }
 
+    /**
+     * @param array<string|int, string|int> $params
+     * @param array<string|int, string|int> $query
+     *
+     * @return string
+     */
     public function getPath(array $params = [], array $query = []): string
     {
-        $names = array_map(static fn (string $x) => "{{$x}}", array_keys($params));
-        $path = str_replace($names, array_values($params), $this->path);
+        $params = $this->substituteParams($params, 'path');
+        $query = $this->substituteParams($query, 'query');
+        $path = str_replace(
+            array_map(
+                static fn (string $name) => "{{$name}}",
+                array_keys($params),
+            ),
+            array_values($params),
+            $this->path
+        );
 
-        return $path . '?' . http_build_query($query);
+        return rtrim($path . '?' . http_build_query($query), '?');
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    private function substituteParams(array $params, string $in): array
+    {
+        $prop = "{$in}Parameters";
+        if (!isset($this->$prop)) {
+            throw new \RuntimeException("Parameters in $in not handled.");
+        }
+        /** @var Parameters $parameters */
+        $parameters = $this->$prop;
+        $result = [];
+        foreach ($params as $name => $value) {
+            if (is_string($name)) {
+                $result[$name] = $value;
+            } else {
+                if (!isset($parameters[$name])) {
+                    continue;
+                }
+                /** @var Parameter $parameter */
+                $parameter = $parameters[$name];
+                $result[$parameter->getName()] = $value;
+            }
+        }
+
+        return $result;
     }
 
     public function getMethod(): string
     {
-        return mb_strtoupper($this->method);
+        return mb_strtoupper($this->method ?? 'GET');
     }
 
-    public function setMethod(string $method): Operation
+    public function setMethod(string $method): self
     {
         $this->method = $method;
 
@@ -84,19 +130,39 @@ final class Operation
         return $this;
     }
 
-    public function getRequest(string $mediaType): Request
+    public function addRequest(Request $request): self
     {
-        return $this->requests[$mediaType];
+        if ($this->method === null) {
+            $this->setMethod('POST');
+        }
+        $request->setOperation($this);
+        $this->requests->add($request);
+
+        return $this;
     }
 
-    public function getParameters(): Parameters
+    public function getRequest(string $mediaType): ?Request
     {
-        return $this->parameters;
+        /** @var Request|null */
+        return $this->requests->firstWhere('mediaType', $mediaType);
     }
 
-    public function setParameters(Parameters $parameters): self
+    public function getPathParameters(): Parameters
     {
-        $this->parameters = $parameters;
+        return $this->pathParameters;
+    }
+
+    public function setPathParameters(Parameters $pathParameters): self
+    {
+        $this->pathParameters = $pathParameters;
+
+        return $this;
+    }
+
+    public function addParameter(Parameter $parameter): self
+    {
+        $parameter->setOperation($this);
+        $this->pathParameters->add($parameter);
 
         return $this;
     }
@@ -115,6 +181,7 @@ final class Operation
 
     public function addResponse(Response $response): self
     {
+        $response->setOperation($this);
         $this->responses->add($response);
 
         return $this;
@@ -125,7 +192,7 @@ final class Operation
         return $this->tags;
     }
 
-    public function setTags(Tags $tags): Operation
+    public function setTags(Tags $tags): self
     {
         $this->tags = $tags;
 
@@ -137,7 +204,7 @@ final class Operation
         return $this->summary;
     }
 
-    public function setSummary(string $summary): Operation
+    public function setSummary(string $summary): self
     {
         $this->summary = $summary;
 
@@ -149,7 +216,7 @@ final class Operation
         return $this->description;
     }
 
-    public function setDescription(string $description): Operation
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
@@ -159,5 +226,24 @@ final class Operation
     public function getSecurity(): Security
     {
         return new Security();
+    }
+
+    public function getQueryParameters(): Parameters
+    {
+        return $this->queryParameters;
+    }
+
+    public function setQueryParameters(Parameters $queryParameters): self
+    {
+        $this->queryParameters = $queryParameters;
+
+        return $this;
+    }
+
+    public function addQueryParameters(Parameter $parameter): self
+    {
+        $this->queryParameters->add($parameter);
+
+        return $this;
     }
 }

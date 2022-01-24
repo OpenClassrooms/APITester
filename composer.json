@@ -27,10 +27,10 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "cebe/php-openapi": "^1.5",
-    "doctrine/collections": "^1.6",
     "fakerphp/faker": "^1.17",
     "firebase/php-jwt": "^5.5",
     "guzzlehttp/promises": "~1.4.0",
+    "illuminate/collections": " ^8.0",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.55",
@@ -94,13 +94,12 @@
       "vendor/bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
     ],
     "check-static": [
-      "@psalm",
       "@phpstan"
     ],
     "test": [
       "@unit"
     ],
-    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
+    "unit": "bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"

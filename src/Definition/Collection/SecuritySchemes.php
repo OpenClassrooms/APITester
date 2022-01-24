@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use OpenAPITesting\Definition\SecurityScheme;
+use OpenAPITesting\Util\Collection;
 
 /**
- * @psalm-suppress ImplementedReturnTypeMismatch
  * @method SecurityScheme[] getIterator()
+ * @implements Collection<TKey, TValue>
  */
-final class SecuritySchemes extends ArrayCollection
+final class SecuritySchemes extends Collection
 {
 }

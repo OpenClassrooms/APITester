@@ -11,6 +11,7 @@ use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Test\TestCase;
 
 final class Error403TestCasesPreparator extends TestCasesPreparator
@@ -32,7 +33,7 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(OpenApi $api): array
+    public function prepare(Api $api): iterable
     {
         $this->openApi = $api;
 
@@ -54,7 +55,6 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
                 );
 
                 $security = $this->getSecurity($operation);
-
 
                 $testCases[] = new TestCase(
                     $operation->operationId,

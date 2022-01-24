@@ -22,7 +22,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     {
         $testCases = [];
         foreach ($api->getOperations() as $operation) {
-            if (count($operation->getResponses()) === 0) {
+            if (0 === \count($operation->getResponses())) {
                 continue;
             }
             $requests = $this->buildRequests($operation);
@@ -67,7 +67,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
             }
         }
 
-        foreach ($operation->getParameters() as $parameter) {
+        foreach ($operation->getPathParameters() as $parameter) {
             foreach ($parameter->getExamples() as $example) {
                 $index = $example->getName();
                 $requests[$index] ??= new Request(

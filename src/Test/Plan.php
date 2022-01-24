@@ -55,9 +55,9 @@ final class Plan
 
     /**
      * @param TestCasesPreparator[] $preparators
-     * @param Requester[] $requesters
-     * @param DefinitionLoader[] $definitionLoaders
-     * @param Authenticator[] $authenticators
+     * @param Requester[]           $requesters
+     * @param DefinitionLoader[]    $definitionLoaders
+     * @param Authenticator[]       $authenticators
      */
     public function __construct(
         array $preparators,
@@ -197,7 +197,9 @@ final class Plan
 
     private function setBaseUri(Api $schema, Requester $requester): void
     {
-        $baseUri = $schema->getServers()[0]->getUrl();
+        $baseUri = $schema->getServers()[0]
+            ->getUrl()
+        ;
         $requester->setBaseUri($baseUri);
     }
 

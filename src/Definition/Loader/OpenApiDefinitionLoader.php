@@ -38,7 +38,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     /**
      * @throws DefinitionLoadingException
-     * @return Api
      */
     public function load(string $filePath, string $format = self::FORMAT_YAML): Api
     {
@@ -60,7 +59,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $parameters = $operation->parameters;
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
-                /** @var \cebe\openapi\spec\Responses|null $responses */
+                /** @var \cebe\openapi\spec\Response[]|null $responses */
                 $responses = $operation->responses;
 
                 $api->addOperation(
@@ -71,7 +70,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setMethod($method)
                         ->setSummary($operation->summary ?? '')
                         ->setDescription($operation->description ?? '')
-                        ->setParameters($this->getParameters($parameters))
+                        ->setPathParameters($this->getParameters($parameters, 'path'))
+                        ->setQueryParameters($this->getParameters($parameters, 'query'))
                         ->setRequests($this->getRequests($requestBody))
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))
@@ -79,8 +79,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
         }
 
-        /** @var null|\cebe\openapi\spec\SecurityScheme[] $securitySchemes */
-        $securitySchemes = $openApi->components !== null ? $openApi->components->securitySchemes : null;
+        /** @var \cebe\openapi\spec\SecurityScheme[]|null $securitySchemes */
+        $securitySchemes = null !== $openApi->components ? $openApi->components->securitySchemes : null;
 
         return $api
             ->setOperations(new Operations($collection))
@@ -98,17 +98,17 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     /**
      * @param \cebe\openapi\spec\Parameter[] $parameters
      */
-    private function getParameters(array $parameters): Parameters
+    private function getParameters(array $parameters, string $in): Parameters
     {
         $collection = [];
         foreach ($parameters as $parameter) {
             /** @var Schema|null $schema */
             $schema = $parameter->schema;
-            $collection[] = new Parameter(
-                $parameter->name,
-                $parameter->in,
-                $schema
-            );
+            if ($parameter->in !== $in) {
+                continue;
+            }
+            $collection[] = Parameter::create($parameter->name)
+                ->setSchema($schema);
         }
 
         return new Parameters($collection);
@@ -122,19 +122,26 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
         $requests = [];
         foreach ($requestBody->content as $type => $mediaType) {
-            /** @var Schema|null $schema */
+            if (null === $mediaType->schema) {
+                continue;
+            }
+            /** @var Schema $schema */
             $schema = $mediaType->schema;
-            $requests[$type] = new Request(
-                $schema,
+            $requests[$type] = Request::create(
                 $type,
-                $requestBody->required
+                $schema,
             );
         }
 
         return new Requests($requests);
     }
 
-    private function getResponses(?\cebe\openapi\spec\Responses $responses): Responses
+    /**
+     * @param \cebe\openapi\spec\Response[] $responses
+     *
+     * @return Responses
+     */
+    private function getResponses(?iterable $responses): Responses
     {
         if (null === $responses) {
             return new Responses();
@@ -151,35 +158,16 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $schema = $mediaType->schema;
                 /** @var \cebe\openapi\spec\Header[] $headers */
                 $headers = $response->headers;
-                $collection[$status . '_' . $type] = new Response(
-                    $type,
-                    (int) $status,
-                    $this->getHeaders($headers),
-                    $schema,
-                    $response->description,
-                );
+                $collection[] = Response::create()
+                    ->setMediaType($type)
+                    ->setStatusCode((int) $status)
+                    ->setHeaders($this->getHeaders($headers))
+                    ->setBody($schema)
+                    ->setDescription($response->description);
             }
         }
 
         return new Responses($collection);
-    }
-
-    /**
-     * @param \cebe\openapi\spec\Header[] $headers
-     */
-    private function getHeaders(array $headers): Headers
-    {
-        $collection = [];
-        foreach ($headers as $header) {
-            /** @var Schema|null $schema */
-            $schema = $header->schema;
-            $collection[] = new Header(
-                $header->name,
-                $schema
-            );
-        }
-
-        return new Headers($collection);
     }
 
     /**
@@ -190,7 +178,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         $collection = [];
 
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 $tag = $tag->name;
             }
             $collection[] = new Tag($tag);
@@ -213,7 +201,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @param null|\cebe\openapi\spec\SecurityScheme[] $securitySchemes
+     * @param \cebe\openapi\spec\SecurityScheme[]|null $securitySchemes
      */
     private function getSecuritySchemes(?array $securitySchemes): SecuritySchemes
     {
@@ -228,4 +216,23 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
         return new SecuritySchemes($collection);
     }
+
+    /**
+     * @param \cebe\openapi\spec\Header[] $headers
+     */
+    private function getHeaders(array $headers): Headers
+    {
+        $collection = [];
+        foreach ($headers as $header) {
+            /** @var Schema|null $schema */
+            $schema = $header->schema;
+            $collection[] = new Header(
+                $header->name,
+                $schema
+            );
+        }
+
+        return new Headers($collection);
+    }
+
 }

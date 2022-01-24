@@ -7,7 +7,9 @@ namespace OpenAPITesting\Preparator;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Responses;
 use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 use Vural\OpenAPIFaker\Options;
@@ -23,49 +25,44 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): array
+    public function prepare(Api $api): iterable
     {
-        $testCases = [];
+        /** @var Responses $responses */
+        $responses = $api->getOperations()
+            ->select('responses.*')
+            ->flatten()
+            ->where('statusCode', 404)
+            ->values();
 
-        foreach ($api->getOperations(['status' => 404]) as $operation) {
-            $responses = $operation->getResponses(['status' => '404']);
-            foreach ($responses as $response) {
-                $testCases[] = new TestCase(
-                    $operation->getId(),
-                    new Request(
-                        $operation->getMethod(),
-                        $this->processPath($operation->getPath(), $operation),
-                        [],
-                        $this->generateBody($operation),
-                    ),
-                    new Response(
-                        404,
-                        [],
-                        $response->getDescription()
-                    ),
-                    $this->getGroups($operation),
-                );
-            }
-        }
-
-        return array_filter($testCases);
+        return $responses
+            ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+        ;
     }
 
-    private function processPath(string $path, Operation $operation): string
+    private function prepareTestCase(DefinitionResponse $response): TestCase
     {
-        foreach ($operation->getParameters() as $parameter) {
-            if ('path' === $parameter->getIn()) {
-                $path = str_replace("{{$parameter->getName()}}", '-9999', $path);
-            }
-        }
-
-        return $path;
+        return new TestCase(
+            $response->getOperation()->getId(),
+            new Request(
+                $response->getOperation()->getMethod(),
+                $response->getOperation()->getPath([-9999]),
+                [],
+                $this->generateBody($response->getOperation()),
+            ),
+            new Response(
+                404,
+                [],
+                $response->getDescription()
+            ),
+            $this->getGroups($response->getOperation()),
+        );
     }
 
     private function generateBody(Operation $operation): ?string
     {
         $request = $operation->getRequest('application/json');
-        if (null === $request->getBody()) {
+
+        if (null === $request) {
             return null;
         }
 
