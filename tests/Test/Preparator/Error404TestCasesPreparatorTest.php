@@ -44,7 +44,7 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield [
             Api::create()->addOperation(
                 Operation::create('getTest', '/test/{id}')
-                    ->addParameter(Parameter::create('id', 'path'))
+                    ->addPathParameter(Parameter::create('id'))
                     ->addResponse(DefinitionResponse::create())
                     ->addResponse(
                         DefinitionResponse::create()

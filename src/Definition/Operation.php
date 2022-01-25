@@ -24,6 +24,8 @@ final class Operation
 
     private Parameters $queryParameters;
 
+    private Parameters $headers;
+
     private Requests $requests;
 
     private Responses $responses;
@@ -44,6 +46,7 @@ final class Operation
         $this->path = $path;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
+        $this->headers = new Parameters();
         $this->requests = new Requests();
         $this->responses = new Responses();
         $this->tags = new Tags();
@@ -165,7 +168,7 @@ final class Operation
         return $this;
     }
 
-    public function addParameter(Parameter $parameter): self
+    public function addPathParameter(Parameter $parameter): self
     {
         $parameter->setOperation($this);
         $this->pathParameters->add($parameter);
@@ -173,26 +176,18 @@ final class Operation
         return $this;
     }
 
-    public function findParameters(string $name, string $in): Parameters
+    public function addQueryParameter(Parameter $parameter): self
     {
-        $parameters = [];
-        foreach ($this->parameters as $parameter) {
-            if ($name === $parameter->getName() && $in === $parameter->getIn()) {
-                $parameters[] = $parameter;
-            }
-        }
+        $parameter->setOperation($this);
+        $this->queryParameters->add($parameter);
 
-        return new Parameters($parameters);
+        return $this;
     }
 
-    public function findParameter(string $name, string $in): ?Parameter
+    public function addHeader(Parameter $header): self
     {
-        return $this->findParameters($name, $in)[0] ?? null;
-    }
-
-    public function addParameter(Parameter $parameter): self
-    {
-        $this->parameters->add($parameter);
+        $header->setOperation($this);
+        $this->headers->add($header);
 
         return $this;
     }
@@ -300,5 +295,17 @@ final class Operation
     public function setApi(Api $api): void
     {
         $this->api = $api;
+    }
+
+    public function getHeaders(): Parameters
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(Parameters $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
     }
 }

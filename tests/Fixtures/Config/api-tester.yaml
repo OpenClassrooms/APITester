@@ -16,17 +16,14 @@ suites:
                     message: 'HTTP 405 Method Not Allowed'
             406: ~
             416:
-                range:
-                    -   in: header
-                        name: Range
-                        unit: items
-                    -   in: query
-                        name:
-                            lower: offset
+                range: # Possible range parameters across the API
+                    header: # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
+                        -   name: Range
+                            unit: items
+                    query: # For query params, give lower and upper parameter names
+                        -   lower: offset
                             upper: limit
-                    -   in: body
-                        name:
-                            lower: from
+                        -   lower: from
                             upper: to
         filters:
             #            include:
