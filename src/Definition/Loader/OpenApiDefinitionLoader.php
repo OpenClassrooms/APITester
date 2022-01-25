@@ -86,7 +86,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             ->setOperations(new Operations($collection))
             ->setServers($this->getServers($openApi->servers))
             ->setTags($this->getTags($openApi->tags))
-            ->setSecuritySchemes($this->getSecuritySchemes($securitySchemes))
+            ->setSecurities($this->getSecuritySchemes($securitySchemes))
         ;
     }
 

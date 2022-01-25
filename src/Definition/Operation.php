@@ -7,10 +7,13 @@ namespace OpenAPITesting\Definition;
 use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Collection\Requests;
 use OpenAPITesting\Definition\Collection\Responses;
+use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Tags;
 
 final class Operation
 {
+    private Api $api;
+
     private string $id;
 
     private string $path;
@@ -31,6 +34,8 @@ final class Operation
 
     private Tags $tags;
 
+    private Securities $securities;
+
     public function __construct(
         string $id,
         string $path
@@ -42,6 +47,7 @@ final class Operation
         $this->requests = new Requests();
         $this->responses = new Responses();
         $this->tags = new Tags();
+        $this->securities = new Securities();
     }
 
     public static function create(string $id, string $path): self
@@ -223,11 +229,6 @@ final class Operation
         return $this;
     }
 
-    public function getSecurity(): Security
-    {
-        return new Security();
-    }
-
     public function getQueryParameters(): Parameters
     {
         return $this->queryParameters;
@@ -245,5 +246,35 @@ final class Operation
         $this->queryParameters->add($parameter);
 
         return $this;
+    }
+
+    public function getSecurities(): Securities
+    {
+        return $this->securities;
+    }
+
+    public function setSecurities(Securities $securities): self
+    {
+        $this->securities = $securities;
+
+        return $this;
+    }
+
+    public function addSecurity(Security $security): self
+    {
+        $security->setOperation($this);
+        $this->securities->add($security);
+
+        return $this;
+    }
+
+    public function getApi(): Api
+    {
+        return $this->api;
+    }
+
+    public function setApi(Api $api): void
+    {
+        $this->api = $api;
     }
 }

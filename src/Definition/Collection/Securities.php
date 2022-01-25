@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
-use OpenAPITesting\Definition\SecurityScheme;
+use OpenAPITesting\Definition\Security;
 use OpenAPITesting\Util\Collection;
 
 /**
- * @method SecurityScheme[] getIterator()
+ * @method Security[] getIterator()
  * @implements Collection<TKey, TValue>
  */
-final class SecuritySchemes extends Collection
+final class Securities extends Collection
 {
 }

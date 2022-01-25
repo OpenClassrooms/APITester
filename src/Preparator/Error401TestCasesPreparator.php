@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\SecurityScheme;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
+use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Security;
+use OpenAPITesting\Definition\Security\ApiKeySecurity;
+use OpenAPITesting\Definition\Security\HttpSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
 use OpenAPITesting\Test\TestCase;
 
 final class Error401TestCasesPreparator extends TestCasesPreparator
 {
-    public const HTTP_AUTH_TYPE = 'http';
-    public const OAUTH2_AUTH_TYPE = 'oauth2';
-    public const API_KEY_AUTH_TYPE = 'apikey';
-    public const BASIC_AUTH_SCHEME = 'basic';
-    public const BEARER_AUTH_SCHEME = 'bearer';
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
+
+    private string $fakeApiKey = self::FAKE_API_KEY;
 
     public static function getName(): string
     {
@@ -34,77 +32,54 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
      */
     public function prepare(Api $api): iterable
     {
-        /** @var Responses $responses */
-        $responses = $api->getOperations()
-            ->select('responses.*')
-            ->flatten()
-            ->where('statusCode', 401)
-            ->values();
+        /** @var Securities $securities */
+        $securities = $api->getOperations()
+            ->where('responses.*.statusCode', [401])
+            ->select('securities.*')
+            ->flatten();
 
-        return $responses
-            ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+        return $securities
+            ->map(fn (Security $security) => $this->prepareTestCase($security))
         ;
     }
 
-    private function prepareTestCase(DefinitionResponse $response): TestCase
+    private function prepareTestCase(Security $security): TestCase
     {
-        $operation = $response->getOperation();
+        $operation = $security->getOperation();
         $request = $this->setAuthentication(
             new Request(
                 $operation->getMethod(),
                 $operation->getPath()
             ),
-            $operation->getSecurity()
+            $security
         );
 
         return new TestCase(
             $operation->getId(),
             $request,
-            new Response(401, [], $response->getDescription()),
+            new Response(401),
             $this->getGroups($operation),
         );
     }
 
-    /**
-     * @param SecurityScheme[] $security
-     */
     private function setAuthentication(Request $request, Security $security): Request
     {
-        if ($this->needsBasicCredentials($security)) {
+        if ($security instanceof HttpSecurity && $security->isBasic()) {
             $request = $this->addFakeBasicHeader($request);
-        } elseif ($this->needsBearerToken($security)) {
+        } elseif ($security instanceof HttpSecurity && $security->isBearer()) {
             $request = $this->addFakeBearerToken($request);
-        } elseif ($this->needsOAuth2Token($security)) {
+        } elseif ($security instanceof OAuth2Security) {
             $request = $this->addFakeOAuth2Token($request);
-        }
-
-        $apiKey = $this->getNeededApiKey($security);
-        if (null !== $apiKey) {
-            $request = $this->addFakeApiKeyToRequest($apiKey, $request);
+        } elseif ($security instanceof ApiKeySecurity) {
+            $request = $this->addFakeApiKeyToRequest($request, $security);
         }
 
         return $request;
     }
 
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsBasicCredentials(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BASIC_AUTH_SCHEME);
-    }
-
     private function addFakeBasicHeader(Request $request): Request
     {
         return $request->withAddedHeader('Authorization', 'Basic ' . base64_encode('aaaa:bbbbb'));
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsBearerToken(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::HTTP_AUTH_TYPE, self::BEARER_AUTH_SCHEME);
     }
 
     private function addFakeBearerToken(Request $request): Request
@@ -117,57 +92,26 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
         );
     }
 
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function needsOAuth2Token(array $security): bool
-    {
-        return null !== $this->getNeededAuth($security, self::OAUTH2_AUTH_TYPE);
-    }
-
     private function addFakeOAuth2Token(Request $request): Request
     {
         return $this->addFakeBearerToken($request);
     }
 
-    /**
-     * @param array<array-key, SecurityScheme> $security
-     */
-    private function getNeededApiKey(array $security): ?SecurityScheme
-    {
-        return $this->getNeededAuth($security, self::API_KEY_AUTH_TYPE);
-    }
-
-    private function addFakeApiKeyToRequest(SecurityScheme $security, Request $request): Request
+    private function addFakeApiKeyToRequest(Request $request, ApiKeySecurity $security): Request
     {
         $newRequest = $request;
-
-        if ('header' === $security->in) {
-            $newRequest = $request->withAddedHeader($security->name, self::FAKE_API_KEY);
-        } elseif ('cookie' === $security->in) {
-            $newRequest = $request->withAddedHeader('Cookie', $security->name . '=' . self::FAKE_API_KEY);
-        } elseif ('query' === $security->in) {
+        if ('header' === $security->getIn()) {
+            $newRequest = $request->withAddedHeader($security->getKeyName(), $this->fakeApiKey);
+        } elseif ('cookie' === $security->getIn()) {
+            $newRequest = $request->withAddedHeader('Cookie', "{$security->getKeyName()}={$this->fakeApiKey}");
+        } elseif ('query' === $security->getIn()) {
+            $oldUri = (string) $request->getUri();
+            $prefix = str_contains($oldUri, '?') ? '&' : '?';
             $newRequest = $request->withUri(
-                new Uri(((string) $request->getUri()) . sprintf('&%s=%s', $security->name, self::FAKE_API_KEY))
+                new Uri($oldUri . "{$prefix}{$security->getKeyName()}={$this->fakeApiKey}")
             );
         }
 
         return $newRequest;
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $securityConfig
-     */
-    private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
-    {
-        foreach ($securityConfig as $security) {
-            if ($type === mb_strtolower($security->type)) {
-                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
-                    return $security;
-                }
-            }
-        }
-
-        return null;
     }
 }

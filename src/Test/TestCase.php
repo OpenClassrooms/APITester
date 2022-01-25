@@ -98,7 +98,7 @@ final class TestCase implements Test
             $this->log("[{$startedAt}] {$this->result}");
         }
 
-        /** @var \OpenAPITesting\Test\Result $result */
+        /** @var Result $result */
         $result = $this->result;
 
         return [
@@ -135,56 +135,6 @@ final class TestCase implements Test
         $this->logger = $logger;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
-
-    public function getStatus(): string
-    {
-        $status = self::STATUS_NOT_LAUNCHED;
-
-        if (null !== $this->startedAt) {
-            $status = self::STATUS_LAUNCHED;
-        }
-        if (null === $this->result) {
-            return $status;
-        }
-        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
-            return self::STATUS_SUCCESS;
-        }
-
-        return self::STATUS_FAILED;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeCallbacks(array $callbacks): void
-    {
-        $this->beforeCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterCallbacks(array $callbacks): void
-    {
-        $this->afterCallbacks = $callbacks;
-    }
-
-    /**
-     * @param string[] $excludedFields
-     */
-    public function addExcludedFields(array $excludedFields): void
-    {
-        /** @var string[] excludedFields */
-        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
-    }
-
     private function assert(): void
     {
         if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
@@ -217,5 +167,55 @@ final class TestCase implements Test
             null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
             $msg
         );
+    }
+
+    public function getStatus(): string
+    {
+        $status = self::STATUS_NOT_LAUNCHED;
+
+        if (null !== $this->startedAt) {
+            $status = self::STATUS_LAUNCHED;
+        }
+        if (null === $this->result) {
+            return $status;
+        }
+        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
+            return self::STATUS_SUCCESS;
+        }
+
+        return self::STATUS_FAILED;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
+    {
+        $this->beforeCallbacks = $callbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
+    {
+        $this->afterCallbacks = $callbacks;
+    }
+
+    /**
+     * @param string[] $excludedFields
+     */
+    public function addExcludedFields(array $excludedFields): void
+    {
+        /** @var string[] excludedFields */
+        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
     }
 }

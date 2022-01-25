@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition;
 
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\SecuritySchemes;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
 
@@ -19,8 +18,6 @@ final class Api
 
     private Operations $operations;
 
-    private SecuritySchemes $securitySchemes;
-
     private Servers $servers;
 
     private Tags $tags;
@@ -30,7 +27,6 @@ final class Api
         $this->operations = new Operations();
         $this->servers = new Servers();
         $this->tags = new Tags();
-        $this->securitySchemes = new SecuritySchemes();
     }
 
     public static function create(): self
@@ -48,20 +44,9 @@ final class Api
         $this->version = $version;
     }
 
-    public function getOperations(): Operations
-    {
-        return $this->operations;
-    }
-
-    public function setOperations(Operations $operations): self
-    {
-        $this->operations = $operations;
-
-        return $this;
-    }
-
     public function addOperation(Operation $operation): self
     {
+        $operation->setApi($this);
         $this->operations->add($operation);
 
         return $this;
@@ -111,18 +96,6 @@ final class Api
         return $this;
     }
 
-    public function getSecuritySchemes(): SecuritySchemes
-    {
-        return $this->securitySchemes;
-    }
-
-    public function setSecuritySchemes(SecuritySchemes $securitySchemes): self
-    {
-        $this->securitySchemes = $securitySchemes;
-
-        return $this;
-    }
-
     /**
      * @return array<string, array<Operation>>
      */
@@ -132,11 +105,23 @@ final class Api
         foreach ($this->getOperations() as $operation) {
             $operations[$operation->getMethod()][] = $operation;
             $operations[$operation->getId()][] = $operation;
-            foreach ($operation->getTags()->toArray() as $tag) {
-                $operations[$tag][] = $operation;
+            foreach ($operation->getTags()->select('name') as $tag) {
+                $operations[(string) $tag][] = $operation;
             }
         }
 
         return $operations;
+    }
+
+    public function getOperations(): Operations
+    {
+        return $this->operations;
+    }
+
+    public function setOperations(Operations $operations): self
+    {
+        $this->operations = $operations;
+
+        return $this;
     }
 }

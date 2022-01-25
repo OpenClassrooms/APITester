@@ -16,10 +16,10 @@ abstract class OAuth2Authenticator implements Authenticator
     public function authenticate(AuthConfig $config, Api $api, Requester $requester): ?string
     {
         [$authType, $flowType] = explode(':', $config->getType());
-        if (0 === \count($api->getSecuritySchemes())) {
+        if (0 === \count($api->getSecurities())) {
             throw new \RuntimeException('Auth configured but no security schemes present in api definition');
         }
-        foreach ($api->getSecuritySchemes() as $scheme) {
+        foreach ($api->getSecurities() as $scheme) {
             if ($scheme->type === $authType) {
                 if (null === $scheme->flows) {
                     throw new \RuntimeException(

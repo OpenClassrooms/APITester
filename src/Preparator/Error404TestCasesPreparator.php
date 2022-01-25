@@ -41,11 +41,14 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
 
     private function prepareTestCase(DefinitionResponse $response): TestCase
     {
+        $nbParams = $response->getOperation()->getPathParameters()->count();
+        $params = array_fill(0, $nbParams, -9999);
+
         return new TestCase(
             $response->getOperation()->getId(),
             new Request(
                 $response->getOperation()->getMethod(),
-                $response->getOperation()->getPath([-9999]),
+                $response->getOperation()->getPath($params),
                 [],
                 $this->generateBody($response->getOperation()),
             ),
