@@ -8,11 +8,28 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Test\TestCase;
 
 final class Error416TestCasesPreparator extends TestCasesPreparator
 {
+    public const HEADER_RANGE = 'header';
+    public const QUERY_PARAM_RANGE = 'query';
+    public const NEGATIVE_VALUES = [
+        'name' => 'negative',
+        'lower' => '-5',
+        'upper' => '5',
+    ];
+    public const NON_NUMERIC_VALUES = [
+        'name' => 'non_numeric',
+        'lower' => 'toto',
+        'upper' => 'tata',
+    ];
+    public const INVERSED_VALUES = [
+        'name' => 'inversed',
+        'lower' => '20',
+        'upper' => '5',
+    ];
+
     private ?array $rangeConfig;
 
     public static function getName(): string
@@ -25,22 +42,10 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
      */
     public function prepare(Api $api): array
     {
-        $testCases = [];
-        foreach ($api->getOperations() as $operation) {
-            $rangeQueryParameters = $this->getRangeQueryParameters($operation);
-            $rangeHeaders = $this->getRangeHeaders($operation);
-            foreach ($rangeQueryParameters as $parameter) {
-                $testCases[] = $this->prepareWithNegativeQueryParam($operation, $parameter);
-                $testCases[] = $this->prepareWithNonNumericQueryParam($operation, $parameter);
-                $testCases[] = $this->prepareWithInversedRangeQueryParam($operation, $parameter);
-            }
-            foreach ($rangeHeaders as $header) {
-                $testCases[] = $this->prepareWithNonNumericHeader($operation, $header);
-                $testCases[] = $this->prepareWithInversedRangeHeader($operation, $header);
-            }
-        }
+        $testCases = $api->getOperations()
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation));
 
-        return $testCases;
+        return array_merge(...$testCases);
     }
 
     /**
@@ -53,122 +58,117 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
         $this->rangeConfig = $config['range'] ?? null;
     }
 
-    private function getRangeQueryParameters(Operation $operation): array
+    /**
+     * @return TestCase[]
+     */
+    private function prepareTestCases(Operation $operation): array
     {
-        if (!isset($this->rangeConfig['query'])) {
+        $rangeConfig = $this->getRangeConfig($operation);
+
+        if (null === $rangeConfig) {
             return [];
         }
 
-        $parameters = [];
-        foreach ($this->rangeConfig['query'] as $parameterSet) {
-            $lower = $operation->getQueryParameters()->where('name', $parameterSet['lower'])->first();
-            $upper = $operation->getQueryParameters()->where('name', $parameterSet['upper'])->first();
+        $rangeConfig = $this->prepareValues($rangeConfig);
 
-            if (null === $lower || null === $upper) {
-                continue;
+        switch ($rangeConfig['in']) {
+            case self::QUERY_PARAM_RANGE:
+                return $this->prepareWithQueryParam($operation, $rangeConfig);
+            case self::HEADER_RANGE:
+                return $this->prepareWithHeader($operation, $rangeConfig);
+            default:
+                return [];
+        }
+    }
+
+    private function getRangeConfig(Operation $operation): ?array
+    {
+        if (null === $this->rangeConfig) {
+            return null;
+        }
+
+        foreach ($this->rangeConfig as $rangeConfig) {
+            if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
+                $lower = $operation->getQueryParameters()->where('name', $rangeConfig['lower'])->first();
+                $upper = $operation->getQueryParameters()->where('name', $rangeConfig['upper'])->first();
+
+                if (null === $lower || null === $upper) {
+                    continue;
+                }
+
+                return $rangeConfig;
             }
 
-            $parameters[] = [
-                'lower' => $lower,
-                'upper' => $upper,
-            ];
-        }
+            if (self::HEADER_RANGE === $rangeConfig['in']) {
+                $header = $operation->getHeaders()->where('name', $rangeConfig['name'])->first();
 
-        return $parameters;
-    }
+                if (null === $header) {
+                    continue;
+                }
 
-    private function getRangeHeaders(Operation $operation): array
-    {
-        if (!isset($this->rangeConfig['header'])) {
-            return [];
-        }
-
-        $parameters = [];
-        foreach ($this->rangeConfig['header'] as $headerConfig) {
-            $header = $operation->getHeaders()->where('name', $headerConfig['name'])->first();
-
-            if (null === $header) {
-                continue;
+                return $rangeConfig;
             }
-
-            $parameters[] = $headerConfig;
         }
 
-        return $parameters;
+        return null;
+    }
+
+    private function prepareValues(array $rangeConfig): array
+    {
+        $rangeConfig['values'] = [
+            self::NON_NUMERIC_VALUES,
+            self::INVERSED_VALUES,
+        ];
+
+        if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
+            $rangeConfig['values'][] = self::NEGATIVE_VALUES;
+        }
+
+        return $rangeConfig;
     }
 
     /**
-     * @param Parameter[] $rangeParameter
+     * @return TestCase[]
      */
-    private function prepareWithNegativeQueryParam(Operation $operation, array $rangeParameter): TestCase
+    private function prepareWithQueryParam(Operation $operation, array $rangeConfig): array
     {
-        return new TestCase(
-            'negative_query_range_' . $operation->getId(),
-            new Request(
-                $operation->getMethod(),
-                "{$operation->getPath()}?{$rangeParameter['lower']->getName()}=-5&{$rangeParameter['upper']->getName()}=5"
-            ),
-            new Response(416)
-        );
+        $testCases = [];
+
+        foreach ($rangeConfig['values'] as $values) {
+            $testCases[] = new TestCase(
+                $values['name'] . '_query_range_' . $operation->getId(),
+                new Request(
+                    $operation->getMethod(),
+                    "{$operation->getPath()}?{$rangeConfig['lower']}={$values['lower']}&{$rangeConfig['upper']}={$values['upper']}"
+                ),
+                new Response(416)
+            );
+        }
+
+        return $testCases;
     }
 
     /**
-     * @param Parameter[] $parameters
+     * @return TestCase[]
      */
-    private function prepareWithNonNumericQueryParam(Operation $operation, array $parameters): TestCase
+    private function prepareWithHeader(Operation $operation, array $rangeConfig): array
     {
-        return new TestCase(
-            'non_numeric_query_range_' . $operation->getId(),
-            new Request(
-                $operation->getMethod(),
-                "{$operation->getPath()}?{$parameters['lower']->getName()}=toto&{$parameters['upper']->getName()}=tata"
-            ),
-            new Response(416)
-        );
-    }
+        $testCases = [];
 
-    /**
-     * @param Parameter[] $parameters
-     */
-    private function prepareWithInversedRangeQueryParam(Operation $operation, array $parameters): TestCase
-    {
-        return new TestCase(
-            'inversed_query_range_' . $operation->getId(),
-            new Request(
-                $operation->getMethod(),
-                "{$operation->getPath()}?{$parameters['lower']->getName()}=20&{$parameters['upper']->getName()}=5"
-            ),
-            new Response(416)
-        );
-    }
+        foreach ($rangeConfig['values'] as $values) {
+            $testCases[] = new TestCase(
+                $values['name'] . '_header_range_' . $operation->getId(),
+                new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
+                    [
+                        $rangeConfig['name'] => "{$rangeConfig['unit']}={$values['lower']}-{$values['upper']}",
+                    ]
+                ),
+                new Response(416)
+            );
+        }
 
-    private function prepareWithNonNumericHeader(Operation $operation, array $header): TestCase
-    {
-        return new TestCase(
-            'non_numeric_header_range_' . $operation->getId(),
-            new Request(
-                $operation->getMethod(),
-                $operation->getPath(),
-                [
-                    $header['name'] => "{$header['unit']}=toto-tata",
-                ]
-            ),
-            new Response(416)
-        );
-    }
-
-    private function prepareWithInversedRangeHeader(Operation $operation, array $header): TestCase
-    {
-        return new TestCase(
-            'inversed_header_range_' . $operation->getId(),
-            new Request(
-                $operation->getMethod(),
-                $operation->getPath(),
-                [
-                    $header['name'] => "{$header['unit']}=20-5",
-                ]
-            ),
-            new Response(416)
-        );
+        return $testCases;
     }
 }

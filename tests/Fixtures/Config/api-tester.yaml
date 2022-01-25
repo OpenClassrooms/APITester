@@ -17,14 +17,15 @@ suites:
             406: ~
             416:
                 range: # Possible range parameters across the API
-                    header: # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
-                        -   name: Range
-                            unit: items
-                    query: # For query params, give lower and upper parameter names
-                        -   lower: offset
-                            upper: limit
-                        -   lower: from
-                            upper: to
+                    -   in: header # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
+                        name: Range
+                        unit: items
+                    -   in: query # For range in query params, give lower and upper parameter names
+                        lower: offset
+                        upper: limit
+                    -   in: query
+                        lower: from
+                        upper: to
         filters:
             #            include:
             #                - 'oc_api_student_cirr_status_get'

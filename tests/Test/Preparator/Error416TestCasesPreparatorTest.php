@@ -41,11 +41,10 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'Query param range in Api && query param defined in config' => [
             [
                 'range' => [
-                    'query' => [
-                        [
-                            'lower' => 'offset',
-                            'upper' => 'limit',
-                        ],
+                    [
+                        'in' => 'query',
+                        'lower' => 'offset',
+                        'upper' => 'limit',
                     ],
                 ],
             ],
@@ -60,11 +59,6 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'negative_query_range_test',
-                    new Request('GET', '/test?offset=-5&limit=5'),
-                    new Response(416)
-                ),
-                new TestCase(
                     'non_numeric_query_range_test',
                     new Request('GET', '/test?offset=toto&limit=tata'),
                     new Response(416)
@@ -74,17 +68,21 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Request('GET', '/test?offset=20&limit=5'),
                     new Response(416)
                 ),
+                new TestCase(
+                    'negative_query_range_test',
+                    new Request('GET', '/test?offset=-5&limit=5'),
+                    new Response(416)
+                ),
             ],
         ];
 
         yield 'Header range in Api && header defined in confi' => [
             [
                 'range' => [
-                    'header' => [
-                        [
-                            'name' => 'Range',
-                            'unit' => 'items',
-                        ],
+                    [
+                        'in' => 'header',
+                        'name' => 'Range',
+                        'unit' => 'items',
                     ],
                 ],
             ],
@@ -117,17 +115,15 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'Both header and query param in API && both in config' => [
             [
                 'range' => [
-                    'query' => [
-                        [
-                            'lower' => 'offset',
-                            'upper' => 'limit',
-                        ],
+                    [
+                        'in' => 'query',
+                        'lower' => 'offset',
+                        'upper' => 'limit',
                     ],
-                    'header' => [
-                        [
-                            'name' => 'Range',
-                            'unit' => 'items',
-                        ],
+                    [
+                        'in' => 'header',
+                        'name' => 'Range',
+                        'unit' => 'items',
                     ],
                 ],
             ],
@@ -163,11 +159,6 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(416)
                 ),
                 new TestCase(
-                    'negative_query_range_test2',
-                    new Request('GET', '/test2?offset=-5&limit=5'),
-                    new Response(416)
-                ),
-                new TestCase(
                     'non_numeric_query_range_test2',
                     new Request('GET', '/test2?offset=toto&limit=tata'),
                     new Response(416)
@@ -175,6 +166,11 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 new TestCase(
                     'inversed_query_range_test2',
                     new Request('GET', '/test2?offset=20&limit=5'),
+                    new Response(416)
+                ),
+                new TestCase(
+                    'negative_query_range_test2',
+                    new Request('GET', '/test2?offset=-5&limit=5'),
                     new Response(416)
                 ),
             ],
@@ -197,11 +193,10 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'Nothing in Api && header in config' => [
             [
                 'range' => [
-                    'header' => [
-                        [
-                            'name' => 'Range',
-                            'unit' => 'items',
-                        ],
+                    [
+                        'in' => 'header',
+                        'name' => 'Range',
+                        'unit' => 'items',
                     ],
                 ],
             ],
