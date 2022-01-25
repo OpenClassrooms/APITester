@@ -51,7 +51,6 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             ->setStatusCode(404)
                             ->setDescription('description test')
                     )
-
             ),
             [
                 new TestCase(
@@ -85,7 +84,6 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             ->setStatusCode(404)
                             ->setDescription('description test')
                     )
-
             ),
             [
                 new TestCase(

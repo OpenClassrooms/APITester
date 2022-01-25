@@ -108,7 +108,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 continue;
             }
             $collection[] = Parameter::create($parameter->name)
-                ->setSchema($schema);
+                ->setSchema($schema)
+            ;
         }
 
         return new Parameters($collection);
@@ -138,8 +139,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     /**
      * @param \cebe\openapi\spec\Response[] $responses
-     *
-     * @return Responses
      */
     private function getResponses(?iterable $responses): Responses
     {
@@ -150,7 +149,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         /** @var string $status */
         foreach ($responses as $status => $response) {
             /**
-             * @var string $type
+             * @var string    $type
              * @var MediaType $mediaType
              */
             foreach ($response->content as $type => $mediaType) {
@@ -163,7 +162,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
-                    ->setDescription($response->description);
+                    ->setDescription($response->description)
+                ;
             }
         }
 
@@ -234,5 +234,4 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
         return new Headers($collection);
     }
-
 }

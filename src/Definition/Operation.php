@@ -66,8 +66,6 @@ final class Operation
     /**
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
-     *
-     * @return string
      */
     public function getPath(array $params = [], array $query = []): string
     {
@@ -93,14 +91,14 @@ final class Operation
     private function substituteParams(array $params, string $in): array
     {
         $prop = "{$in}Parameters";
-        if (!isset($this->$prop)) {
-            throw new \RuntimeException("Parameters in $in not handled.");
+        if (!isset($this->{$prop})) {
+            throw new \RuntimeException("Parameters in {$in} not handled.");
         }
         /** @var Parameters $parameters */
-        $parameters = $this->$prop;
+        $parameters = $this->{$prop};
         $result = [];
         foreach ($params as $name => $value) {
-            if (is_string($name)) {
+            if (\is_string($name)) {
                 $result[$name] = $value;
             } else {
                 if (!isset($parameters[$name])) {
@@ -141,7 +139,7 @@ final class Operation
 
     public function addRequest(Request $request): self
     {
-        if ($this->method === null) {
+        if (null === $this->method) {
             $this->setMethod('POST');
         }
         $request->setOperation($this);

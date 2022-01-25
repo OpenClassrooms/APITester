@@ -21,8 +21,8 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     ];
     public const NON_NUMERIC_VALUES = [
         'name' => 'non_numeric',
-        'lower' => 'toto',
-        'upper' => 'tata',
+        'lower' => 'foo',
+        'upper' => 'bar',
     ];
     public const INVERSED_VALUES = [
         'name' => 'inversed',
@@ -30,6 +30,9 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
         'upper' => '5',
     ];
 
+    /**
+     * @var array<array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}>|null
+     */
     private ?array $rangeConfig;
 
     public static function getName(): string
@@ -40,10 +43,11 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): array
+    public function prepare(Api $api): iterable
     {
         $testCases = $api->getOperations()
-            ->map(fn (Operation $operation) => $this->prepareTestCases($operation));
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
+        ;
 
         return array_merge(...$testCases);
     }
@@ -55,7 +59,10 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     {
         parent::configure($config);
 
-        $this->rangeConfig = $config['range'] ?? null;
+        /** @var array<array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}>|null $rangeConfig */
+        $rangeConfig = $config['range'] ?? null;
+
+        $this->rangeConfig = $rangeConfig;
     }
 
     /**
@@ -69,18 +76,20 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
             return [];
         }
 
-        $rangeConfig = $this->prepareValues($rangeConfig);
-
-        switch ($rangeConfig['in']) {
-            case self::QUERY_PARAM_RANGE:
-                return $this->prepareWithQueryParam($operation, $rangeConfig);
-            case self::HEADER_RANGE:
-                return $this->prepareWithHeader($operation, $rangeConfig);
-            default:
-                return [];
+        if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
+            return $this->prepareWithQueryParam($operation, $rangeConfig);
         }
+
+        if (self::HEADER_RANGE === $rangeConfig['in']) {
+            return $this->prepareWithHeader($operation, $rangeConfig);
+        }
+
+        return [];
     }
 
+    /**
+     * @return array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}|null
+     */
     private function getRangeConfig(Operation $operation): ?array
     {
         if (null === $this->rangeConfig) {
@@ -89,8 +98,14 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
 
         foreach ($this->rangeConfig as $rangeConfig) {
             if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
-                $lower = $operation->getQueryParameters()->where('name', $rangeConfig['lower'])->first();
-                $upper = $operation->getQueryParameters()->where('name', $rangeConfig['upper'])->first();
+                if (!isset($rangeConfig['lower'], $rangeConfig['upper'])) {
+                    continue;
+                }
+
+                $lower = $operation->getQueryParameters()
+                    ->where('name', $rangeConfig['lower'])->first();
+                $upper = $operation->getQueryParameters()
+                    ->where('name', $rangeConfig['upper'])->first();
 
                 if (null === $lower || null === $upper) {
                     continue;
@@ -100,7 +115,12 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
             }
 
             if (self::HEADER_RANGE === $rangeConfig['in']) {
-                $header = $operation->getHeaders()->where('name', $rangeConfig['name'])->first();
+                if (!isset($rangeConfig['name'])) {
+                    continue;
+                }
+
+                $header = $operation->getHeaders()
+                    ->where('name', $rangeConfig['name'])->first();
 
                 if (null === $header) {
                     continue;
@@ -113,28 +133,19 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
         return null;
     }
 
-    private function prepareValues(array $rangeConfig): array
-    {
-        $rangeConfig['values'] = [
-            self::NON_NUMERIC_VALUES,
-            self::INVERSED_VALUES,
-        ];
-
-        if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
-            $rangeConfig['values'][] = self::NEGATIVE_VALUES;
-        }
-
-        return $rangeConfig;
-    }
-
     /**
+     * @param array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string} $rangeConfig
+     *
      * @return TestCase[]
      */
     private function prepareWithQueryParam(Operation $operation, array $rangeConfig): array
     {
-        $testCases = [];
+        if (!isset($rangeConfig['lower'], $rangeConfig['upper'])) {
+            return [];
+        }
 
-        foreach ($rangeConfig['values'] as $values) {
+        $testCases = [];
+        foreach ([self::NEGATIVE_VALUES, self::NON_NUMERIC_VALUES, self::INVERSED_VALUES] as $values) {
             $testCases[] = new TestCase(
                 $values['name'] . '_query_range_' . $operation->getId(),
                 new Request(
@@ -149,13 +160,18 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
+     * @param array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string} $rangeConfig
+     *
      * @return TestCase[]
      */
     private function prepareWithHeader(Operation $operation, array $rangeConfig): array
     {
-        $testCases = [];
+        if (!isset($rangeConfig['name'], $rangeConfig['unit'])) {
+            return [];
+        }
 
-        foreach ($rangeConfig['values'] as $values) {
+        $testCases = [];
+        foreach ([self::NON_NUMERIC_VALUES, self::INVERSED_VALUES] as $values) {
             $testCases[] = new TestCase(
                 $values['name'] . '_header_range_' . $operation->getId(),
                 new Request(

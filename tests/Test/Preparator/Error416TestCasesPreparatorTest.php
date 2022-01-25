@@ -18,7 +18,8 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param TestCase[] $expected
+     * @param array<array-key, mixed> $config
+     * @param TestCase[]              $expected
      */
     public function test(array $config, Api $api, array $expected): void
     {

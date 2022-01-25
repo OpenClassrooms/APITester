@@ -45,7 +45,8 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         $params = array_fill(0, $nbParams, -9999);
 
         return new TestCase(
-            $response->getOperation()->getId(),
+            $response->getOperation()
+                ->getId(),
             new Request(
                 $response->getOperation()->getMethod(),
                 $response->getOperation()->getPath($params),
