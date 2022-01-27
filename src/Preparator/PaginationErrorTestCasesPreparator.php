@@ -24,7 +24,8 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     public function prepare(Api $api): iterable
     {
         $testCases = $api->getOperations()
-            ->map(fn (Operation $operation) => $this->prepareTestCases($operation));
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
+        ;
 
         return array_merge(...$testCases);
     }
@@ -40,10 +41,14 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
             throw new \InvalidArgumentException('A range config must be defined to use ' . __CLASS__);
         }
 
+        if (!\is_array($rawConfig['range'])) {
+            throw new \InvalidArgumentException('Range config must be an array to use ' . __CLASS__);
+        }
+
         $config = new PaginationErrorConfig();
 
         foreach ($rawConfig['range'] as $rawConfigItem) {
-            $config->add(
+            $config->addItem(
                 new PaginationErrorConfigItem(
                     $rawConfigItem['in'],
                     $rawConfigItem['names'],
@@ -56,6 +61,18 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
+     * @return string[][]
+     */
+    abstract protected function getQueryValues(): array;
+
+    abstract protected function getErrorCode(): int;
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getHeaderValues(): array;
+
+    /**
      * @return TestCase[]
      */
     private function prepareTestCases(Operation $operation): array
@@ -66,11 +83,11 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
             return [];
         }
 
-        if ($configItem->isInQuery()) {
+        if ($configItem->inQuery()) {
             return $this->prepareWithQueryParam($operation, $configItem);
         }
 
-        if ($configItem->isInHeader()) {
+        if ($configItem->inHeader()) {
             return $this->prepareWithHeader($operation, $configItem);
         }
 
@@ -79,12 +96,16 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
     private function getRangeConfig(Operation $operation): ?PaginationErrorConfigItem
     {
-        foreach ($this->config as $configItem) {
-            if ($configItem->isInQuery()) {
+        foreach ($this->config->getItems() as $configItem) {
+            if ($configItem->inQuery()) {
                 $lower = $operation->getQueryParameters()
-                    ->where('name', $configItem->getLower())->first();
+                    ->where('name', $configItem->getLower())
+                    ->first()
+                ;
                 $upper = $operation->getQueryParameters()
-                    ->where('name', $configItem->getUpper())->first();
+                    ->where('name', $configItem->getUpper())
+                    ->first()
+                ;
 
                 if (null === $lower || null === $upper) {
                     continue;
@@ -93,7 +114,7 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
                 return $configItem;
             }
 
-            if ($configItem->isInHeader()) {
+            if ($configItem->inHeader()) {
                 $header = $operation->getHeaders()
                     ->where('name', $configItem->getNames()[0])->first();
 
@@ -150,10 +171,4 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
         return $testCases;
     }
-
-    abstract protected function getQueryValues(): array;
-
-    abstract protected function getErrorCode(): int;
-
-    abstract protected function getHeaderValues(): array;
 }

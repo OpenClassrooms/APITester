@@ -26,7 +26,6 @@ final class PasswordOAuth2Security extends OAuth2Security
         return new self($name, $tokenUrl, $scopes);
     }
 
-
     public function getTokenUrl(): string
     {
         return $this->tokenUrl;

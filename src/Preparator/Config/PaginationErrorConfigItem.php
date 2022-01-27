@@ -1,19 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAPITesting\Preparator\Config;
 
-class PaginationErrorConfigItem
+final class PaginationErrorConfigItem
 {
     public const HEADER_RANGE = 'header';
     public const QUERY_PARAM_RANGE = 'query';
 
     private string $in;
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private array $names;
 
     private ?string $unit;
 
+    /**
+     * @param string[] $names
+     */
     public function __construct(string $in, array $names, string $unit = null)
     {
         $this->in = $in;
@@ -25,19 +32,12 @@ class PaginationErrorConfigItem
         }
     }
 
-    private function validate(): bool
-    {
-        return
-            ($this->isInHeader() && count($this->names) === 1 && null !== $this->unit)
-            || ($this->isInQuery() && count($this->names) === 2);
-    }
-
-    public function isInHeader(): bool
+    public function inHeader(): bool
     {
         return self::HEADER_RANGE === $this->getIn();
     }
 
-    public function isInQuery(): bool
+    public function inQuery(): bool
     {
         return self::QUERY_PARAM_RANGE === $this->getIn();
     }
@@ -56,7 +56,7 @@ class PaginationErrorConfigItem
 
     public function getLower(): string
     {
-        if (!$this->isInQuery()) {
+        if (2 !== \count($this->names)) {
             throw new \InvalidArgumentException('Cannot get lower value if config item is not in query.');
         }
 
@@ -65,13 +65,16 @@ class PaginationErrorConfigItem
 
     public function getUpper(): string
     {
-        if (!$this->isInQuery()) {
+        if (2 !== \count($this->names)) {
             throw new \InvalidArgumentException('Cannot get lower value if config item is not in query.');
         }
 
         return $this->names[1];
     }
 
+    /**
+     * @return string[]
+     */
     public function getNames(): array
     {
         return $this->names;
@@ -97,5 +100,12 @@ class PaginationErrorConfigItem
         $this->unit = $unit;
 
         return $this;
+    }
+
+    private function validate(): bool
+    {
+        return
+            ($this->inHeader() && 1 === \count($this->names) && null !== $this->unit)
+            || ($this->inQuery() && 2 === \count($this->names));
     }
 }

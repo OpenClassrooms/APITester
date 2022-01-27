@@ -19,7 +19,7 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      * @dataProvider getData
      *
      * @param array<array-key, mixed> $config
-     * @param TestCase[] $expected
+     * @param TestCase[]              $expected
      */
     public function test(array $config, Api $api, array $expected): void
     {

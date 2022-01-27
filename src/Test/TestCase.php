@@ -135,40 +135,6 @@ final class TestCase implements Test
         $this->logger = $logger;
     }
 
-    private function assert(): void
-    {
-        if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
-            throw new \RuntimeException("Test {$this->getName()} was not launched.");
-        }
-        /** @var Requester $requester */
-        $requester = $this->requester;
-        try {
-            Assert::objectsEqual(
-                $this->expectedResponse,
-                $requester->getResponse($this->id),
-                $this->excludedFields
-            );
-        } catch (ExpectationFailedException $exception) {
-            $diff = $exception->getComparisonFailure();
-            $message = null !== $diff ? 'Assertion field: ' . $diff->getDiff() : $exception->getMessage();
-            $this->result = Result::failed(
-                $this->name . ' => ' . $message
-            );
-
-            return;
-        }
-
-        $this->result = Result::success("{$this->name} => Succeeded.");
-    }
-
-    private function log(string $msg): void
-    {
-        $this->logger->log(
-            null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
-            $msg
-        );
-    }
-
     public function getStatus(): string
     {
         $status = self::STATUS_NOT_LAUNCHED;
@@ -217,5 +183,39 @@ final class TestCase implements Test
     {
         /** @var string[] excludedFields */
         $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
+    }
+
+    private function assert(): void
+    {
+        if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
+            throw new \RuntimeException("Test {$this->getName()} was not launched.");
+        }
+        /** @var Requester $requester */
+        $requester = $this->requester;
+        try {
+            Assert::objectsEqual(
+                $this->expectedResponse,
+                $requester->getResponse($this->id),
+                $this->excludedFields
+            );
+        } catch (ExpectationFailedException $exception) {
+            $diff = $exception->getComparisonFailure();
+            $message = null !== $diff ? 'Assertion field: ' . $diff->getDiff() : $exception->getMessage();
+            $this->result = Result::failed(
+                $this->name . ' => ' . $message
+            );
+
+            return;
+        }
+
+        $this->result = Result::success("{$this->name} => Succeeded.");
+    }
+
+    private function log(string $msg): void
+    {
+        $this->logger->log(
+            null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
+            $msg
+        );
     }
 }

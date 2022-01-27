@@ -12,7 +12,6 @@ final class HttpSecurity extends Security
 
     private ?string $format;
 
-
     public function __construct(string $name, string $scheme, ?string $format = null)
     {
         parent::__construct($name);
@@ -27,7 +26,7 @@ final class HttpSecurity extends Security
 
     public function isBasic(): bool
     {
-        return $this->getScheme() === Security::SCHEME_BASIC_AUTH;
+        return Security::SCHEME_BASIC_AUTH === $this->getScheme();
     }
 
     public function getScheme(): string
@@ -37,7 +36,7 @@ final class HttpSecurity extends Security
 
     public function isBearer(): bool
     {
-        return $this->getScheme() === Security::SCHEME_BEARER_AUTH;
+        return Security::SCHEME_BEARER_AUTH === $this->getScheme();
     }
 
     public function getFormat(): ?string

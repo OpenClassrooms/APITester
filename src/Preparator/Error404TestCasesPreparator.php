@@ -32,7 +32,8 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             ->select('responses.*')
             ->flatten()
             ->where('statusCode', 404)
-            ->values();
+            ->values()
+        ;
 
         return $responses
             ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
@@ -41,15 +42,20 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
 
     private function prepareTestCase(DefinitionResponse $response): TestCase
     {
-        $nbParams = $response->getOperation()->getPathParameters()->count();
+        $nbParams = $response->getOperation()
+            ->getPathParameters()
+            ->count()
+        ;
         $params = array_fill(0, $nbParams, -9999);
 
         return new TestCase(
             $response->getOperation()
                 ->getId(),
             new Request(
-                $response->getOperation()->getMethod(),
-                $response->getOperation()->getPath($params),
+                $response->getOperation()
+                    ->getMethod(),
+                $response->getOperation()
+                    ->getPath($params),
                 [],
                 $this->generateBody($response->getOperation()),
             ),

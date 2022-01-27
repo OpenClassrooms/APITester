@@ -83,36 +83,6 @@ final class Operation
         return rtrim($path . '?' . http_build_query($query), '?');
     }
 
-    /**
-     * @param array<int|string, string|int> $params
-     *
-     * @return array<string, string|int>
-     */
-    private function substituteParams(array $params, string $in): array
-    {
-        $prop = "{$in}Parameters";
-        if (!isset($this->{$prop})) {
-            throw new \RuntimeException("Parameters in {$in} not handled.");
-        }
-        /** @var Parameters $parameters */
-        $parameters = $this->{$prop};
-        $result = [];
-        foreach ($params as $name => $value) {
-            if (\is_string($name)) {
-                $result[$name] = $value;
-            } else {
-                if (!isset($parameters[$name])) {
-                    continue;
-                }
-                /** @var Parameter $parameter */
-                $parameter = $parameters[$name];
-                $result[$parameter->getName()] = $value;
-            }
-        }
-
-        return $result;
-    }
-
     public function getMethod(): string
     {
         return mb_strtoupper($this->method ?? 'GET');
@@ -305,5 +275,35 @@ final class Operation
         $this->headers = $headers;
 
         return $this;
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    private function substituteParams(array $params, string $in): array
+    {
+        $prop = "{$in}Parameters";
+        if (!isset($this->{$prop})) {
+            throw new \RuntimeException("Parameters in {$in} not handled.");
+        }
+        /** @var Parameters $parameters */
+        $parameters = $this->{$prop};
+        $result = [];
+        foreach ($params as $name => $value) {
+            if (\is_string($name)) {
+                $result[$name] = $value;
+            } else {
+                if (!isset($parameters[$name])) {
+                    continue;
+                }
+                /** @var Parameter $parameter */
+                $parameter = $parameters[$name];
+                $result[$parameter->getName()] = $value;
+            }
+        }
+
+        return $result;
     }
 }

@@ -38,6 +38,8 @@ abstract class TestCasesPreparator
         $this->token = $token;
     }
 
+    abstract public static function getName(): string;
+
     /**
      * @return string[]
      */
@@ -52,6 +54,4 @@ abstract class TestCasesPreparator
             'preparator_' . static::getName(),
         ];
     }
-
-    abstract public static function getName(): string;
 }

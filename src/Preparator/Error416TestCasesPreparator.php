@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-class Error416TestCasesPreparator extends PaginationErrorTestCasesPreparator
+final class Error416TestCasesPreparator extends PaginationErrorTestCasesPreparator
 {
     public const ERROR_CODE = 416;
     public const NEGATIVE_VALUES = [
@@ -33,11 +33,17 @@ class Error416TestCasesPreparator extends PaginationErrorTestCasesPreparator
         return 416;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getHeaderValues(): array
     {
         return [self::NON_NUMERIC_VALUES, self::INVERSED_VALUES];
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getQueryValues(): array
     {
         return [self::NON_NUMERIC_VALUES, self::INVERSED_VALUES, self::NEGATIVE_VALUES];

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-class Error413TestCasesPreparator extends PaginationErrorTestCasesPreparator
+final class Error413TestCasesPreparator extends PaginationErrorTestCasesPreparator
 {
     public const TOO_LARGE_VALUES = [
         'name' => 'too_large',
@@ -22,11 +22,17 @@ class Error413TestCasesPreparator extends PaginationErrorTestCasesPreparator
         return 413;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getHeaderValues(): array
     {
         return [self::TOO_LARGE_VALUES];
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getQueryValues(): array
     {
         return [self::TOO_LARGE_VALUES];
