@@ -57,12 +57,12 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
         return $testCases;
     }
 
-    public function configure(array $config): void
+    public function configure(array $rawConfig): void
     {
-        parent::configure($config);
+        parent::configure($rawConfig);
 
-        if (isset($config['responseBody']) && \is_array($config['responseBody'])) {
-            $this->responseBody = $config['responseBody'];
+        if (isset($rawConfig['responseBody']) && \is_array($rawConfig['responseBody'])) {
+            $this->responseBody = $rawConfig['responseBody'];
         }
     }
 

@@ -8,6 +8,8 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Preparator\Config\PaginationErrorConfig;
+use OpenAPITesting\Preparator\Config\PaginationErrorConfigItem;
 use OpenAPITesting\Test\TestCase;
 
 final class Error416TestCasesPreparator extends TestCasesPreparator
@@ -30,10 +32,8 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
         'upper' => '5',
     ];
 
-    /**
-     * @var array<array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}>|null
-     */
-    private ?array $rangeConfig;
+
+    private PaginationErrorConfig $config;
 
     public static function getName(): string
     {
@@ -46,8 +46,7 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     public function prepare(Api $api): iterable
     {
         $testCases = $api->getOperations()
-            ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
-        ;
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation));
 
         return array_merge(...$testCases);
     }
@@ -55,14 +54,27 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function configure(array $config): void
+    public function configure(array $rawConfig): void
     {
-        parent::configure($config);
+        parent::configure($rawConfig);
 
-        /** @var array<array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}>|null $rangeConfig */
-        $rangeConfig = $config['range'] ?? null;
+        if (!isset($rawConfig['range'])) {
+            throw new \InvalidArgumentException('A range config must be defined to use ' . __CLASS__);
+        }
 
-        $this->rangeConfig = $rangeConfig;
+        $config = new PaginationErrorConfig();
+
+        foreach ($rawConfig['range'] as $rawConfigItem) {
+            $config->add(
+                new PaginationErrorConfigItem(
+                    $rawConfigItem['in'],
+                    $rawConfigItem['names'],
+                    $rawConfigItem['unit'] ?? null
+                )
+            );
+        }
+
+        $this->config = $config;
     }
 
     /**
@@ -70,63 +82,48 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): array
     {
-        $rangeConfig = $this->getRangeConfig($operation);
+        $configItem = $this->getRangeConfig($operation);
 
-        if (null === $rangeConfig) {
+        if (null === $configItem) {
             return [];
         }
 
-        if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
-            return $this->prepareWithQueryParam($operation, $rangeConfig);
+        if ($configItem->isInQuery()) {
+            return $this->prepareWithQueryParam($operation, $configItem);
         }
 
-        if (self::HEADER_RANGE === $rangeConfig['in']) {
-            return $this->prepareWithHeader($operation, $rangeConfig);
+        if ($configItem->isInHeader()) {
+            return $this->prepareWithHeader($operation, $configItem);
         }
 
         return [];
     }
 
-    /**
-     * @return array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string}|null
-     */
-    private function getRangeConfig(Operation $operation): ?array
+    private function getRangeConfig(Operation $operation): ?PaginationErrorConfigItem
     {
-        if (null === $this->rangeConfig) {
-            return null;
-        }
-
-        foreach ($this->rangeConfig as $rangeConfig) {
-            if (self::QUERY_PARAM_RANGE === $rangeConfig['in']) {
-                if (!isset($rangeConfig['lower'], $rangeConfig['upper'])) {
-                    continue;
-                }
-
+        foreach ($this->config as $configItem) {
+            if ($configItem->isInQuery()) {
                 $lower = $operation->getQueryParameters()
-                    ->where('name', $rangeConfig['lower'])->first();
+                    ->where('name', $configItem->getLower())->first();
                 $upper = $operation->getQueryParameters()
-                    ->where('name', $rangeConfig['upper'])->first();
+                    ->where('name', $configItem->getUpper())->first();
 
                 if (null === $lower || null === $upper) {
                     continue;
                 }
 
-                return $rangeConfig;
+                return $configItem;
             }
 
-            if (self::HEADER_RANGE === $rangeConfig['in']) {
-                if (!isset($rangeConfig['name'])) {
-                    continue;
-                }
-
+            if ($configItem->isInHeader()) {
                 $header = $operation->getHeaders()
-                    ->where('name', $rangeConfig['name'])->first();
+                    ->where('name', $configItem->getNames()[0])->first();
 
                 if (null === $header) {
                     continue;
                 }
 
-                return $rangeConfig;
+                return $configItem;
             }
         }
 
@@ -134,23 +131,17 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string} $rangeConfig
-     *
      * @return TestCase[]
      */
-    private function prepareWithQueryParam(Operation $operation, array $rangeConfig): array
+    private function prepareWithQueryParam(Operation $operation, PaginationErrorConfigItem $configItem): array
     {
-        if (!isset($rangeConfig['lower'], $rangeConfig['upper'])) {
-            return [];
-        }
-
         $testCases = [];
-        foreach ([self::NEGATIVE_VALUES, self::NON_NUMERIC_VALUES, self::INVERSED_VALUES] as $values) {
+        foreach ([self::NON_NUMERIC_VALUES, self::INVERSED_VALUES, self::NEGATIVE_VALUES] as $values) {
             $testCases[] = new TestCase(
                 $values['name'] . '_query_range_' . $operation->getId(),
                 new Request(
                     $operation->getMethod(),
-                    "{$operation->getPath()}?{$rangeConfig['lower']}={$values['lower']}&{$rangeConfig['upper']}={$values['upper']}"
+                    "{$operation->getPath()}?{$configItem->getLower()}={$values['lower']}&{$configItem->getUpper()}={$values['upper']}"
                 ),
                 new Response(416)
             );
@@ -160,16 +151,10 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array{'in':string,'name'?:string, 'unit'?:string, 'upper'?:string, 'lower'?:string} $rangeConfig
-     *
      * @return TestCase[]
      */
-    private function prepareWithHeader(Operation $operation, array $rangeConfig): array
+    private function prepareWithHeader(Operation $operation, PaginationErrorConfigItem $configItem): array
     {
-        if (!isset($rangeConfig['name'], $rangeConfig['unit'])) {
-            return [];
-        }
-
         $testCases = [];
         foreach ([self::NON_NUMERIC_VALUES, self::INVERSED_VALUES] as $values) {
             $testCases[] = new TestCase(
@@ -178,7 +163,7 @@ final class Error416TestCasesPreparator extends TestCasesPreparator
                     $operation->getMethod(),
                     $operation->getPath(),
                     [
-                        $rangeConfig['name'] => "{$rangeConfig['unit']}={$values['lower']}-{$values['upper']}",
+                        $configItem->getNames()[0] => "{$configItem->getUnit()}={$values['lower']}-{$values['upper']}",
                     ]
                 ),
                 new Response(416)

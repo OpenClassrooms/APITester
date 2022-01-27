@@ -19,7 +19,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      * @dataProvider getData
      *
      * @param array<array-key, mixed> $config
-     * @param TestCase[]              $expected
+     * @param TestCase[] $expected
      */
     public function test(array $config, Api $api, array $expected): void
     {
@@ -44,8 +44,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 'range' => [
                     [
                         'in' => 'query',
-                        'lower' => 'offset',
-                        'upper' => 'limit',
+                        'names' => ['offset', 'limit'],
                     ],
                 ],
             ],
@@ -61,7 +60,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     'non_numeric_query_range_test',
-                    new Request('GET', '/test?offset=toto&limit=tata'),
+                    new Request('GET', '/test?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
@@ -77,12 +76,12 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        yield 'Header range in Api && header defined in confi' => [
+        yield 'Header range in Api && header defined in config' => [
             [
                 'range' => [
                     [
                         'in' => 'header',
-                        'name' => 'Range',
+                        'names' => ['Range'],
                         'unit' => 'items',
                     ],
                 ],
@@ -99,7 +98,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 new TestCase(
                     'non_numeric_header_range_test',
                     new Request('GET', '/test', [
-                        'Range' => 'items=toto-tata',
+                        'Range' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
@@ -118,12 +117,11 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 'range' => [
                     [
                         'in' => 'query',
-                        'lower' => 'offset',
-                        'upper' => 'limit',
+                        'names' => ['offset', 'limit'],
                     ],
                     [
                         'in' => 'header',
-                        'name' => 'Range',
+                        'names' => ['Range'],
                         'unit' => 'items',
                     ],
                 ],
@@ -148,7 +146,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 new TestCase(
                     'non_numeric_header_range_test1',
                     new Request('GET', '/test1', [
-                        'Range' => 'items=toto-tata',
+                        'Range' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
@@ -161,7 +159,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
                 new TestCase(
                     'non_numeric_query_range_test2',
-                    new Request('GET', '/test2?offset=toto&limit=tata'),
+                    new Request('GET', '/test2?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
@@ -177,26 +175,12 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        yield 'Query param range in Api && nothing in config' => [
-            [],
-            Api::create()
-                ->addOperation(
-                    Operation::create(
-                        'test',
-                        '/test'
-                    )
-                        ->addQueryParameter(new Parameter('offset'))
-                        ->addQueryParameter(new Parameter('limit'))
-                ),
-            [],
-        ];
-
         yield 'Nothing in Api && header in config' => [
             [
                 'range' => [
                     [
                         'in' => 'header',
-                        'name' => 'Range',
+                        'names' => ['Range'],
                         'unit' => 'items',
                     ],
                 ],

@@ -41,12 +41,12 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
         return 'fixtures';
     }
 
-    public function configure(array $config): void
+    public function configure(array $rawConfig): void
     {
-        if (!isset($config['path'])) {
+        if (!isset($rawConfig['path'])) {
             throw new InvalidPreparatorConfigException('Missing config param "path"');
         }
-        $this->path = (string) $config['path'];
+        $this->path = (string) $rawConfig['path'];
     }
 
     /**

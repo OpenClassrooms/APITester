@@ -68,7 +68,7 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
         return array_filter($testCases);
     }
 
-    public function configure(array $config): void
+    public function configure(array $rawConfig): void
     {
     }
 
@@ -104,6 +104,22 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
+     * @param array<array-key, SecurityScheme> $securityConfig
+     */
+    private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
+    {
+        foreach ($securityConfig as $security) {
+            if ($type === mb_strtolower($security->type)) {
+                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
+                    return $security;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param array<array-key, SecurityScheme> $security
      */
     private function needsBearerToken(array $security): bool
@@ -125,22 +141,6 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
     private function getNeededApiKey(array $security): ?SecurityScheme
     {
         return $this->getNeededAuth($security, self::API_KEY_AUTH_TYPE);
-    }
-
-    /**
-     * @param array<array-key, SecurityScheme> $securityConfig
-     */
-    private function getNeededAuth(array $securityConfig, string $type, string $scheme = null): ?SecurityScheme
-    {
-        foreach ($securityConfig as $security) {
-            if ($type === mb_strtolower($security->type)) {
-                if (null === $scheme || $scheme === mb_strtolower($security->scheme)) {
-                    return $security;
-                }
-            }
-        }
-
-        return null;
     }
 
     private function addFakeApiKeyToRequest(SecurityScheme $security, Request $request): Request
@@ -165,6 +165,11 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
         return $request->withAddedHeader('Authorization', 'Basic ' . base64_encode('aaaa:bbbbb'));
     }
 
+    private function addFakeOAuth2Token(Request $request): Request
+    {
+        return $this->addFakeBearerToken($request);
+    }
+
     private function addFakeBearerToken(Request $request): Request
     {
         return $request->withAddedHeader(
@@ -173,10 +178,5 @@ final class Error403TestCasesPreparator extends TestCasesPreparator
                 'test' => 1234,
             ], 'abcd')
         );
-    }
-
-    private function addFakeOAuth2Token(Request $request): Request
-    {
-        return $this->addFakeBearerToken($request);
     }
 }
