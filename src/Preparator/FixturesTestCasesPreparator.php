@@ -19,6 +19,10 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
 {
     private string $path = '';
 
+    /**
+     * @throws PreparatorLoadingException
+     * @return TestCase[]
+     */
     public function prepare(Api $api): array
     {
         /**
@@ -52,13 +56,13 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
     /**
      * @param array<string,
      *              array{'name': string,
-     *                    'for': array<string>,
+     *                    'for': string[],
      *                    'request': array{
      *                          'parameters'?: array{'path'?: array<string, string>, 'query'?: array<string, string>},
      *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
      *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
      *              }> $fixtures
-     * @param array<string, array<Operation>> $operations
+     * @param array<string, array<array-key, Operation>> $operations
      *
      * @throws PreparatorLoadingException
      *

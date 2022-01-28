@@ -15,7 +15,7 @@ abstract class OAuth2Security extends Security
      */
     protected array $scopes;
 
-    public function getRefreshUrl(): string
+    public function getRefreshUrl(): ?string
     {
         return $this->refreshUrl;
     }

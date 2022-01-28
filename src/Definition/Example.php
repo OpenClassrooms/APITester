@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
-class Example
+final class Example
 {
     private string $name;
 
     /**
-     * @var mixed
+     * @var array<array-key, mixed>|object
      */
     private $value;
 
     /**
-     * @param mixed $value
+     * @param array<array-key, mixed>|object $value
      */
     public function __construct(string $name, $value)
     {
@@ -27,6 +27,9 @@ class Example
         return $this->name;
     }
 
+    /**
+     * @return array<array-key, mixed>|object
+     */
     public function getValue()
     {
         return $this->value;
