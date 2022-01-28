@@ -37,9 +37,7 @@ class Collection extends \Illuminate\Support\Collection
 
     /**
      * @param TKey|null $key
-     * @param TValue $value
-     *
-     * @return void
+     * @param TValue    $value
      */
     public function offsetSet($key, $value)
     {
@@ -97,7 +95,7 @@ class Collection extends \Illuminate\Support\Collection
     /**
      * @template TGetDefault
      *
-     * @param TKey $key
+     * @param TKey        $key
      * @param TGetDefault $default
      *
      * @return TValue|TGetDefault
@@ -109,7 +107,7 @@ class Collection extends \Illuminate\Support\Collection
 
     /**
      * @param array|callable|string $groupBy
-     * @param bool $preserveKeys
+     * @param bool                  $preserveKeys
      *
      * @return static<static<TKey, TValue>>
      */

@@ -52,7 +52,7 @@ final class Response
         return $this->statusCode;
     }
 
-    public function setStatusCode(int $statusCode): Response
+    public function setStatusCode(int $statusCode): self
     {
         $this->statusCode = $statusCode;
 

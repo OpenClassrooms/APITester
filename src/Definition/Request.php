@@ -41,7 +41,7 @@ final class Request
         return $this->required;
     }
 
-    public function setRequired(bool $required = true): Request
+    public function setRequired(bool $required = true): self
     {
         $this->required = $required;
 

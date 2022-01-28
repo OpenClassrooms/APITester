@@ -36,11 +36,11 @@ final class ApiKeySecurity extends Security
 
     public function getKey(string $value): string
     {
-        if ($this->in === 'cookie') {
+        if ('cookie' === $this->in) {
             return "{$this->keyName}={$value}";
         }
 
-        if ($this->in === 'query') {
+        if ('query' === $this->in) {
             return "&{$this->keyName}={$value}";
         }
 

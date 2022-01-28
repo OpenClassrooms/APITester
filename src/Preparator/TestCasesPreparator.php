@@ -14,8 +14,6 @@ abstract class TestCasesPreparator
 {
     protected ?string $token = null;
 
-    abstract public static function getName(): string;
-
     /**
      * @throws PreparatorLoadingException
      *
@@ -24,13 +22,13 @@ abstract class TestCasesPreparator
     abstract public function prepare(Api $api): iterable;
 
     /**
-     * @param array<array-key, mixed> $config
+     * @param array<array-key, mixed> $rawConfig
      *
      * @throws InvalidPreparatorConfigException
      */
-    public function configure(array $config): void
+    public function configure(array $rawConfig): void
     {
-        if (isset($config['throw'])) {
+        if (isset($rawConfig['throw'])) {
             throw new InvalidPreparatorConfigException();
         }
     }
@@ -39,6 +37,8 @@ abstract class TestCasesPreparator
     {
         $this->token = $token;
     }
+
+    abstract public static function getName(): string;
 
     /**
      * @return string[]

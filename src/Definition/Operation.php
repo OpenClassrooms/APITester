@@ -24,6 +24,8 @@ final class Operation
 
     private Parameters $queryParameters;
 
+    private Parameters $headers;
+
     private Requests $requests;
 
     private Responses $responses;
@@ -44,6 +46,7 @@ final class Operation
         $this->path = $path;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
+        $this->headers = new Parameters();
         $this->requests = new Requests();
         $this->responses = new Responses();
         $this->tags = new Tags();
@@ -63,8 +66,6 @@ final class Operation
     /**
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
-     *
-     * @return string
      */
     public function getPath(array $params = [], array $query = []): string
     {
@@ -80,36 +81,6 @@ final class Operation
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
-    }
-
-    /**
-     * @param array<int|string, string|int> $params
-     *
-     * @return array<string, string|int>
-     */
-    private function substituteParams(array $params, string $in): array
-    {
-        $prop = "{$in}Parameters";
-        if (!isset($this->$prop)) {
-            throw new \RuntimeException("Parameters in $in not handled.");
-        }
-        /** @var Parameters $parameters */
-        $parameters = $this->$prop;
-        $result = [];
-        foreach ($params as $name => $value) {
-            if (is_string($name)) {
-                $result[$name] = $value;
-            } else {
-                if (!isset($parameters[$name])) {
-                    continue;
-                }
-                /** @var Parameter $parameter */
-                $parameter = $parameters[$name];
-                $result[$parameter->getName()] = $value;
-            }
-        }
-
-        return $result;
     }
 
     public function getMethod(): string
@@ -138,7 +109,7 @@ final class Operation
 
     public function addRequest(Request $request): self
     {
-        if ($this->method === null) {
+        if (null === $this->method) {
             $this->setMethod('POST');
         }
         $request->setOperation($this);
@@ -165,10 +136,26 @@ final class Operation
         return $this;
     }
 
-    public function addParameter(Parameter $parameter): self
+    public function addPathParameter(Parameter $parameter): self
     {
         $parameter->setOperation($this);
         $this->pathParameters->add($parameter);
+
+        return $this;
+    }
+
+    public function addQueryParameter(Parameter $parameter): self
+    {
+        $parameter->setOperation($this);
+        $this->queryParameters->add($parameter);
+
+        return $this;
+    }
+
+    public function addHeader(Parameter $header): self
+    {
+        $header->setOperation($this);
+        $this->headers->add($header);
 
         return $this;
     }
@@ -276,5 +263,47 @@ final class Operation
     public function setApi(Api $api): void
     {
         $this->api = $api;
+    }
+
+    public function getHeaders(): Parameters
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(Parameters $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    private function substituteParams(array $params, string $in): array
+    {
+        $prop = "{$in}Parameters";
+        if (!isset($this->{$prop})) {
+            throw new \RuntimeException("Parameters in {$in} not handled.");
+        }
+        /** @var Parameters $parameters */
+        $parameters = $this->{$prop};
+        $result = [];
+        foreach ($params as $name => $value) {
+            if (\is_string($name)) {
+                $result[$name] = $value;
+            } else {
+                if (!isset($parameters[$name])) {
+                    continue;
+                }
+                /** @var Parameter $parameter */
+                $parameter = $parameters[$name];
+                $result[$parameter->getName()] = $value;
+            }
+        }
+
+        return $result;
     }
 }

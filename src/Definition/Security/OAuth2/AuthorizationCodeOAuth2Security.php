@@ -37,7 +37,6 @@ final class AuthorizationCodeOAuth2Security extends OAuth2Security
         return new self($name, $authorizationUrl, $tokenUrl, $scopes);
     }
 
-
     public function getTokenUrl(): string
     {
         return $this->tokenUrl;

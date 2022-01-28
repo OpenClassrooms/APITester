@@ -38,7 +38,7 @@ abstract class Security
         return $this->operation;
     }
 
-    public function setOperation(Operation $operation): Security
+    public function setOperation(Operation $operation): self
     {
         $this->operation = $operation;
 
@@ -79,7 +79,7 @@ abstract class Security
         if ($this instanceof OAuth2Security) {
             return static::TYPE_OAUTH2;
         }
-        $type = get_class($this);
-        throw new \RuntimeException("Unhandled security type for class $type");
+        $type = static::class;
+        throw new \RuntimeException("Unhandled security type for class {$type}");
     }
 }

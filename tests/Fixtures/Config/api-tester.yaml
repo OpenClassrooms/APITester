@@ -15,6 +15,15 @@ suites:
                     code: 405
                     message: 'HTTP 405 Method Not Allowed'
             406: ~
+            416:
+                range: # Possible range parameters across the API
+                    -   in: header # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
+                        names: [ 'Range' ]
+                        unit: items
+                    -   in: query # For range in query params, give lower and upper parameter names
+                        names: [ 'offset', 'limit' ]
+                    -   in: query
+                        names: [ 'from', 'to' ]
         filters:
             #            include:
             #                - 'oc_api_student_cirr_status_get'

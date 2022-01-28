@@ -23,7 +23,7 @@ final class Assert
     /**
      * @param object|iterable<mixed> $expected
      * @param object|iterable<mixed> $actual
-     * @param array<string> $exclude
+     * @param array<string>          $exclude
      *
      * @throws InvalidArgumentException
      * @throws ExpectationFailedException

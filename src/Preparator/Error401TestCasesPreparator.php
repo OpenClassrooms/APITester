@@ -36,7 +36,8 @@ final class Error401TestCasesPreparator extends TestCasesPreparator
         $securities = $api->getOperations()
             ->where('responses.*.statusCode', [401])
             ->select('securities.*')
-            ->flatten();
+            ->flatten()
+        ;
 
         return $securities
             ->map(fn (Security $security) => $this->prepareTestCase($security))
