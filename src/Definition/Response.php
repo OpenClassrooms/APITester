@@ -5,29 +5,29 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition;
 
 use cebe\openapi\spec\Schema;
-use OpenAPITesting\Definition\Collection\Examples;
-use OpenAPITesting\Definition\Collection\Headers;
+use OpenAPITesting\Definition\Collection\Parameters;
+use OpenAPITesting\Definition\Collection\ResponseExamples;
 
 final class Response
 {
-    private Operation $operation;
+    private Operation $parent;
 
     private string $mediaType = 'application/json';
 
     private int $statusCode = 200;
 
-    private Headers $headers;
+    private Parameters $headers;
 
     private ?Schema $body = null;
 
-    private Examples $examples;
+    private ResponseExamples $examples;
 
     private string $description = '';
 
     public function __construct()
     {
-        $this->headers = new Headers();
-        $this->examples = new Examples();
+        $this->headers = new Parameters();
+        $this->examples = new ResponseExamples();
     }
 
     public static function create(): self
@@ -59,12 +59,12 @@ final class Response
         return $this;
     }
 
-    public function getHeaders(): Headers
+    public function getHeaders(): Parameters
     {
         return $this->headers;
     }
 
-    public function setHeaders(Headers $headers): self
+    public function setHeaders(Parameters $headers): self
     {
         $this->headers = $headers;
 
@@ -83,14 +83,25 @@ final class Response
         return $this;
     }
 
-    public function getExamples(): Examples
+    public function getExamples(): ResponseExamples
     {
         return $this->examples;
     }
 
-    public function setExamples(Examples $examples): self
+    public function setExamples(ResponseExamples $examples): self
     {
+        foreach ($examples as $example) {
+            $example->setParent($this);
+        }
         $this->examples = $examples;
+
+        return $this;
+    }
+
+    public function addExample(ResponseExample $example): self
+    {
+        $example->setParent($this);
+        $this->examples->add($example);
 
         return $this;
     }
@@ -107,13 +118,13 @@ final class Response
         return $this;
     }
 
-    public function getOperation(): Operation
+    public function getParent(): Operation
     {
-        return $this->operation;
+        return $this->parent;
     }
 
-    public function setOperation(Operation $operation): void
+    public function setParent(Operation $parent): void
     {
-        $this->operation = $operation;
+        $this->parent = $parent;
     }
 }

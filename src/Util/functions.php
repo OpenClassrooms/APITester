@@ -12,7 +12,12 @@ use OpenAPITesting\Util\Accessor;
 use OpenAPITesting\Util\Collection;
 
 /**
- * @param mixed $value
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @param array<Tkey, TValue> $value
+ *
+ * @return Collection<Tkey, TValue>
  */
 function collect($value = null): Collection
 {

@@ -9,7 +9,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpClient\HttplugClient;
 
-final class HttpAsyncRequester implements Requester
+final class HttpAsyncRequester extends Requester
 {
     private string $baseUri;
 
@@ -30,6 +30,11 @@ final class HttpAsyncRequester implements Requester
         $this->baseUri = rtrim($baseUri, '/');
     }
 
+    public static function getName(): string
+    {
+        return 'http-async';
+    }
+
     /**
      * @inheritDoc
      */
@@ -45,11 +50,6 @@ final class HttpAsyncRequester implements Requester
         }
 
         return $this->responses[$id];
-    }
-
-    public static function getName(): string
-    {
-        return 'http-async';
     }
 
     public function setBaseUri(string $baseUri): void

@@ -5,26 +5,38 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition\Loader;
 
 use cebe\openapi\Reader;
+use cebe\openapi\spec\Example;
+use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
+use cebe\openapi\spec\OAuthFlow;
 use cebe\openapi\spec\OpenApi;
+use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
+use cebe\openapi\spec\SecurityRequirement;
+use cebe\openapi\spec\SecurityScheme;
 use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Collection\Headers;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Collection\Requests;
 use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Collection\SecuritySchemes;
+use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
-use OpenAPITesting\Definition\Header;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
+use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Definition\Request;
+use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Definition\Response;
-use OpenAPITesting\Definition\SecurityScheme;
+use OpenAPITesting\Definition\ResponseExample;
+use OpenAPITesting\Definition\Security\ApiKeySecurity;
+use OpenAPITesting\Definition\Security\HttpSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2ClientCredentialsSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use OpenAPITesting\Definition\Server;
 use OpenAPITesting\Definition\Tag;
 
@@ -49,11 +61,34 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             /** @var OpenApi $openApi */
             $openApi = Reader::readFromYamlFile($filePath);
         } catch (\Exception $e) {
-            throw new DefinitionLoadingException($e);
+            throw new DefinitionLoadingException("Could not load {$filePath}", $e);
         }
 
-        $collection = [];
-        foreach ($openApi->paths as $path => $pathInfo) {
+        /** @var array<string, SecurityScheme> $securitySchemes */
+        $securitySchemes = null !== $openApi->components ? $openApi->components->securitySchemes : [];
+
+        return $api
+            ->setOperations($this->getOperations($openApi->paths->getPaths(), $securitySchemes))
+            ->setServers($this->getServers($openApi->servers))
+            ->setTags($this->getTags($openApi->tags))
+        ;
+    }
+
+    public static function getFormat(): string
+    {
+        return 'openapi';
+    }
+
+    /**
+     * @param array<string, SecurityScheme> $securitySchemes
+     * @param array<string, PathItem>       $paths
+     *
+     * @throws DefinitionLoadingException
+     */
+    private function getOperations(array $paths, array $securitySchemes): Operations
+    {
+        $operations = new Operations();
+        foreach ($paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
                 $parameters = $operation->parameters;
@@ -62,7 +97,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var \cebe\openapi\spec\Response[]|null $responses */
                 $responses = $operation->responses;
 
-                $api->addOperation(
+                $operations->add(
                     Operation::create(
                         $operation->operationId,
                         $path
@@ -75,99 +110,25 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setRequests($this->getRequests($requestBody))
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))
+                        ->setSecurities($this->getSecurities($securitySchemes, $operation->security ?? []))
                 );
             }
         }
 
-        /** @var \cebe\openapi\spec\SecurityScheme[]|null $securitySchemes */
-        $securitySchemes = null !== $openApi->components ? $openApi->components->securitySchemes : null;
-
-        return $api
-            ->setOperations(new Operations($collection))
-            ->setServers($this->getServers($openApi->servers))
-            ->setTags($this->getTags($openApi->tags))
-            ->setSecurities($this->getSecuritySchemes($securitySchemes))
-        ;
-    }
-
-    public static function getFormat(): string
-    {
-        return 'openapi';
+        return $operations;
     }
 
     /**
-     * @param \cebe\openapi\spec\Parameter[] $parameters
+     * @param \cebe\openapi\spec\Server[] $servers
      */
-    private function getParameters(array $parameters, string $in): Parameters
+    private function getServers(array $servers): Servers
     {
         $collection = [];
-        foreach ($parameters as $parameter) {
-            /** @var Schema|null $schema */
-            $schema = $parameter->schema;
-            if ($parameter->in !== $in) {
-                continue;
-            }
-            $collection[] = Parameter::create($parameter->name)
-                ->setSchema($schema)
-            ;
+        foreach ($servers as $server) {
+            $collection[] = new Server($server->url);
         }
 
-        return new Parameters($collection);
-    }
-
-    private function getRequests(?RequestBody $requestBody): Requests
-    {
-        if (null === $requestBody) {
-            return new Requests();
-        }
-
-        $requests = [];
-        foreach ($requestBody->content as $type => $mediaType) {
-            if (null === $mediaType->schema) {
-                continue;
-            }
-            /** @var Schema $schema */
-            $schema = $mediaType->schema;
-            $requests[$type] = Request::create(
-                $type,
-                $schema,
-            );
-        }
-
-        return new Requests($requests);
-    }
-
-    /**
-     * @param \cebe\openapi\spec\Response[] $responses
-     */
-    private function getResponses(?iterable $responses): Responses
-    {
-        if (null === $responses) {
-            return new Responses();
-        }
-        $collection = [];
-        /** @var string $status */
-        foreach ($responses as $status => $response) {
-            /**
-             * @var string    $type
-             * @var MediaType $mediaType
-             */
-            foreach ($response->content as $type => $mediaType) {
-                /** @var Schema|null $schema */
-                $schema = $mediaType->schema;
-                /** @var \cebe\openapi\spec\Header[] $headers */
-                $headers = $response->headers;
-                $collection[] = Response::create()
-                    ->setMediaType($type)
-                    ->setStatusCode((int) $status)
-                    ->setHeaders($this->getHeaders($headers))
-                    ->setBody($schema)
-                    ->setDescription($response->description)
-                ;
-            }
-        }
-
-        return new Responses($collection);
+        return new Servers($collection);
     }
 
     /**
@@ -188,50 +149,194 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @param \cebe\openapi\spec\Server[] $servers
+     * @param \cebe\openapi\spec\Parameter[] $parameters
      */
-    private function getServers(array $servers): Servers
+    private function getParameters(array $parameters, string $in): Parameters
     {
-        $collection = [];
-        foreach ($servers as $server) {
-            $collection[] = new Server($server->url);
+        $collection = new Parameters();
+        foreach ($parameters as $name => $parameter) {
+            /** @var Schema|null $schema */
+            $schema = $parameter->schema;
+            if ($parameter->in !== $in) {
+                continue;
+            }
+            $defParam = Parameter::create($parameter->name ?? $name)
+                ->setSchema($schema)
+            ;
+            foreach ($parameter->examples ?? [] as $exampleName => $example) {
+                $defParam->addExample(new ParameterExample($exampleName, (string) $example->value));
+            }
+            $collection->add($defParam);
         }
 
-        return new Servers($collection);
+        return $collection;
+    }
+
+    private function getRequests(?RequestBody $requestBody): Requests
+    {
+        $collection = new Requests();
+        if (null === $requestBody) {
+            return $collection;
+        }
+
+        foreach ($requestBody->content as $type => $mediaType) {
+            if (null === $mediaType->schema) {
+                continue;
+            }
+            /** @var Schema $schema */
+            $schema = $mediaType->schema;
+            $request = Request::create(
+                $type,
+                $schema,
+            );
+            /** @var Example $example */
+            foreach ($mediaType->examples ?? [] as $name => $example) {
+                $request->addExample(new RequestExample((string) $name, $example->value));
+            }
+            $collection->add($request);
+        }
+
+        return $collection;
     }
 
     /**
-     * @param \cebe\openapi\spec\SecurityScheme[]|null $securitySchemes
+     * @param \cebe\openapi\spec\Response[] $responses
      */
-    private function getSecuritySchemes(?array $securitySchemes): SecuritySchemes
+    private function getResponses(?iterable $responses): Responses
     {
-        if (null === $securitySchemes) {
-            return new SecuritySchemes();
+        $collection = new Responses();
+        if (null === $responses) {
+            return $collection;
+        }
+        /** @var string $status */
+        foreach ($responses as $status => $response) {
+            /** @var Header[] $headers */
+            $headers = $response->headers;
+
+            if (0 === \count($response->content)) {
+                $defResponse = Response::create()
+                    ->setStatusCode((int) $status)
+                    ->setHeaders($this->getHeaders($headers))
+                    ->setDescription($response->description)
+                ;
+                $collection->add($defResponse);
+                continue;
+            }
+
+            /**
+             * @var string    $type
+             * @var MediaType $mediaType
+             */
+            foreach ($response->content as $type => $mediaType) {
+                /** @var Schema|null $schema */
+                $schema = $mediaType->schema;
+                $defResponse = Response::create()
+                    ->setMediaType($type)
+                    ->setStatusCode((int) $status)
+                    ->setHeaders($this->getHeaders($headers))
+                    ->setBody($schema)
+                    ->setDescription($response->description)
+                ;
+
+                /**
+                 * @var string  $name
+                 * @var Example $example
+                 */
+                foreach ($mediaType->examples ?? [] as $name => $example) {
+                    $defResponse->addExample(new ResponseExample($name, $example->value));
+                }
+                $collection->add($defResponse);
+            }
         }
 
-        $collection = [];
-        foreach ($securitySchemes as $scheme) {
-            $collection[] = new SecurityScheme($scheme->type, $scheme->flows);
-        }
-
-        return new SecuritySchemes($collection);
+        return $collection;
     }
 
     /**
-     * @param \cebe\openapi\spec\Header[] $headers
+     * @param array<string, SecurityScheme>      $securitySchemes
+     * @param array<string, SecurityRequirement> $securityRequirements
+     *
+     * @throws DefinitionLoadingException
      */
-    private function getHeaders(array $headers): Headers
+    private function getSecurities(array $securitySchemes, array $securityRequirements = []): Securities
     {
         $collection = [];
-        foreach ($headers as $header) {
+        foreach ($securitySchemes as $name => $scheme) {
+            if ('apiKey' === $scheme->type) {
+                $collection[] = new ApiKeySecurity($name, $scheme->name, $scheme->in);
+            }
+            if ('http' === $scheme->type) {
+                $collection[] = new HttpSecurity($name, $scheme->scheme, $scheme->bearerFormat);
+            }
+            if ('oauth2' === $scheme->type && null !== $scheme->flows) {
+                /**
+                 * @var string    $type
+                 * @var OAuthFlow $flow
+                 */
+                foreach ((array) $scheme->flows->getSerializableData() as $type => $flow) {
+                    $scopes = (array) ($securityRequirements[$name] ?? []);
+                    /** @var object $flowScopes */
+                    $flowScopes = $flow->scopes;
+                    $diff = array_diff($scopes, array_keys((array) $flowScopes));
+                    if (\count($diff) > 0) {
+                        $diff = implode(',', $diff);
+                        throw new DefinitionLoadingException("Scopes '{$diff}' not configured in securitySchemes");
+                    }
+                    if ('implicit' === $type) {
+                        $collection[] = new OAuth2ImplicitSecurity(
+                            $name,
+                            $flow->authorizationUrl,
+                            $scopes
+                        );
+                    }
+                    if ('password' === $type) {
+                        $collection[] = new OAuth2PasswordSecurity(
+                            $name,
+                            $flow->tokenUrl,
+                            $scopes
+                        );
+                    }
+                    if ('clientCredentials' === $type) {
+                        $collection[] = new OAuth2ClientCredentialsSecurity(
+                            $name,
+                            $flow->tokenUrl,
+                            $scopes
+                        );
+                    }
+                    if ('authorizationCode' === $type) {
+                        $collection[] = new OAuth2AuthorizationCodeSecurity(
+                            $name,
+                            $flow->authorizationUrl,
+                            $flow->tokenUrl,
+                            $scopes,
+                        );
+                    }
+                }
+            }
+        }
+
+        return new Securities($collection);
+    }
+
+    /**
+     * @param Header[] $headers
+     */
+    private function getHeaders(array $headers): Parameters
+    {
+        $collection = new Parameters();
+        foreach ($headers as $name => $header) {
             /** @var Schema|null $schema */
             $schema = $header->schema;
-            $collection[] = new Header(
-                $header->name,
+            $defHeader = new Parameter(
+                $header->name ?? $name,
                 $schema
             );
+            foreach ($header->examples ?? [] as $exampleName => $example) {
+                $defHeader->addExample(new ParameterExample($exampleName, (string) $example->value));
+            }
+            $collection->add($defHeader);
         }
 
-        return new Headers($collection);
+        return $collection;
     }
 }

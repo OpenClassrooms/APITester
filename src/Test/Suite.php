@@ -137,6 +137,25 @@ final class Suite implements Test
     }
 
     /**
+     * @throws PreparatorLoadingException
+     *
+     * @return TestCase[]
+     */
+    private function prepareTestCases(): array
+    {
+        $testCases = [];
+        foreach ($this->preparators as $preparator) {
+            foreach ($preparator->prepare($this->api) as $testCase) {
+                if ($this->includes($testCase)) {
+                    $testCases[] = $testCase;
+                }
+            }
+        }
+
+        return $testCases;
+    }
+
+    /**
      * @param TestCase[] $testCases
      *
      * @throws PreparatorLoadingException
@@ -166,23 +185,5 @@ final class Suite implements Test
         }
 
         return $results;
-    }
-
-    /**
-     * @throws PreparatorLoadingException
-     *
-     * @return TestCase[]
-     */
-    private function prepareTestCases(): array
-    {
-        $testCases = [];
-        foreach ($this->preparators as $preparator) {
-            $testCases[] = array_filter(
-                $preparator->prepare($this->api),
-                [$this, 'includes']
-            );
-        }
-
-        return array_merge(...$testCases);
     }
 }

@@ -46,4 +46,9 @@ final class ApiKeySecurity extends Security
 
         return $this->keyName;
     }
+
+    public function getType(): string
+    {
+        return static::TYPE_API_KEY;
+    }
 }

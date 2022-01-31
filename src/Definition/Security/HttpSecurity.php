@@ -43,4 +43,17 @@ final class HttpSecurity extends Security
     {
         return $this->format;
     }
+
+    public function getType(): string
+    {
+        if ($this->getScheme() === static::SCHEME_BASIC_AUTH) {
+            return static::TYPE_HTTP_BASIC;
+        }
+
+        if ($this->getScheme() === static::SCHEME_BEARER_AUTH) {
+            return static::TYPE_HTTP_BEARER;
+        }
+
+        throw new \RuntimeException("Unhandled security scheme '{$this->getScheme()}'.");
+    }
 }

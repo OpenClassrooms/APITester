@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
-use OpenAPITesting\Definition\Example;
+use OpenAPITesting\Definition\ResponseExample;
 use OpenAPITesting\Util\Collection;
 
 /**
- * @method Example[] getIterator()
+ * @method ResponseExample[] getIterator()
  * @implements Collection<TKey, TValue>
  */
-final class Examples extends Collection
+final class ResponseExamples extends Collection
 {
 }

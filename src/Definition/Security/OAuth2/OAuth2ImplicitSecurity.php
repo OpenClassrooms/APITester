@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security\OAuth2;
 
-final class ImplicitOAuth2Security extends OAuth2Security
+final class OAuth2ImplicitSecurity extends OAuth2Security
 {
     protected string $authorizationUrl;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security\OAuth2;
 
-final class AuthorizationCodeOAuth2Security extends OAuth2Security
+final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
 {
     private string $tokenUrl;
 

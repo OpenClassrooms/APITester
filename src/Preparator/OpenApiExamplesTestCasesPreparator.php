@@ -9,7 +9,7 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
+use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
@@ -21,10 +21,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     public function prepare(Api $api): array
     {
         $testCases = [];
-        foreach ($api->getOperations() as $operation) {
-            if (0 === \count($operation->getResponses())) {
-                continue;
-            }
+        foreach ($api->getOperations()->where('responses.*') as $operation) {
             $requests = $this->buildRequests($operation);
             $responses = $this->buildResponses($operation);
             $testCases[] = $this->buildTestCases(
@@ -47,38 +44,55 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
      */
     private function buildRequests(Operation $operation): array
     {
-        $defaultHeaders = null !== $this->token ? [
-            'authorization' => "Bearer {$this->token}",
-        ] : [];
         $requests = [];
         foreach ($operation->getRequests() as $request) {
             foreach ($request->getExamples() as $example) {
                 $requests[$example->getName()] = new Request(
                     $operation->getMethod(),
-                    $operation->getPath() . '?1=1',
-                    array_merge(
-                        [
-                            'content-type' => $request->getMediaType(),
-                        ],
-                        $defaultHeaders
-                    ),
-                    Json::encode($example->getValue()),
+                    $operation->getPath(),
+                    [
+                        'content-type' => $request->getMediaType(),
+                    ],
+                    Json::encode((array) $example->getValue()),
                 );
             }
         }
 
         foreach ($operation->getPathParameters() as $parameter) {
             foreach ($parameter->getExamples() as $example) {
-                $index = $example->getName();
-                $requests[$index] ??= new Request(
+                $name = $example->getName();
+                $requests[$name] ??= new Request(
                     $operation->getMethod(),
-                    $operation->getPath() . '?1=1',
-                    $defaultHeaders,
+                    $operation->getPath(),
                 );
-                $requests[$index] = $this->addParameterToRequest(
-                    $requests[$index],
-                    $parameter,
-                    $example->getValue(),
+                $requests[$name]->withUri(
+                    new Uri(
+                        $operation->getPath(
+                            [
+                                $parameter->getName() => $example->getValue(),
+                            ]
+                        )
+                    )
+                );
+            }
+        }
+
+        foreach ($operation->getQueryParameters() as $parameter) {
+            foreach ($parameter->getExamples() as $example) {
+                $name = $example->getName();
+                $requests[$name] ??= new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
+                );
+                $request = $requests[$name];
+                $request->withUri(
+                    new Uri(
+                        $operation->getPath(
+                            [
+                                $parameter->getName() => $example->getValue(),
+                            ]
+                        )
+                    )
                 );
             }
         }
@@ -94,8 +108,8 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
         $responses = [];
         foreach ($operation->getResponses() as $response) {
             foreach ($response->getExamples() as $example) {
-                $index = $example->getName();
-                $responses[$index] = new Response(
+                $name = $example->getName();
+                $responses[$name] = new Response(
                     $response->getStatusCode(),
                     [
                         'content-type' => $response->getMediaType(),
@@ -103,9 +117,17 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     Json::encode($example)
                 );
                 foreach ($response->getHeaders() as $header) {
-                    $responses[$index] = $responses[$index]->withAddedHeader(
+                    /** @var ParameterExample|null $example */
+                    $example = $header->getExamples()
+                        ->where('name', $name)
+                        ->first()
+                    ;
+                    if (null === $example) {
+                        continue;
+                    }
+                    $responses[$name] = $responses[$name]->withAddedHeader(
                         $header->getName(),
-                        $example
+                        $example->getValue()
                     );
                 }
             }
@@ -140,28 +162,5 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return $testCases;
-    }
-
-    private function addParameterToRequest(Request $request, Parameter $parameter, string $example): Request
-    {
-        if ('query' === $parameter->getIn()) {
-            $newRequest = $request->withUri(
-                new Uri(((string) $request->getUri()) . "&{$parameter->getName()}={$example}")
-            );
-        } elseif ('path' === $parameter->getIn()) {
-            $newRequest = $request->withUri(
-                new Uri(
-                    str_replace(
-                        "%7B{$parameter->getName()}%7D",
-                        $example,
-                        (string) $request->getUri()
-                    )
-                )
-            );
-        } else {
-            $newRequest = $request->withAddedHeader($parameter->getName(), $example);
-        }
-
-        return $newRequest;
     }
 }

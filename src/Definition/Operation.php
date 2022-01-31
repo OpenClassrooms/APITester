@@ -12,7 +12,7 @@ use OpenAPITesting\Definition\Collection\Tags;
 
 final class Operation
 {
-    private Api $api;
+    private Api $parent;
 
     private string $id;
 
@@ -102,6 +102,9 @@ final class Operation
 
     public function setRequests(Requests $requests): self
     {
+        foreach ($requests as $request) {
+            $request->setParent($this);
+        }
         $this->requests = $requests;
 
         return $this;
@@ -112,7 +115,7 @@ final class Operation
         if (null === $this->method) {
             $this->setMethod('POST');
         }
-        $request->setOperation($this);
+        $request->setParent($this);
         $this->requests->add($request);
 
         return $this;
@@ -129,16 +132,19 @@ final class Operation
         return $this->pathParameters;
     }
 
-    public function setPathParameters(Parameters $pathParameters): self
+    public function setPathParameters(Parameters $parameters): self
     {
-        $this->pathParameters = $pathParameters;
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->pathParameters = $parameters;
 
         return $this;
     }
 
     public function addPathParameter(Parameter $parameter): self
     {
-        $parameter->setOperation($this);
+        $parameter->setParent($this);
         $this->pathParameters->add($parameter);
 
         return $this;
@@ -146,7 +152,7 @@ final class Operation
 
     public function addQueryParameter(Parameter $parameter): self
     {
-        $parameter->setOperation($this);
+        $parameter->setParent($this);
         $this->queryParameters->add($parameter);
 
         return $this;
@@ -154,7 +160,7 @@ final class Operation
 
     public function addHeader(Parameter $header): self
     {
-        $header->setOperation($this);
+        $header->setParent($this);
         $this->headers->add($header);
 
         return $this;
@@ -167,6 +173,9 @@ final class Operation
 
     public function setResponses(Responses $responses): self
     {
+        foreach ($responses as $response) {
+            $response->setParent($this);
+        }
         $this->responses = $responses;
 
         return $this;
@@ -174,7 +183,7 @@ final class Operation
 
     public function addResponse(Response $response): self
     {
-        $response->setOperation($this);
+        $response->setParent($this);
         $this->responses->add($response);
 
         return $this;
@@ -221,9 +230,12 @@ final class Operation
         return $this->queryParameters;
     }
 
-    public function setQueryParameters(Parameters $queryParameters): self
+    public function setQueryParameters(Parameters $parameters): self
     {
-        $this->queryParameters = $queryParameters;
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->queryParameters = $parameters;
 
         return $this;
     }
@@ -242,6 +254,9 @@ final class Operation
 
     public function setSecurities(Securities $securities): self
     {
+        foreach ($securities as $security) {
+            $security->setParent($this);
+        }
         $this->securities = $securities;
 
         return $this;
@@ -249,20 +264,20 @@ final class Operation
 
     public function addSecurity(Security $security): self
     {
-        $security->setOperation($this);
+        $security->setParent($this);
         $this->securities->add($security);
 
         return $this;
     }
 
-    public function getApi(): Api
+    public function getParent(): Api
     {
-        return $this->api;
+        return $this->parent;
     }
 
-    public function setApi(Api $api): void
+    public function setParent(Api $parent): void
     {
-        $this->api = $api;
+        $this->parent = $parent;
     }
 
     public function getHeaders(): Parameters

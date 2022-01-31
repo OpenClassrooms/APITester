@@ -8,6 +8,16 @@
       <fqn value="\RuntimeException" />
     </unchecked_exceptions>
   </component>
+  <component name="PhpCSFixer">
+    <phpcsfixer_settings>
+      <PhpCSFixerConfiguration tool_path="$PROJECT_DIR$/vendor/bin/php-cs-fixer" />
+    </phpcsfixer_settings>
+  </component>
+  <component name="PhpCodeSniffer">
+    <phpcs_settings>
+      <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
+    </phpcs_settings>
+  </component>
   <component name="PhpIncludePathManager">
     <include_path>
       <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-common" />
@@ -67,22 +77,17 @@
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-deprecation-rules" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-symfony" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-phpunit" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-strict-equality" />
       <path value="$PROJECT_DIR$/vendor/dnoegel/php-xdg-base-dir" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-elvis-begone" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-insane-comparison" />
       <path value="$PROJECT_DIR$/vendor/phar-io/manifest" />
       <path value="$PROJECT_DIR$/vendor/phar-io/version" />
       <path value="$PROJECT_DIR$/vendor/myclabs/deep-copy" />
       <path value="$PROJECT_DIR$/vendor/openlss/lib-array2xml" />
       <path value="$PROJECT_DIR$/vendor/vimeo/psalm" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-type-setters-params" />
       <path value="$PROJECT_DIR$/vendor/nyholm/psr7" />
       <path value="$PROJECT_DIR$/vendor/amphp/byte-stream" />
       <path value="$PROJECT_DIR$/vendor/amphp/amp" />
       <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
       <path value="$PROJECT_DIR$/vendor/cebe/php-openapi" />
-      <path value="$PROJECT_DIR$/vendor/psalm/plugin-phpunit" />
       <path value="$PROJECT_DIR$/vendor/spaze/phpstan-disallowed-calls" />
       <path value="$PROJECT_DIR$/vendor/nikic/php-parser" />
       <path value="$PROJECT_DIR$/vendor/n98/junit-xml" />
@@ -122,8 +127,6 @@
       <path value="$PROJECT_DIR$/vendor/symfony/config" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-webmozart-assert" />
       <path value="$PROJECT_DIR$/vendor/azjezz/psl" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-use-constants" />
-      <path value="$PROJECT_DIR$/vendor/orklah/psalm-strict-types" />
       <path value="$PROJECT_DIR$/vendor/nikic/iter" />
       <path value="$PROJECT_DIR$/vendor/respect/validation" />
       <path value="$PROJECT_DIR$/vendor/respect/stringifier" />
@@ -170,6 +173,8 @@
       <path value="$PROJECT_DIR$/vendor/illuminate/macroable" />
       <path value="$PROJECT_DIR$/vendor/illuminate/collections" />
       <path value="$PROJECT_DIR$/vendor/illuminate/contracts" />
+      <path value="$PROJECT_DIR$/vendor/webmozart/path-util" />
+      <path value="$PROJECT_DIR$/vendor/ocramius/package-versions" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4">

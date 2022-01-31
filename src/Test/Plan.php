@@ -9,6 +9,7 @@ use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Config\AuthConfig;
 use OpenAPITesting\Config\PlanConfig;
+use OpenAPITesting\Config\SuiteConfig;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
@@ -39,7 +40,7 @@ final class Plan
     /**
      * @var DefinitionLoader[]
      */
-    private array $loaders;
+    private array $definitionLoaders;
 
     /**
      * @var array<string, array<string, Result>>
@@ -68,7 +69,7 @@ final class Plan
     ) {
         $this->preparators = $preparators;
         $this->requesters = $requesters;
-        $this->loaders = $definitionLoaders;
+        $this->definitionLoaders = $definitionLoaders;
         $this->authenticators = $authenticators;
         $this->logger = $logger ?? new NullLogger();
     }
@@ -85,47 +86,26 @@ final class Plan
      */
     public function execute(PlanConfig $testPlanConfig): void
     {
-        foreach ($testPlanConfig->getTestSuiteConfigs() as $config) {
-            $requester = $this->getRequester($config->getRequester());
-            $definitionLoader = $this->getConfiguredLoader(
-                $config->getDefinition()
-                    ->getFormat()
-            );
-            $schema = $definitionLoader->load(
-                $config->getDefinition()
-                    ->getPath()
-            );
-            $this->setBaseUri($schema, $requester);
-            $authConfig = $config->getAuth();
-            $token = null;
-            if (null !== $authConfig) {
-                $authenticator = $this->getConfiguredAuthenticator($authConfig);
-                $token = $authenticator->authenticate($authConfig, $schema, $requester);
-            }
-            $preparators = $this->getConfiguredPreparators($config->getPreparators(), $token);
+        foreach ($testPlanConfig->getTestSuiteConfigs() as $suiteConfig) {
+            $requester = $this->getRequester($suiteConfig->getRequester());
+            $api = $this->getApi($suiteConfig, $requester);
+            $tokens = $this->Authenticate($suiteConfig, $api, $requester);
+            $preparators = $this->getConfiguredPreparators($suiteConfig->getPreparators(), $tokens);
             $testSuite = new Suite(
-                $config->getName(),
-                $schema,
+                $suiteConfig->getName(),
+                $api,
                 $preparators,
                 $requester,
-                $config->getFilters(),
+                $suiteConfig->getFilters(),
                 $this->logger,
             );
-            $testSuite->setBeforeTestCaseCallbacks($config->getBeforeTestCaseCallbacks());
-            $testSuite->setAfterTestCaseCallbacks($config->getAfterTestCaseCallbacks());
+            $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
+            $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
             $testSuite->launch();
             if (\count($testSuite->getResult()) > 0) {
-                $this->results[$config->getName()] = $testSuite->getResult();
+                $this->results[$suiteConfig->getName()] = $testSuite->getResult();
             }
         }
-    }
-
-    /**
-     * @return array<string, array<string, Result>>
-     */
-    public function getResults(): array
-    {
-        return $this->results;
     }
 
     /**
@@ -141,44 +121,11 @@ final class Plan
     }
 
     /**
-     * @param array<string, array<string, mixed>> $preparators
-     *
-     * @throws InvalidPreparatorConfigException
-     *
-     * @return TestCasesPreparator[]
+     * @return array<string, array<string, Result>>
      */
-    private function getConfiguredPreparators(array $preparators, ?string $token = null): array
+    public function getResults(): array
     {
-        if (0 === \count($preparators)) {
-            return $this->preparators;
-        }
-        $configuredPreparators = [];
-        foreach ($this->preparators as $p) {
-            $config = $preparators[$p::getName()] ?? null;
-            if (null !== $config) {
-                $p->configure($config);
-                $p->setToken($token);
-            }
-            if (\array_key_exists($p::getName(), $preparators)) {
-                $configuredPreparators[] = $p;
-            }
-        }
-
-        return $configuredPreparators;
-    }
-
-    /**
-     * @throws DefinitionLoaderNotFoundException
-     */
-    private function getConfiguredLoader(string $format): DefinitionLoader
-    {
-        foreach ($this->loaders as $loader) {
-            if ($loader::getFormat() === $format) {
-                return $loader;
-            }
-        }
-
-        throw new DefinitionLoaderNotFoundException($format);
+        return $this->results;
     }
 
     /**
@@ -193,6 +140,20 @@ final class Plan
         }
 
         throw new RequesterNotFoundException($name);
+    }
+
+    /**
+     * @throws DefinitionLoaderNotFoundException
+     */
+    private function getConfiguredLoader(string $format): DefinitionLoader
+    {
+        foreach ($this->definitionLoaders as $loader) {
+            if ($loader::getFormat() === $format) {
+                return $loader;
+            }
+        }
+
+        throw new DefinitionLoaderNotFoundException($format);
     }
 
     private function setBaseUri(Api $schema, Requester $requester): void
@@ -215,5 +176,73 @@ final class Plan
         }
 
         throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
+    }
+
+    /**
+     * @param array<string, string[]>             $tokens
+     * @param array<string, array<string, mixed>> $preparators
+     *
+     * @throws InvalidPreparatorConfigException
+     *
+     * @return TestCasesPreparator[]
+     */
+    private function getConfiguredPreparators(array $preparators, array $tokens = []): array
+    {
+        if (0 === \count($preparators)) {
+            return $this->preparators;
+        }
+        $configuredPreparators = [];
+        foreach ($this->preparators as $p) {
+            $config = $preparators[$p::getName()] ?? null;
+            if (null !== $config) {
+                $p->configure($config);
+                $p->setTokens($tokens);
+            }
+            if (\array_key_exists($p::getName(), $preparators)) {
+                $configuredPreparators[] = $p;
+            }
+        }
+
+        return $configuredPreparators;
+    }
+
+    /**
+     * @throws DefinitionLoaderNotFoundException
+     * @throws DefinitionLoadingException
+     */
+    private function getApi(SuiteConfig $config, Requester $requester): Api
+    {
+        $definitionLoader = $this->getConfiguredLoader(
+            $config->getDefinition()
+                ->getFormat()
+        );
+        $api = $definitionLoader->load(
+            $config->getDefinition()
+                ->getPath()
+        );
+
+        $this->setBaseUri($api, $requester);
+
+        return $api;
+    }
+
+    /**
+     * @throws AuthenticationLoadingException
+     * @throws AuthenticatorNotFoundException
+     *
+     * @return array<string, array<string>>
+     */
+    private function Authenticate(SuiteConfig $config, Api $api, Requester $requester): array
+    {
+        $tokens = [];
+        foreach ($config->getAuthentifications() as $authConf) {
+            $authenticator = $this->getConfiguredAuthenticator($authConf);
+            $token = $authenticator->authenticate($authConf, $api, $requester);
+            if (null !== $token) {
+                $tokens[$token] = $authConf->getScopes();
+            }
+        }
+
+        return $tokens;
     }
 }

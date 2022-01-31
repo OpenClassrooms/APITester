@@ -19,7 +19,7 @@ final class PlanConfig
     private ?object $callbackObject;
 
     /**
-     * @throws \OpenAPITesting\Config\Exception\ConfigurationException
+     * @throws ConfigurationException
      */
     public function __construct(string $path, ?object $callbackObject = null)
     {
@@ -34,7 +34,7 @@ final class PlanConfig
          *              'definition': array{'path': string, 'format': string},
          *              'preparators'?: ?array<string, array<string, mixed>>,
          *              'requester'?: ?string,
-         *              'auth'?: array{'username'?: ?string, 'password'?: ?string, 'type': string},
+         *              'auth'?: array<string, array{'username'?: ?string, 'password'?: ?string, 'type': string}>,
          *              'filters'?: ?array{'include': ?string[], 'exclude': ?string[]},
          *              'callbacks'?: ?array{'beforeTestCase': string[], 'afterTestCase': string[]}
          *              }
@@ -52,11 +52,11 @@ final class PlanConfig
                 ),
                 $suite['preparators'] ?? [],
                 $suite['requester'] ?? HttpAsyncRequester::getName(),
-                isset($suite['auth']) ? new AuthConfig(
-                    $suite['auth']['type'],
-                    $suite['auth']['username'] ?? null,
-                    $suite['auth']['password'] ?? null,
-                ) : null,
+                isset($suite['auth']) ? array_map(static fn ($x) => new AuthConfig(
+                    $x['type'],
+                    $x['username'] ?? null,
+                    $x['password'] ?? null,
+                ), $suite['auth']) : [],
                 new FiltersConfig(
                     $suite['filters']['include'] ?? [],
                     $suite['filters']['exclude'] ?? [],
@@ -99,7 +99,7 @@ final class PlanConfig
     /**
      * @param mixed[] $data
      *
-     * @throws \OpenAPITesting\Config\Exception\ConfigurationException
+     * @throws ConfigurationException
      *
      * @return mixed[]
      */

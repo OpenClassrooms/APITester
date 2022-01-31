@@ -6,8 +6,8 @@ suites:
         requester: 'http-async'
         preparators:
             examples: ~
-            fixtures:
-                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
+            #            fixtures:
+            #                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
             401: ~
             404: ~
             405:
@@ -33,6 +33,7 @@ suites:
                 - 'deleteOrder'
                 - 'deleteUser'
         auth:
-            type: 'oauth2:implicit'
-            headers:
-                Authorization: '%ENV(CLIENT_BASIC)%'
+            user_1:
+                type: 'oauth2:implicit'
+                headers:
+                    Authorization: '%ENV(CLIENT_BASIC)%'

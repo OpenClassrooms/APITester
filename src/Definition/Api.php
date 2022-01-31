@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
+use Illuminate\Support\Collection;
 use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
 
@@ -46,7 +48,7 @@ final class Api
 
     public function addOperation(Operation $operation): self
     {
-        $operation->setApi($this);
+        $operation->setParent($this);
         $this->operations->add($operation);
 
         return $this;
@@ -84,18 +86,6 @@ final class Api
         return $this;
     }
 
-    public function getTags(): Tags
-    {
-        return $this->tags;
-    }
-
-    public function setTags(Tags $tags): self
-    {
-        $this->tags = $tags;
-
-        return $this;
-    }
-
     /**
      * @return array<string, array<Operation>>
      */
@@ -120,8 +110,44 @@ final class Api
 
     public function setOperations(Operations $operations): self
     {
+        foreach ($operations as $operation) {
+            $operation->setParent($this);
+        }
         $this->operations = $operations;
 
         return $this;
+    }
+
+    public function getTags(): Tags
+    {
+        return $this->tags;
+    }
+
+    public function setTags(Tags $tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<string>
+     */
+    public function getScopes(): Collection
+    {
+        return $this->getSecurities()
+            ->select('scopes')
+            ->flatten()
+            ->unique()
+        ;
+    }
+
+    public function getSecurities(): Securities
+    {
+        /** @var Securities $securities */
+        return $this->getOperations()
+            ->select('securities.*')
+            ->flatten()
+        ;
     }
 }

@@ -12,11 +12,24 @@ final class AuthConfig
 
     private string $type;
 
-    public function __construct(string $type, ?string $username = null, ?string $password = null)
-    {
+    /**
+     * @var string[]
+     */
+    private array $scopes;
+
+    /**
+     * @param string[] $scopes
+     */
+    public function __construct(
+        string $type,
+        ?string $username = null,
+        ?string $password = null,
+        array $scopes = []
+    ) {
         $this->username = $username;
         $this->password = $password;
         $this->type = $type;
+        $this->scopes = $scopes;
     }
 
     public function getUsername(): ?string
@@ -32,5 +45,13 @@ final class AuthConfig
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getScopes(): array
+    {
+        return $this->scopes;
     }
 }

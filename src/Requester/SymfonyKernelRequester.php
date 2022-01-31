@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-final class SymfonyKernelRequester implements Requester
+final class SymfonyKernelRequester extends Requester
 {
     private KernelInterface $kernel;
 
@@ -56,7 +56,7 @@ final class SymfonyKernelRequester implements Requester
 
     public static function getName(): string
     {
-        return 'kernel';
+        return 'symfony-kernel';
     }
 
     public function setBaseUri(string $baseUri): void

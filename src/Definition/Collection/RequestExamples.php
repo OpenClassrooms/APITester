@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
-use OpenAPITesting\Definition\Header;
+use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Util\Collection;
 
 /**
- * @method Header[] getIterator()
+ * @method RequestExample[] getIterator()
  * @implements Collection<TKey, TValue>
  */
-final class Headers extends Collection
+final class RequestExamples extends Collection
 {
 }

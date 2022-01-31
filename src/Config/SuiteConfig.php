@@ -10,7 +10,10 @@ final class SuiteConfig
 {
     private DefinitionConfig $definition;
 
-    private ?AuthConfig $auth;
+    /**
+     * @var AuthConfig[]
+     */
+    private array $auth;
 
     /**
      * @var array<string, array<string, mixed>>
@@ -37,13 +40,14 @@ final class SuiteConfig
      * @param \Closure[]                          $beforeTestCaseCallbacks
      * @param \Closure[]                          $afterTestCaseCallbacks
      * @param array<string, array<string, mixed>> $preparators
+     * @param array<string, AuthConfig>           $auth
      */
     public function __construct(
         string $name,
         DefinitionConfig $definition,
         array $preparators = [],
         ?string $requester = null,
-        ?AuthConfig $auth = null,
+        array $auth = [],
         ?FiltersConfig $filters = null,
         array $beforeTestCaseCallbacks = [],
         array $afterTestCaseCallbacks = []
@@ -138,7 +142,10 @@ final class SuiteConfig
         $this->afterTestCaseCallbacks = $callbacks;
     }
 
-    public function getAuth(): ?AuthConfig
+    /**
+     * @return AuthConfig[]
+     */
+    public function getAuthentifications(): array
     {
         return $this->auth;
     }

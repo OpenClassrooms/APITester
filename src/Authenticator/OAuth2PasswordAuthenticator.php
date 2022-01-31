@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Authenticator;
 
-use cebe\openapi\spec\OAuthFlow;
 use Nyholm\Psr7\Request;
 use OpenAPITesting\Config\AuthConfig;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Json;
 
-final class OAuth2PasswordAuthenticator extends OAuth2Authenticator
+final class OAuth2PasswordAuthenticator extends Authenticator
 {
     public static function getName(): string
     {
         return 'oauth2:password';
     }
 
-    protected function handleFlow(OAuthFlow $flow, AuthConfig $config, Requester $requester): ?string
+    public function authenticate(AuthConfig $config, Api $api, Requester $requester): ?string
     {
+        /** @var OAuth2PasswordSecurity $security */
+        $security = $this->getSecurity($api, $config->getType());
         $request = new Request(
             'POST',
-            $flow->tokenUrl,
+            $security->getTokenUrl(),
             [],
             Json::encode([
                 'username' => $config->getUsername(),

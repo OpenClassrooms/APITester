@@ -197,7 +197,7 @@ components:
                 id: 10
                 name: Jessica Smith
             summary: expects 201
-        badPetCreationBody: # Example 2
+        badPetCreationBody: # RequestExample 2
             value:
                 id: 11
                 name: 123

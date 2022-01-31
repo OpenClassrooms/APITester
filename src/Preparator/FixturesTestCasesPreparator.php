@@ -21,6 +21,7 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
 
     /**
      * @throws PreparatorLoadingException
+     *
      * @return TestCase[]
      */
     public function prepare(Api $api): array

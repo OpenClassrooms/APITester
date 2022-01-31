@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition;
 
 use cebe\openapi\spec\Schema;
-use OpenAPITesting\Definition\Collection\Examples;
+use OpenAPITesting\Definition\Collection\ParameterExamples;
 
 final class Parameter
 {
-    private Operation $operation;
+    private Operation $parent;
 
     private string $name;
 
-    private ?Schema $schema = null;
+    private ?Schema $schema;
 
-    private Examples $examples;
+    private ParameterExamples $examples;
 
-    public function __construct(string $name)
+    public function __construct(string $name, ?Schema $schema = null)
     {
         $this->name = $name;
-        $this->examples = new Examples();
+        $this->examples = new ParameterExamples();
+        $this->schema = $schema;
     }
 
     public static function create(string $name): self
@@ -45,19 +46,27 @@ final class Parameter
         return $this;
     }
 
-    public function getExamples(): Examples
+    public function getExamples(): ParameterExamples
     {
         return $this->examples;
     }
 
-    public function getOperation(): Operation
+    public function addExample(ParameterExample $example): self
     {
-        return $this->operation;
+        $example->setParent($this);
+        $this->examples->add($example);
+
+        return $this;
     }
 
-    public function setOperation(Operation $operation): self
+    public function getParent(): Operation
     {
-        $this->operation = $operation;
+        return $this->parent;
+    }
+
+    public function setParent(Operation $operation): self
+    {
+        $this->parent = $operation;
 
         return $this;
     }

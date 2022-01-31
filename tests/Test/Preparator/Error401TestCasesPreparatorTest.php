@@ -13,7 +13,7 @@ use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\Security\ApiKeySecurity;
 use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\ImplicitOAuth2Security;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
 use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -48,7 +48,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     Operation::create('test1', '/test/oauth2')
                         ->addResponse(DefinitionResponse::create()->setStatusCode(401))
                         ->addSecurity(
-                            ImplicitOAuth2Security::create(
+                            OAuth2ImplicitSecurity::create(
                                 'oauth2_test',
                                 'https://petstore3.swagger.io/oauth/authorize',
                                 ['write:pets']

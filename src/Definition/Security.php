@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
-use OpenAPITesting\Definition\Security\ApiKeySecurity;
-use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
-
 abstract class Security
 {
     public const TYPE_HTTP_BASIC = 'http_basic';
@@ -22,7 +18,7 @@ abstract class Security
 
     public const SCHEME_BEARER_AUTH = 'bearer';
 
-    protected Operation $operation;
+    protected Operation $parent;
 
     protected string $description = '';
 
@@ -33,14 +29,14 @@ abstract class Security
         $this->name = $name;
     }
 
-    public function getOperation(): Operation
+    public function getParent(): Operation
     {
-        return $this->operation;
+        return $this->parent;
     }
 
-    public function setOperation(Operation $operation): self
+    public function setParent(Operation $parent): self
     {
-        $this->operation = $operation;
+        $this->parent = $parent;
 
         return $this;
     }
@@ -62,24 +58,5 @@ abstract class Security
         return $this->name;
     }
 
-    public function getType(): string
-    {
-        if ($this instanceof HttpSecurity && $this->getScheme() === static::SCHEME_BASIC_AUTH) {
-            return static::TYPE_HTTP_BASIC;
-        }
-
-        if ($this instanceof HttpSecurity && $this->getScheme() === static::SCHEME_BEARER_AUTH) {
-            return static::TYPE_HTTP_BEARER;
-        }
-
-        if ($this instanceof ApiKeySecurity) {
-            return static::TYPE_API_KEY;
-        }
-
-        if ($this instanceof OAuth2Security) {
-            return static::TYPE_OAUTH2;
-        }
-        $type = static::class;
-        throw new \RuntimeException("Unhandled security type for class {$type}");
-    }
+    abstract public function getType(): string;
 }

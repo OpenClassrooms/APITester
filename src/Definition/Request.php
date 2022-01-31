@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition;
 
 use cebe\openapi\spec\Schema;
-use OpenAPITesting\Definition\Collection\Examples;
+use OpenAPITesting\Definition\Collection\RequestExamples;
 
 final class Request
 {
-    private Operation $operation;
+    private Operation $parent;
 
     private string $mediaType;
 
@@ -17,13 +17,13 @@ final class Request
 
     private bool $required = true;
 
-    private Examples $examples;
+    private RequestExamples $examples;
 
     public function __construct(string $mediaType, Schema $body)
     {
         $this->body = $body;
         $this->mediaType = $mediaType;
-        $this->examples = new Examples();
+        $this->examples = new RequestExamples();
     }
 
     public static function create(string $mediaType, Schema $body): self
@@ -53,19 +53,27 @@ final class Request
         return $this->mediaType;
     }
 
-    public function getExamples(): Examples
+    public function getExamples(): RequestExamples
     {
         return $this->examples;
     }
 
-    public function getOperation(): Operation
+    public function addExample(RequestExample $example): self
     {
-        return $this->operation;
+        $example->setParent($this);
+        $this->examples->add($example);
+
+        return $this;
     }
 
-    public function setOperation(Operation $operation): self
+    public function getParent(): Operation
     {
-        $this->operation = $operation;
+        return $this->parent;
+    }
+
+    public function setParent(Operation $parent): self
+    {
+        $this->parent = $parent;
 
         return $this;
     }

@@ -33,9 +33,9 @@ final class PlanTest extends TestCase
                 new OpenApiExamplesTestCasesPreparator(),
                 new Error401TestCasesPreparator(),
                 new Error404TestCasesPreparator(),
-                //                Ignored errors in this test since the Petstore API does not respond as expected for these error codes
-                //                new Error405TestCasesPreparator(),
-                //                new Error406TestCasesPreparator(),
+                //Ignored errors in this test since the Petstore API does not respond as expected for these error codes
+                // new Error405TestCasesPreparator(),
+                // new Error406TestCasesPreparator(),
                 new FixturesTestCasesPreparator(),
             ],
             [new HttpAsyncRequester()],

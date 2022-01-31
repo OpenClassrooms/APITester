@@ -12,7 +12,10 @@ use OpenAPITesting\Test\TestCase;
 
 abstract class TestCasesPreparator
 {
-    protected ?string $token = null;
+    /**
+     * @var array<string, string[]>
+     */
+    protected array $tokens = [];
 
     /**
      * @throws PreparatorLoadingException
@@ -33,9 +36,16 @@ abstract class TestCasesPreparator
         }
     }
 
-    public function setToken(?string $token): void
+    /**
+     * @param array<string, string[]> $tokens
+     */
+    public function setTokens(array $tokens): void
     {
-        $this->token = $token;
+        $this->tokens = $tokens;
+    }
+
+    public function authenticate(Operation $operation, \Nyholm\Psr7\Request $request): void
+    {
     }
 
     abstract public static function getName(): string;
