@@ -74,6 +74,24 @@ final class Operation
     }
 
     /**
+     * @param ParameterExample[] $pathParamExamples
+     * @param ParameterExample[] $queryParamExamples
+     */
+    public function getPathFromExamples(array $pathParamExamples, array $queryParamExamples): string
+    {
+        $pathParams = [];
+        foreach ($pathParamExamples as $param) {
+            $pathParams[$param->getName()] = $param->getValue();
+        }
+        $queryParams = [];
+        foreach ($queryParamExamples as $param) {
+            $queryParams[$param->getName()] = $param->getValue();
+        }
+
+        return $this->getPath($pathParams, $queryParams);
+    }
+
+    /**
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
      */

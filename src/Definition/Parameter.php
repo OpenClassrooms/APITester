@@ -13,20 +13,23 @@ final class Parameter
 
     private string $name;
 
+    private bool $required;
+
     private ?Schema $schema;
 
     private ParameterExamples $examples;
 
-    public function __construct(string $name, ?Schema $schema = null)
+    public function __construct(string $name, bool $required = false, ?Schema $schema = null)
     {
         $this->name = $name;
         $this->examples = new ParameterExamples();
+        $this->required = $required;
         $this->schema = $schema;
     }
 
-    public static function create(string $name): self
+    public static function create(string $name, bool $required = false): self
     {
-        return new self($name);
+        return new self($name, $required);
     }
 
     public function getName(): string
@@ -67,6 +70,18 @@ final class Parameter
     public function setParent(Operation $operation): self
     {
         $this->parent = $operation;
+
+        return $this;
+    }
+
+    public function isRequired(): bool
+    {
+        return $this->required;
+    }
+
+    public function setRequired(bool $required): self
+    {
+        $this->required = $required;
 
         return $this;
     }
