@@ -32,7 +32,7 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api),
-            ['size', 'id', 'headerNames', 'groups', 'stream']
+            ['size', 'id', 'headerNames', 'groups', 'stream', 'excludedFields']
         );
     }
 

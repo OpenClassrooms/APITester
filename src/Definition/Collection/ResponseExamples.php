@@ -9,7 +9,7 @@ use OpenAPITesting\Util\Collection;
 
 /**
  * @method ResponseExample[] getIterator()
- * @implements Collection<TKey, TValue>
+ * @extends Collection<array-key, ResponseExample>
  */
 final class ResponseExamples extends Collection
 {

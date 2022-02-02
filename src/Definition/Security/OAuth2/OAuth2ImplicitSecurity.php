@@ -13,7 +13,7 @@ final class OAuth2ImplicitSecurity extends OAuth2Security
      */
     public function __construct(string $name, string $authorizationUrl, array $scopes)
     {
-        parent::__construct($name);
+        parent::__construct($name, $scopes);
         $this->authorizationUrl = $authorizationUrl;
         $this->scopes = $scopes;
     }
@@ -29,5 +29,10 @@ final class OAuth2ImplicitSecurity extends OAuth2Security
     public function getAuthorizationUrl(): string
     {
         return $this->authorizationUrl;
+    }
+
+    public function getType(): string
+    {
+        return static::TYPE_OAUTH2 . '_implicit';
     }
 }

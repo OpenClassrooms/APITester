@@ -8,7 +8,7 @@ namespace OpenAPITesting\Util;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements \Illuminate\Support\Collection<TKey, TValue>
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
  */
 class Collection extends \Illuminate\Support\Collection
 {
@@ -117,7 +117,7 @@ class Collection extends \Illuminate\Support\Collection
     }
 
     /**
-     * @param string|array|int|null $value
+     * @param string|array<mixed>|int|null $value
      *
      * @return static<TKey, mixed>
      */
@@ -131,10 +131,66 @@ class Collection extends \Illuminate\Support\Collection
      *
      * @return static<TKey, TValue>
      */
-    public function compare($items): self
+    public function compare(iterable $items): self
     {
         return $this->diff($items)
             ->merge(collect($items)->diff($this))
         ;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function operatorForWhere($key, $operator = null, $value = null): callable
+    {
+        if (1 === \func_num_args()) {
+            $value = true;
+
+            $operator = '=';
+        }
+
+        if (2 === \func_num_args()) {
+            $value = $operator;
+
+            $operator = '=';
+        }
+
+        return static function ($item) use ($key, $operator, $value) {
+            $retrieved = data_get($item, $key);
+
+            $strings = array_filter([$retrieved, $value], static function ($value) {
+                return \is_string($value) || (\is_object($value) && method_exists($value, '__toString'));
+            });
+
+            if (\count($strings) < 2 && 1 === \count(array_filter([$retrieved, $value], 'is_object'))) {
+                return \in_array($operator, ['!=', '<>', '!=='], true);
+            }
+
+            switch ($operator) {
+                default:
+                case '=':
+                case '==':
+                case '===':
+                    return $retrieved === $value;
+                case '!=':
+                case '<>':
+                case '!==':
+                    return $retrieved !== $value;
+                case '<':
+                    return $retrieved < $value;
+                case '>':
+                    return $retrieved > $value;
+                case '<=':
+                    return $retrieved <= $value;
+                case '>=':
+                    return $retrieved >= $value;
+                case 'contains':
+                    return (\is_array($retrieved) && \in_array($value, $retrieved, true))
+                        || (\is_string($retrieved) && str_contains($retrieved, (string) $value));
+                case 'includes':
+                    return (\is_array($retrieved) && \count(array_diff((array) $value, $retrieved)) > 0)
+                        || (\is_string($retrieved) && str_contains($retrieved, (string) $value));
+            }
+        };
     }
 }

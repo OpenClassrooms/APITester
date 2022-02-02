@@ -13,7 +13,7 @@ final class OAuth2ClientCredentialsSecurity extends OAuth2Security
      */
     public function __construct(string $name, string $tokenUrl, array $scopes)
     {
-        parent::__construct($name);
+        parent::__construct($name, $scopes);
         $this->tokenUrl = $tokenUrl;
         $this->scopes = $scopes;
     }
@@ -29,5 +29,10 @@ final class OAuth2ClientCredentialsSecurity extends OAuth2Security
     public function getTokenUrl(): string
     {
         return $this->tokenUrl;
+    }
+
+    public function getType(): string
+    {
+        return static::TYPE_OAUTH2 . '_client_credentials';
     }
 }

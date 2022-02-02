@@ -99,7 +99,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
                 $operations->add(
                     Operation::create(
-                        $operation->operationId,
+                        $operation->operationId ?? $this->generateOperationId($path, $method),
                         $path
                     )
                         ->setMethod($method)
@@ -148,6 +148,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         return new Tags($collection);
     }
 
+    private function generateOperationId(string $path, string $method): string
+    {
+        return trim(str_replace('/', '_', $path) . '_' . $method, '_');
+    }
+
     /**
      * @param \cebe\openapi\spec\Parameter[] $parameters
      */
@@ -165,6 +170,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             ;
             foreach ($parameter->examples ?? [] as $exampleName => $example) {
                 $defParam->addExample(new ParameterExample($exampleName, (string) $example->value));
+            }
+            if (null !== $parameter->example) {
+                $defParam->addExample(new ParameterExample('default', (string) $parameter->example));
+            }
+            if ($parameter->schema instanceof Schema
+                && null !== $parameter->schema->example
+            ) {
+                $defParam->addExample(new ParameterExample('default', (string) $parameter->schema->example));
             }
             $collection->add($defParam);
         }
@@ -192,6 +205,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             /** @var Example $example */
             foreach ($mediaType->examples ?? [] as $name => $example) {
                 $request->addExample(new RequestExample((string) $name, $example->value));
+            }
+            if (null !== $mediaType->example) {
+                $request->addExample(new RequestExample('default', $mediaType->example));
+            }
+            if ($mediaType->schema instanceof Schema
+                && null !== $mediaType->schema->example
+            ) {
+                $request->addExample(new RequestExample('default', $mediaType->schema->example));
             }
             $collection->add($request);
         }
@@ -245,6 +266,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 foreach ($mediaType->examples ?? [] as $name => $example) {
                     $defResponse->addExample(new ResponseExample($name, $example->value));
                 }
+                if (null !== $mediaType->example) {
+                    $defResponse->addExample(new ResponseExample('default', $mediaType->example));
+                }
+                if ($mediaType->schema instanceof Schema
+                    && null !== $mediaType->schema->example
+                ) {
+                    $defResponse->addExample(new ResponseExample('default', $mediaType->schema->example));
+                }
                 $collection->add($defResponse);
             }
         }
@@ -282,6 +311,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $diff = implode(',', $diff);
                         throw new DefinitionLoadingException("Scopes '{$diff}' not configured in securitySchemes");
                     }
+                    $name .= '_' . $type;
                     if ('implicit' === $type) {
                         $collection[] = new OAuth2ImplicitSecurity(
                             $name,

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use OpenAPITesting\Authenticator\Authenticator;
+use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Config\AuthConfig;
 use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Config\SuiteConfig;
 use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
@@ -83,10 +85,14 @@ final class Plan
      * @throws PreparatorLoadingException
      * @throws AuthenticatorNotFoundException
      * @throws AuthenticationLoadingException
+     * @throws AuthenticationException
      */
-    public function execute(PlanConfig $testPlanConfig): void
+    public function execute(PlanConfig $testPlanConfig, ?string $suiteName = null): void
     {
         foreach ($testPlanConfig->getTestSuiteConfigs() as $suiteConfig) {
+            if ($suiteConfig->getName() !== $suiteName) {
+                continue;
+            }
             $requester = $this->getRequester($suiteConfig->getRequester());
             $api = $this->getApi($suiteConfig, $requester);
             $tokens = $this->Authenticate($suiteConfig, $api, $requester);
@@ -144,6 +150,69 @@ final class Plan
 
     /**
      * @throws DefinitionLoaderNotFoundException
+     * @throws DefinitionLoadingException
+     */
+    private function getApi(SuiteConfig $config, Requester $requester): Api
+    {
+        $definitionLoader = $this->getConfiguredLoader(
+            $config->getDefinition()
+                ->getFormat()
+        );
+        $api = $definitionLoader->load(
+            $config->getDefinition()
+                ->getPath()
+        );
+
+        $this->setBaseUri($api, $requester);
+
+        return $api;
+    }
+
+    /**
+     * @throws AuthenticationLoadingException
+     * @throws AuthenticatorNotFoundException
+     * @throws AuthenticationException
+     */
+    private function Authenticate(SuiteConfig $config, Api $api, Requester $requester): Tokens
+    {
+        $tokens = new Tokens();
+        foreach ($config->getAuthentifications() as $authConf) {
+            $authenticator = $this->getConfiguredAuthenticator($authConf);
+            $tokens->add($authenticator->authenticate($authConf, $api, $requester));
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     *
+     * @throws InvalidPreparatorConfigException
+     *
+     * @return TestCasesPreparator[]
+     */
+    private function getConfiguredPreparators(array $preparators, Tokens $tokens): array
+    {
+        if (0 === \count($preparators)) {
+            return $this->preparators;
+        }
+        $configuredPreparators = [];
+        foreach ($this->preparators as $p) {
+            $config = $preparators[$p::getName()] ?? null;
+            if (null !== $config) {
+                $p->configure($config);
+            }
+            $p->setTokens($tokens);
+            if (\array_key_exists($p::getName(), $preparators)) {
+                $configuredPreparators[] = $p;
+            }
+        }
+
+        return $configuredPreparators;
+    }
+
+    /**
+     * @throws DefinitionLoaderNotFoundException
      */
     private function getConfiguredLoader(string $format): DefinitionLoader
     {
@@ -176,73 +245,5 @@ final class Plan
         }
 
         throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
-    }
-
-    /**
-     * @param array<string, string[]>             $tokens
-     * @param array<string, array<string, mixed>> $preparators
-     *
-     * @throws InvalidPreparatorConfigException
-     *
-     * @return TestCasesPreparator[]
-     */
-    private function getConfiguredPreparators(array $preparators, array $tokens = []): array
-    {
-        if (0 === \count($preparators)) {
-            return $this->preparators;
-        }
-        $configuredPreparators = [];
-        foreach ($this->preparators as $p) {
-            $config = $preparators[$p::getName()] ?? null;
-            if (null !== $config) {
-                $p->configure($config);
-                $p->setTokens($tokens);
-            }
-            if (\array_key_exists($p::getName(), $preparators)) {
-                $configuredPreparators[] = $p;
-            }
-        }
-
-        return $configuredPreparators;
-    }
-
-    /**
-     * @throws DefinitionLoaderNotFoundException
-     * @throws DefinitionLoadingException
-     */
-    private function getApi(SuiteConfig $config, Requester $requester): Api
-    {
-        $definitionLoader = $this->getConfiguredLoader(
-            $config->getDefinition()
-                ->getFormat()
-        );
-        $api = $definitionLoader->load(
-            $config->getDefinition()
-                ->getPath()
-        );
-
-        $this->setBaseUri($api, $requester);
-
-        return $api;
-    }
-
-    /**
-     * @throws AuthenticationLoadingException
-     * @throws AuthenticatorNotFoundException
-     *
-     * @return array<string, array<string>>
-     */
-    private function Authenticate(SuiteConfig $config, Api $api, Requester $requester): array
-    {
-        $tokens = [];
-        foreach ($config->getAuthentifications() as $authConf) {
-            $authenticator = $this->getConfiguredAuthenticator($authConf);
-            $token = $authenticator->authenticate($authConf, $api, $requester);
-            if (null !== $token) {
-                $tokens[$token] = $authConf->getScopes();
-            }
-        }
-
-        return $tokens;
     }
 }

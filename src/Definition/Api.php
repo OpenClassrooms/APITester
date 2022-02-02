@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
-use Illuminate\Support\Collection;
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
+use OpenAPITesting\Util\Collection;
 
 final class Api
 {
@@ -131,10 +130,11 @@ final class Api
     }
 
     /**
-     * @return Collection<string>
+     * @return Collection<array-key, string>
      */
     public function getScopes(): Collection
     {
+        /** @var Collection<array-key, string> */
         return $this->getSecurities()
             ->select('scopes')
             ->flatten()
@@ -142,9 +142,12 @@ final class Api
         ;
     }
 
-    public function getSecurities(): Securities
+    /**
+     * @return Collection<array-key, Security>
+     */
+    public function getSecurities(): Collection
     {
-        /** @var Securities $securities */
+        /** @var Collection<array-key, Security> */
         return $this->getOperations()
             ->select('securities.*')
             ->flatten()

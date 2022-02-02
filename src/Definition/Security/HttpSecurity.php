@@ -12,9 +12,12 @@ final class HttpSecurity extends Security
 
     private ?string $format;
 
-    public function __construct(string $name, string $scheme, ?string $format = null)
+    /**
+     * @param array<string, string> $scopes
+     */
+    public function __construct(string $name, string $scheme, ?string $format = null, array $scopes = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $scopes);
         $this->scheme = $scheme;
         $this->format = $format;
     }

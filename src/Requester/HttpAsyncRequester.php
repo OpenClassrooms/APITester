@@ -40,6 +40,7 @@ final class HttpAsyncRequester extends Requester
      */
     public function request(RequestInterface $request, string $id): void
     {
+        $this->launched = false;
         $this->requests[$id] = $request;
     }
 
@@ -47,6 +48,7 @@ final class HttpAsyncRequester extends Requester
     {
         if (false === $this->launched) {
             $this->call();
+            unset($this->requests[$id]);
         }
 
         return $this->responses[$id];
@@ -61,7 +63,11 @@ final class HttpAsyncRequester extends Requester
     {
         $httpClient = new HttplugClient();
         foreach ($this->requests as $id => $request) {
-            $request = $request->withUri(new Uri($this->baseUri . $request->getUri()));
+            $request = $request->withUri(
+                str_contains((string) $request->getUri(), 'https://') ? $request->getUri() : new Uri(
+                    trim($this->baseUri, '/') . '/' . trim((string) $request->getUri(), '/')
+                )
+            );
             try {
                 $httpClient
                     ->sendAsyncRequest($request)
@@ -70,6 +76,7 @@ final class HttpAsyncRequester extends Requester
                             $this->responses[$id] = $response;
                         },
                         function (\Throwable $exception) {
+                            echo "Error: {$exception->getMessage()}\n";
                             throw $exception;
                         }
                     )

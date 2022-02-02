@@ -1,5 +1,5 @@
 suites:
-    all:
+    petstore:
         definition:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
@@ -25,8 +25,6 @@ suites:
                     -   in: query
                         names: [ 'from', 'to' ]
         filters:
-            #            include:
-            #                - 'oc_api_student_cirr_status_get'
             exclude:
                 - 'getUserByName'
                 - 'updatePet'
@@ -34,6 +32,54 @@ suites:
                 - 'deleteUser'
         auth:
             user_1:
-                type: 'oauth2:implicit'
+                type: 'oauth2_implicit'
                 headers:
                     Authorization: '%ENV(CLIENT_BASIC)%'
+
+    oc:
+        definition:
+            path: 'tests/Fixtures/OpenAPI/openclassrooms-api.yml'
+            format: 'openapi'
+        requester: 'http-async'
+        preparators:
+            401: ~
+            403: ~
+            404: ~
+            405:
+                responseBody:
+                    code: 405
+                    message: 'HTTP 405 Method Not Allowed'
+            406: ~
+            413:
+                range:
+                    -   in: header
+                        names: [ 'Range' ]
+                        unit: items
+            416:
+                range:
+                    -   in: header
+                        names: [ 'Range' ]
+                        unit: items
+        filters:
+            include:
+                - 'oc_api_student_cirr_status_get'
+                - 'oc_api_learning_activity_learning_path_projects_with_user_information_get'
+        auth:
+            user_1:
+                type: 'oauth2_password'
+                username: '%env(USER1_USERNAME)%'
+                password: '%env(USER1_PASSWORD)%'
+                scopes: [ 'learning_content', 'user_learning_activity' ]
+                headers:
+                    Authorization: 'Basic %env(CLIENT_BASIC)%'
+                    Accept: 'application/json'
+                    Content-Type: 'application/json'
+            user_2:
+                type: 'oauth2_password'
+                username: '%env(USER1_USERNAME)%'
+                password: '%env(USER1_PASSWORD)%'
+                scopes: [ 'openclassrooms_client' ]
+                headers:
+                    Authorization: 'Basic %env(CLIENT_BASIC)%'
+                    Accept: 'application/json'
+                    Content-Type: 'application/json'

@@ -63,6 +63,16 @@ final class Operation
         return $this->id;
     }
 
+    public function getExamplePath(): string
+    {
+        return $this->getPath(
+            $this->getPathParameters()
+                ->toExampleArray(),
+            $this->getQueryParameters()
+                ->toExampleArray()
+        );
+    }
+
     /**
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
@@ -81,6 +91,36 @@ final class Operation
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
+    }
+
+    public function getPathParameters(): Parameters
+    {
+        return $this->pathParameters;
+    }
+
+    public function setPathParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->pathParameters = $parameters;
+
+        return $this;
+    }
+
+    public function getQueryParameters(): Parameters
+    {
+        return $this->queryParameters;
+    }
+
+    public function setQueryParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->queryParameters = $parameters;
+
+        return $this;
     }
 
     public function getMethod(): string
@@ -125,21 +165,6 @@ final class Operation
     {
         /** @var Request|null */
         return $this->requests->firstWhere('mediaType', $mediaType);
-    }
-
-    public function getPathParameters(): Parameters
-    {
-        return $this->pathParameters;
-    }
-
-    public function setPathParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->pathParameters = $parameters;
-
-        return $this;
     }
 
     public function addPathParameter(Parameter $parameter): self
@@ -221,21 +246,6 @@ final class Operation
     public function setDescription(string $description): self
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getQueryParameters(): Parameters
-    {
-        return $this->queryParameters;
-    }
-
-    public function setQueryParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->queryParameters = $parameters;
 
         return $this;
     }

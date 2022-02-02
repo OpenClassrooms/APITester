@@ -9,7 +9,7 @@ use OpenAPITesting\Util\Collection;
 
 /**
  * @method Security[] getIterator()
- * @implements Collection<TKey, TValue>
+ * @extends Collection<array-key, Security>
  */
 final class Securities extends Collection
 {

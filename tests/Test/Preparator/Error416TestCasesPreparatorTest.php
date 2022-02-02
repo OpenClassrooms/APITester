@@ -19,7 +19,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      * @dataProvider getData
      *
      * @param array<array-key, mixed> $config
-     * @param TestCase[] $expected
+     * @param TestCase[]              $expected
      */
     public function test(array $config, Api $api, array $expected): void
     {
@@ -34,7 +34,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<int, array{Api, array<TestCase>}>
+     * @return iterable<string, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {

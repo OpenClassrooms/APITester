@@ -6,12 +6,13 @@ namespace OpenAPITesting\Util;
 
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-class Accessor
+final class Accessor
 {
     /**
-     * @param array|object $target
-     * @param mixed        $default
+     * @param array<mixed>|object $target
+     * @param mixed               $default
      *
      * @return mixed
      */
@@ -26,8 +27,8 @@ class Accessor
     }
 
     /**
-     * @param array|object $target
-     * @param mixed        $value
+     * @param array<mixed>|object $target
+     * @param mixed               $value
      */
     public static function set(&$target, string $key, $value): void
     {
@@ -36,7 +37,7 @@ class Accessor
         $propertyAccessor->setValue($target, $key, $value);
     }
 
-    private static function initPropertyAccessor()
+    private static function initPropertyAccessor(): PropertyAccessorInterface
     {
         return PropertyAccess::createPropertyAccessorBuilder()
             ->enableExceptionOnInvalidIndex()

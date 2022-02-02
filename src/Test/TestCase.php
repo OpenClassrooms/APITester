@@ -64,12 +64,14 @@ final class TestCase implements Test
 
     /**
      * @param string[] $groups
+     * @param string[] $excludedFields
      */
     public function __construct(
         string $name,
         RequestInterface $request,
         ResponseInterface $expectedResponse,
-        array $groups = []
+        array $groups = [],
+        array $excludedFields = []
     ) {
         $this->groups = $groups;
         $this->request = $request;
@@ -77,6 +79,7 @@ final class TestCase implements Test
         $this->name = $name;
         $this->logger = new NullLogger();
         $this->id = uniqid('testcase_', false);
+        $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
     }
 
     public function getName(): string

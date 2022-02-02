@@ -19,7 +19,7 @@ final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
         string $tokenUrl,
         array $scopes
     ) {
-        parent::__construct($name);
+        parent::__construct($name, $scopes);
         $this->tokenUrl = $tokenUrl;
         $this->authorizationUrl = $authorizationUrl;
         $this->scopes = $scopes;
@@ -45,5 +45,10 @@ final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
     public function getAuthorizationUrl(): string
     {
         return $this->authorizationUrl;
+    }
+
+    public function getType(): string
+    {
+        return static::TYPE_OAUTH2 . '_authorization_code';
     }
 }

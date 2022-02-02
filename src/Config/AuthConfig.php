@@ -6,6 +6,8 @@ namespace OpenAPITesting\Config;
 
 final class AuthConfig
 {
+    private string $name;
+
     private ?string $username;
 
     private ?string $password;
@@ -18,18 +20,28 @@ final class AuthConfig
     private array $scopes;
 
     /**
-     * @param string[] $scopes
+     * @var string[]
+     */
+    private array $headers;
+
+    /**
+     * @param string[]              $scopes
+     * @param array<string, string> $headers
      */
     public function __construct(
+        string $name,
         string $type,
         ?string $username = null,
         ?string $password = null,
-        array $scopes = []
+        array $scopes = [],
+        array $headers = []
     ) {
         $this->username = $username;
         $this->password = $password;
         $this->type = $type;
         $this->scopes = $scopes;
+        $this->name = $name;
+        $this->headers = $headers;
     }
 
     public function getUsername(): ?string
@@ -53,5 +65,18 @@ final class AuthConfig
     public function getScopes(): array
     {
         return $this->scopes;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 }

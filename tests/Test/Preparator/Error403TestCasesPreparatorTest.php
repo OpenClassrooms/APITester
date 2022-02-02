@@ -11,6 +11,7 @@ use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use OpenAPITesting\Definition\Token;
 use OpenAPITesting\Preparator\Error403TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -25,25 +26,42 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $openApi, array $expected): void
     {
         $preparator = new Error403TestCasesPreparator();
-        $preparator->setTokens([
-            '1111' => [
-                'scope1',
-                'scope2',
-            ],
-            '2222' => [
-                'scope3',
-                'scope4',
-            ],
-            '3333' => [
-                'scope5',
-            ],
-        ]);
         $preparator->configure([]);
+        $preparator->addToken(
+            new Token(
+                'oauth2_implicit',
+                '1111',
+                [
+                    'scope1',
+                    'scope2',
+                ],
+            )
+        )
+            ->addToken(
+                new Token(
+                    'oauth2_implicit',
+                    '2222',
+                    [
+                        'scope3',
+                        'scope4',
+                    ],
+                )
+            )
+            ->addToken(
+                new Token(
+                    'oauth2_implicit',
+                    '3333',
+                    [
+                        'scope5',
+                    ],
+                )
+            )
+        ;
 
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($openApi),
-            ['size', 'id', 'headerNames', 'groups']
+            ['size', 'id', 'headerNames', 'groups', 'excludedFields']
         );
     }
 
@@ -64,11 +82,10 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 ['scope2', 'scope1']
                             )
                         )
-                )
-            ,
+                ),
             [
                 new TestCase(
-                    'test1',
+                    'test1_403_oauth2_implicit',
                     new Request(
                         'GET',
                         '/test/oauth2',
@@ -79,7 +96,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(403)
                 ),
                 new TestCase(
-                    'test1',
+                    'test1_403_oauth2_implicit',
                     new Request(
                         'GET',
                         '/test/oauth2',

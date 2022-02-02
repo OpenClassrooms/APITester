@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
+use OpenAPITesting\Util\Collection;
+
 abstract class Security
 {
     public const TYPE_HTTP_BASIC = 'http_basic';
@@ -24,9 +26,18 @@ abstract class Security
 
     protected string $name;
 
-    public function __construct(string $name)
+    /**
+     * @var array<string, string>
+     */
+    protected array $scopes;
+
+    /**
+     * @param array<string, string> $scopes
+     */
+    public function __construct(string $name, array $scopes = [])
     {
-        $this->name = $name;
+        $this->name = mb_strtolower($name);
+        $this->scopes = $scopes;
     }
 
     public function getParent(): Operation
@@ -59,4 +70,12 @@ abstract class Security
     }
 
     abstract public function getType(): string;
+
+    /**
+     * @return Collection<string, string>
+     */
+    public function getScopes(): Collection
+    {
+        return collect($this->scopes);
+    }
 }

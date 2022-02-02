@@ -9,6 +9,27 @@ use OpenAPITesting\Requester\HttpAsyncRequester;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @phpstan-type AuthsConfig array<string, array{
+ *                                          'name': string,
+ *                                          'username'?: ?string,
+ *                                          'password'?: ?string,
+ *                                          'type': string,
+ *                                          'headers'?: array<string, string>,
+ *                                          'scopes'?: array<string>,
+ * }>
+ * @phpstan-type SuitesConfig array{
+ *  'suites': array<string, array{
+ *              'definition': array{'path': string, 'format': string},
+ *              'preparators'?: ?array<string, array<string, mixed>>,
+ *              'requester'?: ?string,
+ *              'filters'?: ?array{'include': ?string[], 'exclude': ?string[]},
+ *              'auth'?: AuthsConfig,
+ *              'callbacks'?: ?array{'beforeTestCase': string[], 'afterTestCase': string[]}
+ *             }
+ *            >
+ * }
+ */
 final class PlanConfig
 {
     /**
@@ -25,22 +46,11 @@ final class PlanConfig
     {
         $this->callbackObject = $callbackObject;
         $dotenv = new Dotenv();
-        $dotenv->load(PROJECT_DIR . '/env/.env');
+        $dotenv->loadEnv(PROJECT_DIR . '/env/.env');
         /** @var mixed[] $data */
         $data = Yaml::parseFile($path);
-        /**
-         * @var array{
-         *  'suites': array<string, array{
-         *              'definition': array{'path': string, 'format': string},
-         *              'preparators'?: ?array<string, array<string, mixed>>,
-         *              'requester'?: ?string,
-         *              'auth'?: array<string, array{'username'?: ?string, 'password'?: ?string, 'type': string}>,
-         *              'filters'?: ?array{'include': ?string[], 'exclude': ?string[]},
-         *              'callbacks'?: ?array{'beforeTestCase': string[], 'afterTestCase': string[]}
-         *              }
-         *            >
-         * } $data
-         */
+
+        /** @var SuitesConfig $data */
         $data = $this->process($data);
         foreach ($data['suites'] as $suiteTitle => $suite) {
             $callbacks = $this->callableFromConfig($suite['callbacks'] ?? []);
@@ -52,11 +62,7 @@ final class PlanConfig
                 ),
                 $suite['preparators'] ?? [],
                 $suite['requester'] ?? HttpAsyncRequester::getName(),
-                isset($suite['auth']) ? array_map(static fn ($x) => new AuthConfig(
-                    $x['type'],
-                    $x['username'] ?? null,
-                    $x['password'] ?? null,
-                ), $suite['auth']) : [],
+                isset($suite['auth']) ? $this->getAuthConfigs($suite['auth']) : [],
                 new FiltersConfig(
                     $suite['filters']['include'] ?? [],
                     $suite['filters']['exclude'] ?? [],
@@ -73,27 +79,6 @@ final class PlanConfig
     public function getTestSuiteConfigs(): array
     {
         return $this->testSuiteConfigs;
-    }
-
-    /**
-     * @param array{beforeTestCase?: string[], afterTestCase?: string[]} $allCallbacks
-     *
-     * @return array{beforeTestCase?: \Closure[], afterTestCase?: \Closure[]}
-     */
-    private function callableFromConfig(array $allCallbacks): array
-    {
-        $closures = [];
-        foreach ($allCallbacks as $type => $callbacks) {
-            foreach ($callbacks as $callback) {
-                if (null !== $this->callbackObject) {
-                    $callback = [$this->callbackObject, $callback];
-                }
-                /** @var callable $callback */
-                $closures[$type][] = \Closure::fromCallable($callback);
-            }
-        }
-
-        return $closures;
     }
 
     /**
@@ -125,5 +110,48 @@ final class PlanConfig
         }
 
         return $data;
+    }
+
+    /**
+     * @param array{beforeTestCase?: string[], afterTestCase?: string[]} $allCallbacks
+     *
+     * @return array{beforeTestCase?: \Closure[], afterTestCase?: \Closure[]}
+     */
+    private function callableFromConfig(array $allCallbacks): array
+    {
+        $closures = [];
+        foreach ($allCallbacks as $type => $callbacks) {
+            foreach ($callbacks as $callback) {
+                if (null !== $this->callbackObject) {
+                    $callback = [$this->callbackObject, $callback];
+                }
+                /** @var callable $callback */
+                $closures[$type][] = \Closure::fromCallable($callback);
+            }
+        }
+
+        return $closures;
+    }
+
+    /**
+     * @param AuthsConfig $auth
+     *
+     * @return array<AuthConfig>
+     */
+    private function getAuthConfigs(array $auth): array
+    {
+        $configs = [];
+        foreach ($auth as $name => $data) {
+            $configs[] = new AuthConfig(
+                $name,
+                $data['type'],
+                $data['username'] ?? null,
+                $data['password'] ?? null,
+                $data['scopes'] ?? [],
+                $data['headers'] ?? [],
+            );
+        }
+
+        return $configs;
     }
 }

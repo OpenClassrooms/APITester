@@ -12,9 +12,12 @@ final class ApiKeySecurity extends Security
 
     private string $keyName;
 
-    public function __construct(string $name, string $keyName, string $in)
+    /**
+     * @param array<string, string> $scopes
+     */
+    public function __construct(string $name, string $keyName, string $in, array $scopes = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $scopes);
         $this->in = $in;
         $this->keyName = $keyName;
     }
