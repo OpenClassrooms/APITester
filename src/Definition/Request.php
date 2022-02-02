@@ -74,14 +74,14 @@ final class Request
     }
 
     /**
-     * @return array<string, string|array<array-key, mixed>>
+     * @return array<string, mixed>
      */
-    public function buildBodyFromExamples(bool $onlyRequired = true): array
+    public function getBodyFromExamples(bool $onlyRequired = true): array
     {
         $body = [];
 
         foreach ($this->body->properties as $property => $schema) {
-            if ($onlyRequired && !in_array($property, $this->body->required, true)) {
+            if ($onlyRequired && !\in_array($property, $this->body->required, true)) {
                 continue;
             }
             $body[$property] = $this->getExamples()->where('name', $property)->toArray()[0]->getValue();

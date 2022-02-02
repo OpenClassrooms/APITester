@@ -361,6 +361,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $schema = $header->schema;
             $defHeader = new Parameter(
                 $header->name ?? $name,
+                $header->required,
                 $schema
             );
             foreach ($header->examples ?? [] as $exampleName => $example) {

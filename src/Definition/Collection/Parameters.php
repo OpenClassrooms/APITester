@@ -20,16 +20,26 @@ final class Parameters extends Collection
     public function toExampleArray(): array
     {
         $params = [];
+        foreach ($this->getExamples() as $example) {
+            $params[$example->getName()] = $example->getValue();
+        }
+
+        return $params;
+    }
+
+    public function getExamples(): ParameterExamples
+    {
+        $examples = [];
         foreach ($this->items as $item) {
             /** @var ParameterExample|null $example */
             $example = $item->getExamples()
                 ->first()
             ;
             if (null !== $example) {
-                $params[$item->getName()] = $example->getValue();
+                $examples[] = $example;
             }
         }
 
-        return $params;
+        return new ParameterExamples($examples);
     }
 }

@@ -22,13 +22,11 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param array<array-key, mixed> $config
      * @param TestCase[] $expected
      */
-    public function test(array $config, Api $api, array $expected): void
+    public function test(Api $api, array $expected): void
     {
         $preparator = new Error400TestCasesPreparator();
-        $preparator->configure($config);
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api),
@@ -37,12 +35,11 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<int, array{Api, array<TestCase>}>
+     * @return iterable<string, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {
         yield 'Required query param' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -53,8 +50,7 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         ->addQueryParameter(
                             (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
                         )
-                )
-            ,
+                ),
             [
                 new TestCase(
                     'required_foo_query_param_missing_test',
@@ -65,7 +61,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
 
         yield 'Required query params' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -95,7 +90,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
 
         yield 'Required query param and path param' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -120,7 +114,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
 
         yield 'Required header and query param' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -137,38 +130,21 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'required_bar_header_param_missing_test',
-                    new Request('GET', '/test?foo_query=foo1'),
+                    'required_foo_query_param_missing_test',
+                    new Request('GET', '/test', [
+                        'bar_header' => 'bar1',
+                    ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_foo_query_param_missing_test',
-                    new Request('GET', '/test', ['bar_header' => 'bar1']),
+                    'required_bar_header_param_missing_test',
+                    new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
             ],
         ];
 
-//        yield 'Required cookie param' => [
-//            [],
-//            Api::create()
-//                ->addOperation(
-//                    Operation::create(
-//                        'test',
-//                        '/test'
-//                    )
-//                ),
-//            [
-//                new TestCase(
-//                    'required_header_param_test',
-//                    new Request('GET', '/test'),
-//                    new Response(400)
-//                ),
-//            ],
-//        ];
-
         yield 'Multiple operations' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -192,17 +168,18 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         ->addQueryParameter(
                             (new Parameter('foo_query2', true))->addExample(new ParameterExample('foo_query2', 'foo'))
                         )
-                )
-            ,
+                ),
             [
                 new TestCase(
-                    'required_bar_header_param_missing_test',
-                    new Request('GET', '/test?foo_query=foo1'),
+                    'required_foo_query_param_missing_test',
+                    new Request('GET', '/test', [
+                        'bar_header' => 'bar1',
+                    ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_foo_query_param_missing_test',
-                    new Request('GET', '/test', ['bar_header' => 'bar1']),
+                    'required_bar_header_param_missing_test',
+                    new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
                 new TestCase(
@@ -214,7 +191,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
 
         yield 'Required body param' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -246,7 +222,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
 
         yield 'Required body param and query param' => [
-            [],
             Api::create()
                 ->addOperation(
                     Operation::create(
@@ -279,7 +254,14 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
                 new TestCase(
                     'required_foo_query_param_missing_test',
-                    new Request('POST', '/test', [], Json::encode(['foo_body' => 'foo_body1'])),
+                    new Request(
+                        'POST',
+                        '/test',
+                        [],
+                        Json::encode([
+                            'foo_body' => 'foo_body1',
+                        ])
+                    ),
                     new Response(400)
                 ),
             ],

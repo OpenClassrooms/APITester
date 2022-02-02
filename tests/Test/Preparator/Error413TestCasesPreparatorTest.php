@@ -34,7 +34,7 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<string, array{Api, array<TestCase>}>
+     * @return iterable<string, array{array<string, mixed>,Api, array<TestCase>}>
      */
     public function getData(): iterable
     {

@@ -7,9 +7,9 @@ namespace OpenAPITesting\Preparator;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
@@ -31,13 +31,7 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     {
         $testCases = [];
         foreach ($api->getOperations() as $operation) {
-            if ($operation->getRequests()->count() > 0) {
-                foreach ($operation->getRequests() as $request) {
-                    $testCases[] = $this->prepareForRequest($request);
-                }
-            } else {
-                $testCases[] = $this->prepareForOperation($operation);
-            }
+            $testCases[] = $this->prepareTestCases($operation);
         }
 
         return array_merge(...$testCases);
@@ -46,85 +40,106 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     /**
      * @return TestCase[]
      */
-    private function prepareForRequest(\OpenAPITesting\Definition\Request $request): array
-    {
-        $testCases = [];
-
-        $body = $request->buildBodyFromExamples(true);
-
-        $requiredParams = $this->getRequiredParameters($request->getParent());
-
-        $parameterExamples = [];
-        foreach ($requiredParams as $type => $parameters) {
-            $parameterExamples[$type] = $this->getParameterExamples($parameters);
-        }
-
-        foreach ($body as $name => $value) {
-            $bodyWithMissingParam = $body;
-            unset($bodyWithMissingParam[$name]);
-            $testCases[] = $this->createForMissingParameter(
-                $request->getParent(),
-                $name,
-                $parameterExamples,
-                $bodyWithMissingParam
-            );
-        }
-
-        return array_merge(
-            $testCases,
-            $this->prepareForParameters($requiredParams, $parameterExamples, $body)
-        );
-    }
-
-    /**
-     * @return TestCase[]
-     */
-    private function prepareForOperation(Operation $operation): array
+    private function prepareTestCases(Operation $operation): array
     {
         $requiredParams = $this->getRequiredParameters($operation);
 
-        $parameterExamples = [];
-        foreach ($requiredParams as $type => $parameters) {
-            $parameterExamples[$type] = $this->getParameterExamples($parameters);
+        if (0 === $operation->getRequests()->count()) {
+            return $this->prepareForParameters($requiredParams);
         }
 
-        return $this->prepareForParameters($requiredParams, $parameterExamples);
+        $testCases = [];
+        foreach ($operation->getRequests() as $request) {
+            $body = $request->getBodyFromExamples(true);
+
+            $testCases[] = $this->prepareForBody($requiredParams, $body, $operation);
+            $testCases[] = $this->prepareForParameters($requiredParams, $body);
+        }
+
+        return array_merge(...$testCases);
     }
 
     /**
-     * @return array<string,Parameter[]> $requiredParams
+     * @return array<string, Parameters> $requiredParams
      */
     private function getRequiredParameters(Operation $operation): array
     {
         return [
-            self::PATH_PARAMETER_TYPE => array_filter(
-                $operation->getPathParameters()->toArray(),
-                static fn (Parameter $p) => $p->isRequired()
-            ),
-            self::QUERY_PARAMETER_TYPE => array_filter(
-                $operation->getQueryParameters()->toArray(),
-                static fn (Parameter $p) => $p->isRequired()
-            ),
-            self::HEADER_PARAMETER_TYPE => array_filter(
-                $operation->getHeaders()->toArray(),
-                static fn (Parameter $p) => $p->isRequired()
-            ),
+            self::PATH_PARAMETER_TYPE => $operation->getPathParameters()->where('required', true),
+            self::QUERY_PARAMETER_TYPE => $operation->getQueryParameters()->where('required', true),
+            self::HEADER_PARAMETER_TYPE => $operation->getHeaders()->where('required', true),
         ];
     }
 
     /**
-     * @param Parameter[] $parameters
+     * @param array<string, Parameters> $requiredParams
+     * @param array<string, mixed>      $body
      *
-     * @return ParameterExample[]
+     * @return TestCase[]
      */
-    private function getParameterExamples(array $parameters): array
-    {
-        return array_map(static fn (Parameter $p): ParameterExample => $p->getExamples()->toArray()[0], $parameters);
+    private function prepareForParameters(
+        array $requiredParams,
+        array $body = []
+    ): array {
+        $testCases = [];
+        foreach ($requiredParams as $type => $params) {
+            if (self::PATH_PARAMETER_TYPE === $type) { // Path parameters are mandatory to match the route
+                continue;
+            }
+            foreach ($params as $param) {
+                $parameters = $this->excludeParameter($requiredParams, $type, $param);
+
+                $testCases[] = $this->createForMissingParameter(
+                    $param->getParent(),
+                    $param->getName(),
+                    $parameters,
+                    $body
+                );
+            }
+        }
+
+        return $testCases;
     }
 
     /**
-     * @param array<string,ParameterExample[]> $parameters
-     * @param array<string, mixed> $body
+     * @param array<string,Parameters> $requiredParams
+     * @param array<string, mixed>     $body
+     *
+     * @return TestCase[]
+     */
+    private function prepareForBody(
+        array $requiredParams,
+        array $body,
+        Operation $operation
+    ): array {
+        $testCases = [];
+        foreach ($body as $name => $value) {
+            $testCases[] = $this->createForMissingParameter(
+                $operation,
+                $name,
+                $requiredParams,
+                $this->excludeFieldFromBody($name, $body)
+            );
+        }
+
+        return $testCases;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameterExamples
+     *
+     * @return array<string, Parameters>
+     */
+    private function excludeParameter(array $parameterExamples, string $type, Parameter $toExclude): array
+    {
+        $parameterExamples[$type] = $parameterExamples[$type]->where('name', '!=', $toExclude->getName());
+
+        return $parameterExamples;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameters
+     * @param array<string, mixed>      $body
      */
     private function createForMissingParameter(
         Operation $operation,
@@ -132,20 +147,15 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
         array $parameters,
         array $body = null
     ): TestCase {
-        $formattedHeaders = [];
-        foreach ($parameters[self::HEADER_PARAMETER_TYPE] as $header) {
-            $formattedHeaders[$header->getName()] = $header->getValue();
-        }
-
         return new TestCase(
             "required_{$missing}_param_missing_{$operation->getId()}",
             new Request(
                 $operation->getMethod(),
-                $operation->getPathFromExamples(
+                $operation->getExamplePath(
                     $parameters[self::PATH_PARAMETER_TYPE],
                     $parameters[self::QUERY_PARAMETER_TYPE]
                 ),
-                $formattedHeaders,
+                $parameters[self::HEADER_PARAMETER_TYPE]->toExampleArray(),
                 (null !== $body && [] !== $body) ? Json::encode($body) : null
             ),
             new Response(400)
@@ -153,37 +163,14 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string,Parameter[]> $requiredParams
-     * @param array<string,ParameterExample[]> $parameterExamples
-     * @param array<string, string|array<mixed>> $body
+     * @param array<string, mixed> $body
      *
-     * @return TestCase[]
+     * @return array<string, mixed>
      */
-    private function prepareForParameters(
-        array $requiredParams,
-        array $parameterExamples,
-        array $body = []
-    ): array {
-        $testCases = [];
-        foreach ([self::HEADER_PARAMETER_TYPE, self::QUERY_PARAMETER_TYPE] as $type) {
-            foreach ($requiredParams[$type] as $param) {
-                $parameterExamplesCopy = $parameterExamples;
-                $parameterExamplesCopy[$type] = array_filter(
-                    $parameterExamplesCopy[$type],
-                    static function (ParameterExample $p) use ($param) {
-                        return $p->getName() !== $param->getName();
-                    }
-                );
+    private function excludeFieldFromBody(string $name, array $body): array
+    {
+        unset($body[$name]);
 
-                $testCases[] = $this->createForMissingParameter(
-                    $param->getParent(),
-                    $param->getName(),
-                    $parameterExamplesCopy,
-                    $body
-                );
-            }
-        }
-
-        return $testCases;
+        return $body;
     }
 }

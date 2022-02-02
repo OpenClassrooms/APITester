@@ -63,55 +63,24 @@ final class Operation
         return $this->id;
     }
 
-    public function getExamplePath(): string
-    {
+    public function getExamplePath(
+        Parameters $pathParameters = null,
+        Parameters $queryParameters = null
+    ): string {
+        if (null === $pathParameters) {
+            $pathParameters = $this->getPathParameters();
+        }
+        if (null === $queryParameters) {
+            $queryParameters = $this->getQueryParameters();
+        }
+
         return $this->getPath(
-            $this->getPathParameters()
-                ->toExampleArray(),
-            $this->getQueryParameters()
-                ->toExampleArray()
+            $pathParameters->toExampleArray(),
+            $queryParameters->toExampleArray()
         );
     }
 
-    /**
-     * @param ParameterExample[] $pathParamExamples
-     * @param ParameterExample[] $queryParamExamples
-     */
-    public function getPathFromExamples(array $pathParamExamples, array $queryParamExamples): string
-    {
-        $pathParams = [];
-        foreach ($pathParamExamples as $param) {
-            $pathParams[$param->getName()] = $param->getValue();
-        }
-        $queryParams = [];
-        foreach ($queryParamExamples as $param) {
-            $queryParams[$param->getName()] = $param->getValue();
-        }
-
-        return $this->getPath($pathParams, $queryParams);
-    }
-
-    /**
-     * @param array<string|int, string|int> $params
-     * @param array<string|int, string|int> $query
-     */
-    public function getPath(array $params = [], array $query = []): string
-    {
-        $params = $this->substituteParams($params, 'path');
-        $query = $this->substituteParams($query, 'query');
-        $path = str_replace(
-            array_map(
-                static fn (string $name) => "{{$name}}",
-                array_keys($params),
-            ),
-            array_values($params),
-            $this->path
-        );
-
-        return rtrim($path . '?' . http_build_query($query), '?');
-    }
-
-    public function getPathParameters(): Parameters
+    public function getPathParameters(bool $onlyRequired = false): Parameters
     {
         return $this->pathParameters;
     }
@@ -139,6 +108,26 @@ final class Operation
         $this->queryParameters = $parameters;
 
         return $this;
+    }
+
+    /**
+     * @param array<string|int, string|int> $params
+     * @param array<string|int, string|int> $query
+     */
+    public function getPath(array $params = [], array $query = []): string
+    {
+        $params = $this->substituteParams($params, 'path');
+        $query = $this->substituteParams($query, 'query');
+        $path = str_replace(
+            array_map(
+                static fn (string $name) => "{{$name}}",
+                array_keys($params),
+            ),
+            array_values($params),
+            $this->path
+        );
+
+        return rtrim($path . '?' . http_build_query($query), '?');
     }
 
     public function getMethod(): string
