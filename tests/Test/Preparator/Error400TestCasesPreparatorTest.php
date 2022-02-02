@@ -51,25 +51,6 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
                         )
                 )
-//                ->addOperation(
-//                    Operation::create(
-//                        'test',
-//                        '/test'
-//                    )
-//                        ->addPathParameter(
-//                            (new Parameter('foo', true))->addExample(new ParameterExample('foo', 'foo1'))
-//                        )
-//                )
-//                ->addOperation(
-//                    Operation::create(
-//                        'test',
-//                        '/test'
-//                    )
-//                        ->addPathParameter(
-//                            (new Parameter('foo', false))->addExample(new ParameterExample('foo', 'foo1'))
-//                        )
-//                        ->addHeader((new Parameter('foo', true))->addExample(new ParameterExample('foo', 'foo1')))
-//                )
             ,
             [
                 new TestCase(
@@ -110,24 +91,60 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-//        yield 'Required header param' => [
-//            [],
-//            Api::create()
-//                ->addOperation(
-//                    Operation::create(
-//                        'test',
-//                        '/test'
-//                    )
-//                        ->addHeader(new Parameter('foo', true))
-//                ),
-//            [
-//                new TestCase(
-//                    'required_header_param_test',
-//                    new Request('GET', '/test'),
-//                    new Response(400)
-//                ),
-//            ],
-//        ];
+        yield 'Required query param and path param' => [
+            [],
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test/{id}'
+                    )
+                        ->setMethod('GET')
+                        ->addQueryParameter(
+                            (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
+                        )
+                        ->addPathParameter(
+                            (new Parameter('id', true))->addExample(new ParameterExample('id', '1234'))
+                        )
+                ),
+            [
+                new TestCase(
+                    'required_foo_query_param_missing_test',
+                    new Request('GET', '/test/1234'),
+                    new Response(400)
+                ),
+            ],
+        ];
+
+        yield 'Required header and query param' => [
+            [],
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test'
+                    )
+                        ->setMethod('GET')
+                        ->addQueryParameter(
+                            (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
+                        )
+                        ->addHeader(
+                            (new Parameter('bar_header', true))->addExample(new ParameterExample('bar_header', 'bar1'))
+                        )
+                ),
+            [
+                new TestCase(
+                    'required_foo_query_param_missing_test',
+                    new Request('GET', '/test', ['bar_header' => 'bar1']),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_bar_header_param_missing_test',
+                    new Request('GET', '/test?foo_query=foo1'),
+                    new Response(400)
+                ),
+            ],
+        ];
 
 //        yield 'Required cookie param' => [
 //            [],
