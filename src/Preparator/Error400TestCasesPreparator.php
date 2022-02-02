@@ -29,17 +29,18 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
      */
     public function prepare(Api $api): iterable
     {
-        $aa = [];
+        $testCases = [];
         foreach ($api->getOperations() as $operation) {
             if ($operation->getRequests()->count() > 0) {
                 foreach ($operation->getRequests() as $request) {
-                    $aa[] = $this->prepareForRequest($request);
+                    $testCases[] = $this->prepareForRequest($request);
                 }
+            } else {
+                $testCases[] = $this->prepareForOperation($operation);
             }
-            $aa[] = $this->prepareForParameters($operation);
         }
 
-        return array_merge(...$aa);
+        return array_merge(...$testCases);
     }
 
     /**
@@ -49,27 +50,36 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     {
         $testCases = [];
 
-        $requiredExamples = [];
-        foreach ($request->getBody()->required as $requiredField) {
-            $requiredExamples[$requiredField] = $request->getBody(
-                )->properties[$requiredField]->example ?? $request->getBody()->example[$requiredField];
+        $body = $request->buildBodyFromExamples(true);
+
+        $requiredParams = $this->getRequiredParameters($request->getParent());
+
+        $parameterExamples = [];
+        foreach ($requiredParams as $type => $parameters) {
+            $parameterExamples[$type] = $this->getParameterExamples($parameters);
         }
 
-        foreach ($requiredExamples as $name => $value) {
-            $body = $requiredExamples;
-            unset($body[array_search($name, $body, true)]);
-            $testCases[] = $this->prepareForParameters($request->getParent(), $body);
+        foreach ($body as $name => $value) {
+            $bodyWithMissingParam = $body;
+            unset($bodyWithMissingParam[$name]);
+            $testCases[] = $this->createForMissingParameter(
+                $request->getParent(),
+                $name,
+                $parameterExamples,
+                $bodyWithMissingParam
+            );
         }
 
-        return array_merge(...$testCases);
+        return array_merge(
+            $testCases,
+            $this->prepareForParameters($requiredParams, $parameterExamples, $body)
+        );
     }
 
     /**
-     * @param array<string, string|int> $body
-     *
      * @return TestCase[]
      */
-    private function prepareForParameters(Operation $operation, array $body = []): array
+    private function prepareForOperation(Operation $operation): array
     {
         $requiredParams = $this->getRequiredParameters($operation);
 
@@ -78,10 +88,7 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
             $parameterExamples[$type] = $this->getParameterExamples($parameters);
         }
 
-        return array_merge(
-            $this->prepareForQueryParams($requiredParams, $parameterExamples, $body),
-            $this->prepareForHeaders($requiredParams, $parameterExamples, $body)
-        );
+        return $this->prepareForParameters($requiredParams, $parameterExamples);
     }
 
     /**
@@ -116,95 +123,67 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string,Parameter[]> $requiredParams
-     * @param array<string,ParameterExample[]> $parameterExamples
-     * @param array<string, string|int> $body
-     *
-     * @return TestCase[]
-     */
-    private function prepareForQueryParams(array $requiredParams, array $parameterExamples, array $body = []): array
-    {
-        $testCases = [];
-        foreach ($requiredParams[self::QUERY_PARAMETER_TYPE] as $parameter) {
-            $queryParams = array_filter(
-                $parameterExamples[self::QUERY_PARAMETER_TYPE],
-                static function (ParameterExample $p) use ($parameter) {
-                    return $p->getName() !== $parameter->getName();
-                }
-            );
-
-            $testCases[] = $this->createForMissingParameter(
-                $parameter,
-                $parameterExamples[self::PATH_PARAMETER_TYPE],
-                $queryParams,
-                $parameterExamples[self::HEADER_PARAMETER_TYPE],
-                $body
-            );
-        }
-
-        return $testCases;
-    }
-
-    /**
-     * @param array<string,Parameter[]> $requiredParams
-     * @param array<string,ParameterExample[]> $parameterExamples
-     * @param array<string, string|int> $body
-     *
-     * @return TestCase[]
-     */
-    private function prepareForHeaders(array $requiredParams, array $parameterExamples, array $body = []): array
-    {
-        $testCases = [];
-        foreach ($requiredParams[self::HEADER_PARAMETER_TYPE] as $header) {
-            $headers = array_filter(
-                $parameterExamples[self::HEADER_PARAMETER_TYPE],
-                static function (ParameterExample $p) use ($header) {
-                    return $p->getName() !== $header->getName();
-                }
-            );
-
-            $testCases[] = $this->createForMissingParameter(
-                $header,
-                $parameterExamples[self::PATH_PARAMETER_TYPE],
-                $parameterExamples[self::QUERY_PARAMETER_TYPE],
-                $headers,
-                $body
-            );
-        }
-
-        return $testCases;
-    }
-
-    /**
-     * @param ParameterExample[] $pathParams
-     * @param ParameterExample[] $queryParams
-     * @param ParameterExample[] $headers
-     * @param array<string, string|int> $body
+     * @param array<string,ParameterExample[]> $parameters
+     * @param array<string, mixed> $body
      */
     private function createForMissingParameter(
-        Parameter $missing,
-        array $pathParams,
-        array $queryParams,
-        array $headers,
-        array $body = []
+        Operation $operation,
+        string $missing,
+        array $parameters,
+        array $body = null
     ): TestCase {
         $formattedHeaders = [];
-        foreach ($headers as $header) {
+        foreach ($parameters[self::HEADER_PARAMETER_TYPE] as $header) {
             $formattedHeaders[$header->getName()] = $header->getValue();
         }
 
         return new TestCase(
-            "required_{$missing->getName()}_param_missing_{$missing->getParent()->getId()}",
+            "required_{$missing}_param_missing_{$operation->getId()}",
             new Request(
-                $missing->getParent()->getMethod(),
-                $missing->getParent()->getPathFromExamples(
-                    $pathParams,
-                    $queryParams
+                $operation->getMethod(),
+                $operation->getPathFromExamples(
+                    $parameters[self::PATH_PARAMETER_TYPE],
+                    $parameters[self::QUERY_PARAMETER_TYPE]
                 ),
                 $formattedHeaders,
-                Json::encode($body)
+                (null !== $body && [] !== $body) ? Json::encode($body) : null
             ),
             new Response(400)
         );
+    }
+
+    /**
+     * @param array<string,Parameter[]> $requiredParams
+     * @param array<string,ParameterExample[]> $parameterExamples
+     * @param array<string, string|array<mixed>> $body
+     *
+     * @return TestCase[]
+     */
+    private function prepareForParameters(
+        array $requiredParams,
+        array $parameterExamples,
+        array $body = []
+    ): array {
+        $testCases = [];
+        foreach ([self::HEADER_PARAMETER_TYPE, self::QUERY_PARAMETER_TYPE] as $type) {
+            foreach ($requiredParams[$type] as $param) {
+                $parameterExamplesCopy = $parameterExamples;
+                $parameterExamplesCopy[$type] = array_filter(
+                    $parameterExamplesCopy[$type],
+                    static function (ParameterExample $p) use ($param) {
+                        return $p->getName() !== $param->getName();
+                    }
+                );
+
+                $testCases[] = $this->createForMissingParameter(
+                    $param->getParent(),
+                    $param->getName(),
+                    $parameterExamplesCopy,
+                    $body
+                );
+            }
+        }
+
+        return $testCases;
     }
 }

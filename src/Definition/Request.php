@@ -53,11 +53,6 @@ final class Request
         return $this->mediaType;
     }
 
-    public function getExamples(): RequestExamples
-    {
-        return $this->examples;
-    }
-
     public function addExample(RequestExample $example): self
     {
         $example->setParent($this);
@@ -76,5 +71,27 @@ final class Request
         $this->parent = $parent;
 
         return $this;
+    }
+
+    /**
+     * @return array<string, string|array<array-key, mixed>>
+     */
+    public function buildBodyFromExamples(bool $onlyRequired = true): array
+    {
+        $body = [];
+
+        foreach ($this->body->properties as $property => $schema) {
+            if ($onlyRequired && !in_array($property, $this->body->required, true)) {
+                continue;
+            }
+            $body[$property] = $this->getExamples()->where('name', $property)->toArray()[0]->getValue();
+        }
+
+        return $body;
+    }
+
+    public function getExamples(): RequestExamples
+    {
+        return $this->examples;
     }
 }
