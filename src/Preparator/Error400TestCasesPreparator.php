@@ -11,6 +11,7 @@ use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Json;
 
 final class Error400TestCasesPreparator extends TestCasesPreparator
 {
@@ -30,23 +31,65 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     {
         $aa = [];
         foreach ($api->getOperations() as $operation) {
+            if ($operation->getRequests()->count() > 0) {
+                foreach ($operation->getRequests() as $request) {
+                    $aa[] = $this->prepareForRequest($request);
+                }
+            }
             $aa[] = $this->prepareForParameters($operation);
         }
 
-        $aa = array_merge(...$aa);
-
-        return array_merge(
-            $aa,
-//            $this->prepareForBody($api)
-        );
+        return array_merge(...$aa);
     }
 
     /**
      * @return TestCase[]
      */
-    private function prepareForParameters(Operation $operation): array
+    private function prepareForRequest(\OpenAPITesting\Definition\Request $request): array
     {
-        $requiredParams = [
+        $testCases = [];
+
+        $requiredExamples = [];
+        foreach ($request->getBody()->required as $requiredField) {
+            $requiredExamples[$requiredField] = $request->getBody(
+                )->properties[$requiredField]->example ?? $request->getBody()->example[$requiredField];
+        }
+
+        foreach ($requiredExamples as $name => $value) {
+            $body = $requiredExamples;
+            unset($body[array_search($name, $body, true)]);
+            $testCases[] = $this->prepareForParameters($request->getParent(), $body);
+        }
+
+        return array_merge(...$testCases);
+    }
+
+    /**
+     * @param array<string, string|int> $body
+     *
+     * @return TestCase[]
+     */
+    private function prepareForParameters(Operation $operation, array $body = []): array
+    {
+        $requiredParams = $this->getRequiredParameters($operation);
+
+        $parameterExamples = [];
+        foreach ($requiredParams as $type => $parameters) {
+            $parameterExamples[$type] = $this->getParameterExamples($parameters);
+        }
+
+        return array_merge(
+            $this->prepareForQueryParams($requiredParams, $parameterExamples, $body),
+            $this->prepareForHeaders($requiredParams, $parameterExamples, $body)
+        );
+    }
+
+    /**
+     * @return array<string,Parameter[]> $requiredParams
+     */
+    private function getRequiredParameters(Operation $operation): array
+    {
+        return [
             self::PATH_PARAMETER_TYPE => array_filter(
                 $operation->getPathParameters()->toArray(),
                 static fn (Parameter $p) => $p->isRequired()
@@ -60,33 +103,6 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
                 static fn (Parameter $p) => $p->isRequired()
             ),
         ];
-
-        $parameterExamples = [];
-        foreach ($requiredParams as $type => $parameters) {
-            $parameterExamples[$type] = $this->getParameterExamples($parameters);
-        }
-
-        return array_merge(
-            $this->prepareForQueryParams($requiredParams, $parameterExamples),
-            $this->prepareForHeaders($requiredParams, $parameterExamples)
-        );
-
-//        $requests = $api->getOperations()
-//            ->select('requests.*')
-//            ->flatten()
-//            ->toArray();
-//
-//        $requestBodies = [];
-//        /** @var \OpenAPITesting\Definition\Request $request */
-//        foreach ($requests as $request) {
-//            $requestBody = [];
-//            foreach ($request->getBody()->required as $requiredField) {
-//                $requestBody[$requiredField] = $request->getExamples()->toArray()[0];
-//            }
-//            $requestBodies[] = $requestBody;
-//        }
-
-        return $testCases;
     }
 
     /**
@@ -102,10 +118,11 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     /**
      * @param array<string,Parameter[]> $requiredParams
      * @param array<string,ParameterExample[]> $parameterExamples
+     * @param array<string, string|int> $body
      *
      * @return TestCase[]
      */
-    private function prepareForQueryParams(array $requiredParams, array $parameterExamples): array
+    private function prepareForQueryParams(array $requiredParams, array $parameterExamples, array $body = []): array
     {
         $testCases = [];
         foreach ($requiredParams[self::QUERY_PARAMETER_TYPE] as $parameter) {
@@ -120,7 +137,8 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
                 $parameter,
                 $parameterExamples[self::PATH_PARAMETER_TYPE],
                 $queryParams,
-                $parameterExamples[self::HEADER_PARAMETER_TYPE]
+                $parameterExamples[self::HEADER_PARAMETER_TYPE],
+                $body
             );
         }
 
@@ -130,10 +148,11 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     /**
      * @param array<string,Parameter[]> $requiredParams
      * @param array<string,ParameterExample[]> $parameterExamples
+     * @param array<string, string|int> $body
      *
      * @return TestCase[]
      */
-    private function prepareForHeaders(array $requiredParams, array $parameterExamples): array
+    private function prepareForHeaders(array $requiredParams, array $parameterExamples, array $body = []): array
     {
         $testCases = [];
         foreach ($requiredParams[self::HEADER_PARAMETER_TYPE] as $header) {
@@ -148,7 +167,8 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
                 $header,
                 $parameterExamples[self::PATH_PARAMETER_TYPE],
                 $parameterExamples[self::QUERY_PARAMETER_TYPE],
-                $headers
+                $headers,
+                $body
             );
         }
 
@@ -159,12 +179,14 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
      * @param ParameterExample[] $pathParams
      * @param ParameterExample[] $queryParams
      * @param ParameterExample[] $headers
+     * @param array<string, string|int> $body
      */
     private function createForMissingParameter(
         Parameter $missing,
         array $pathParams,
         array $queryParams,
-        array $headers
+        array $headers,
+        array $body = []
     ): TestCase {
         $formattedHeaders = [];
         foreach ($headers as $header) {
@@ -179,30 +201,10 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
                     $pathParams,
                     $queryParams
                 ),
-                $formattedHeaders
+                $formattedHeaders,
+                Json::encode($body)
             ),
             new Response(400)
         );
-    }
-
-    /**
-     * @return TestCase[]
-     */
-    private function prepareForBody(Api $api): array
-    {
-        $requests = $api->getOperations()
-            ->select('requests.*')
-            ->flatten()
-            ->toArray();
-
-        $testCases = [];
-        /** @var \OpenAPITesting\Definition\Request $request */
-        foreach ($requests as $request) {
-            foreach ($request->getBody()->required as $requiredField) {
-                $testCases[] = new TestCase();
-            }
-        }
-
-        return [];
     }
 }
