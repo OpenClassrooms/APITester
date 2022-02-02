@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use _PHPStan_daf7d5577\Symfony\Component\Console\Exception\LogicException;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Security;
 use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
@@ -36,6 +35,6 @@ final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
             ;
         }
 
-        throw new LogicException('Unhandled security instance of type ' . \get_class($security));
+        throw new \LogicException('Unhandled security instance of type ' . \get_class($security));
     }
 }

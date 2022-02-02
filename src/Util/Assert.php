@@ -21,8 +21,8 @@ use Symfony\Component\Serializer\Serializer;
 final class Assert
 {
     /**
-     * @param object|iterable<mixed> $expected
-     * @param object|iterable<mixed> $actual
+     * @param iterable<mixed>|object $expected
+     * @param iterable<mixed>|object $actual
      * @param array<string>          $exclude
      *
      * @throws InvalidArgumentException

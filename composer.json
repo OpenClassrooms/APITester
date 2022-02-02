@@ -61,7 +61,7 @@
     "korbeil/phpstan-generic-rules": "^1.0",
     "nunomaduro/phpinsights": "^2.1",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.2",
+    "phpstan/phpstan": "dev-master",
     "phpstan/phpstan-beberlei-assert": "^1.0",
     "phpstan/phpstan-deprecation-rules": "^1.0",
     "phpstan/phpstan-phpunit": "^1.0",
