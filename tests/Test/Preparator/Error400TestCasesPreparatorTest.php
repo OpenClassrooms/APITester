@@ -29,7 +29,7 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api),
-            ['size', 'id', 'headerNames', 'groups']
+            ['size', 'id', 'groups']
         );
     }
 
@@ -164,6 +164,52 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 //            ],
 //        ];
 
+        yield 'Multiple operations' => [
+            [],
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test'
+                    )
+                        ->setMethod('GET')
+                        ->addQueryParameter(
+                            (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
+                        )
+                        ->addHeader(
+                            (new Parameter('bar_header', true))->addExample(new ParameterExample('bar_header', 'bar1'))
+                        )
+                )
+                ->addOperation(
+                    Operation::create(
+                        'test2',
+                        '/test2'
+                    )
+                        ->setMethod('GET')
+                        ->addQueryParameter(
+                            (new Parameter('foo_query2', true))->addExample(new ParameterExample('foo_query2', 'foo'))
+                        )
+                )
+            ,
+            [
+                new TestCase(
+                    'required_foo_query_param_missing_test',
+                    new Request('GET', '/test', ['bar_header' => 'bar1']),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_bar_header_param_missing_test',
+                    new Request('GET', '/test?foo_query=foo1'),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_foo_query2_param_missing_test2',
+                    new Request('GET', '/test2'),
+                    new Response(400)
+                ),
+            ],
+        ];
+
 //        yield 'Required body param' => [
 //            [],
 //            Api::create()
@@ -172,11 +218,26 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 //                        'test',
 //                        '/test'
 //                    )
+//                        ->addRequest(
+//                            new \OpenAPITesting\Definition\Request(
+//                                'application/json',
+//                                new Schema([
+//                                    'type' => 'object',
+//                                    'properties' => [
+//                                        'foo' => [
+//                                            'type' => 'string',
+//                                            'example' => 'foo1',
+//                                        ],
+//                                    ],
+//                                    'required' => ['foo'],
+//                                ])
+//                            )
+//                        )
 //                ),
 //            [
 //                new TestCase(
-//                    'required_body_param_test',
-//                    new Request('GET', '/test'),
+//                    'required_foo_missing_test',
+//                    new Request('GET', '/test', []),
 //                    new Response(400)
 //                ),
 //            ],
