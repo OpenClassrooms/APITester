@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security;
 
+use OpenAPITesting\Definition\Collection\Scopes;
 use OpenAPITesting\Definition\Security;
 
 final class ApiKeySecurity extends Security
@@ -12,19 +13,16 @@ final class ApiKeySecurity extends Security
 
     private string $keyName;
 
-    /**
-     * @param array<string, string> $scopes
-     */
-    public function __construct(string $name, string $keyName, string $in, array $scopes = [])
+    public function __construct(string $name, string $keyName, string $in, ?Scopes $scopes = null)
     {
         parent::__construct($name, $scopes);
         $this->in = $in;
         $this->keyName = $keyName;
     }
 
-    public static function create(string $name, string $key, string $in): self
+    public static function create(string $name, string $key, string $in, ?Scopes $scopes = null): self
     {
-        return new self($name, $key, $in);
+        return new self($name, $key, $in, $scopes);
     }
 
     public function getIn(): string

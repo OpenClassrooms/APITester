@@ -20,6 +20,7 @@ use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Collection\Requests;
 use OpenAPITesting\Definition\Collection\Responses;
+use OpenAPITesting\Definition\Collection\Scopes;
 use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
@@ -307,6 +308,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     /** @var object $flowScopes */
                     $flowScopes = $flow->scopes;
                     $diff = array_diff($scopes, array_keys((array) $flowScopes));
+                    $scopes = new Scopes($scopes);
                     if (\count($diff) > 0) {
                         $diff = implode(',', $diff);
                         throw new DefinitionLoadingException("Scopes '{$diff}' not configured in securitySchemes");

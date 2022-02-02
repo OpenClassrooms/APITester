@@ -63,13 +63,13 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
      *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
      *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
      *              }> $fixtures
-     * @param array<string, array<array-key, Operation>> $operations
+     * @param array<string, Operation[]> $groupedOperations
      *
      * @throws PreparatorLoadingException
      *
      * @return array<TestCase>
      */
-    private function generateTestCases(array $fixtures, array $operations): array
+    private function generateTestCases(array $fixtures, array $groupedOperations): array
     {
         $testCases = [];
 
@@ -79,19 +79,19 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
 
             $groups = $item['for'];
             foreach ($groups as $group) {
-                if (!isset($operations[$group])) {
+                if (!isset($groupedOperations[$group])) {
                     throw new PreparatorLoadingException(
                         self::getName(),
                         new \RuntimeException("Group {$group} not found."),
                     );
                 }
-                $operations = $operations[$group];
+                $operations = $groupedOperations[$group];
 
                 foreach ($operations as $operation) {
                     if (isset($item['request']['parameters'])) {
                         $operation->getPath(
                             array_column($item['request']['parameters'], 'path'),
-                            $item['request']['parameters']['query'],
+                            $item['request']['parameters']['query'] ?? [],
                         );
                     }
                     $testCase = new TestCase(

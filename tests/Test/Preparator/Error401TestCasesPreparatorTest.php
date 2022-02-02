@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Test\Preparator;
 
-use cebe\openapi\spec\OpenApi;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
@@ -38,7 +37,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<int, array{OpenApi, array<TestCase>}>
+     * @return iterable<int, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {
@@ -51,8 +50,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             OAuth2ImplicitSecurity::create(
                                 'oauth2_test',
                                 'https://petstore3.swagger.io/oauth/authorize',
-                                ['write:pets']
-                            )
+                            )->addScopeFromString('write:pets')
                         )
                 )
                 ->addOperation(
@@ -116,8 +114,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/oauth2',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                'test' => 1234,
-                            ], 'abcd'),
+                                    'test' => 1234,
+                                ], 'abcd'),
                         ]
                     ),
                     new Response(401)
@@ -170,8 +168,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/bearer',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                'test' => 1234,
-                            ], 'abcd'),
+                                    'test' => 1234,
+                                ], 'abcd'),
                         ]
                     ),
                     new Response(401)

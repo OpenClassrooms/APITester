@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
-use OpenAPITesting\Util\Collection;
+use OpenAPITesting\Definition\Collection\Scopes;
 
 abstract class Security
 {
@@ -26,18 +26,12 @@ abstract class Security
 
     protected string $name;
 
-    /**
-     * @var array<string, string>
-     */
-    protected array $scopes;
+    protected Scopes $scopes;
 
-    /**
-     * @param array<string, string> $scopes
-     */
-    public function __construct(string $name, array $scopes = [])
+    public function __construct(string $name, ?Scopes $scopes = null)
     {
         $this->name = mb_strtolower($name);
-        $this->scopes = $scopes;
+        $this->scopes = $scopes ?? new Scopes();
     }
 
     public function getParent(): Operation
@@ -71,11 +65,15 @@ abstract class Security
 
     abstract public function getType(): string;
 
-    /**
-     * @return Collection<string, string>
-     */
-    public function getScopes(): Collection
+    public function getScopes(): Scopes
     {
-        return collect($this->scopes);
+        return $this->scopes;
+    }
+
+    public function addScopeFromString(string $scope): self
+    {
+        $this->scopes->add(new Scope($scope));
+
+        return $this;
     }
 }

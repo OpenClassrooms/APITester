@@ -4,23 +4,19 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security\OAuth2;
 
+use OpenAPITesting\Definition\Collection\Scopes;
+
 final class OAuth2PasswordSecurity extends OAuth2Security
 {
     protected string $tokenUrl;
 
-    /**
-     * @param string[] $scopes
-     */
-    public function __construct(string $name, string $tokenUrl, array $scopes)
+    public function __construct(string $name, string $tokenUrl, Scopes $scopes)
     {
         parent::__construct($name, $scopes);
         $this->tokenUrl = $tokenUrl;
     }
 
-    /**
-     * @param array<string, string> $scopes
-     */
-    public static function create(string $name, string $tokenUrl, array $scopes): self
+    public static function create(string $name, string $tokenUrl, Scopes $scopes): self
     {
         return new self($name, $tokenUrl, $scopes);
     }

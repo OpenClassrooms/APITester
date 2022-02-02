@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Command;
 
 use OpenAPITesting\Authenticator\Authenticator;
+use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
@@ -88,6 +89,7 @@ final class ExecutePlanCommand extends Command
      * @throws ClientExceptionInterface
      * @throws AuthenticationLoadingException
      * @throws ConfigurationException
+     * @throws AuthenticationException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

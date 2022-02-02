@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security;
 
+use OpenAPITesting\Definition\Collection\Scopes;
 use OpenAPITesting\Definition\Security;
 
 final class HttpSecurity extends Security
@@ -12,19 +13,16 @@ final class HttpSecurity extends Security
 
     private ?string $format;
 
-    /**
-     * @param array<string, string> $scopes
-     */
-    public function __construct(string $name, string $scheme, ?string $format = null, array $scopes = [])
+    public function __construct(string $name, string $scheme, ?string $format = null, ?Scopes $scopes = null)
     {
         parent::__construct($name, $scopes);
         $this->scheme = $scheme;
         $this->format = $format;
     }
 
-    public static function create(string $name, string $scheme, ?string $format = null): self
+    public static function create(string $name, string $scheme, ?string $format = null, ?Scopes $scopes = null): self
     {
-        return new self($name, $scheme, $format);
+        return new self($name, $scheme, $format, $scopes);
     }
 
     public function isBasic(): bool

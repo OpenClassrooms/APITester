@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Security\OAuth2;
 
+use OpenAPITesting\Definition\Collection\Scopes;
+
 final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
 {
     private string $tokenUrl;
 
     private string $authorizationUrl;
 
-    /**
-     * @param array<string, string> $scopes
-     */
     public function __construct(
         string $name,
         string $authorizationUrl,
         string $tokenUrl,
-        array $scopes
+        Scopes $scopes
     ) {
         parent::__construct($name, $scopes);
         $this->tokenUrl = $tokenUrl;
@@ -25,14 +24,11 @@ final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
         $this->scopes = $scopes;
     }
 
-    /**
-     * @param array<string, string> $scopes
-     */
     public static function create(
         string $name,
         string $authorizationUrl,
         string $tokenUrl,
-        array $scopes
+        Scopes $scopes
     ): self {
         return new self($name, $authorizationUrl, $tokenUrl, $scopes);
     }

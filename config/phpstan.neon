@@ -4,6 +4,7 @@ includes:
 parameters:
     bootstrapFiles:
         - constants.php
+        - ../src/Util/functions.php
     level: 9
     paths:
         - ../src

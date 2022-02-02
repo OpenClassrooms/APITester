@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Test\Preparator;
 
-use cebe\openapi\spec\OpenApi;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
@@ -66,7 +65,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return iterable<int, array{OpenApi, array<TestCase>}>
+     * @return iterable<int, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {
@@ -79,8 +78,9 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             OAuth2ImplicitSecurity::create(
                                 'oauth2_test',
                                 'https://petstore3.swagger.io/oauth/authorize',
-                                ['scope2', 'scope1']
                             )
+                                ->addScopeFromString('scope1')
+                                ->addScopeFromString('scope2')
                         )
                 ),
             [
