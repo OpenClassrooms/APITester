@@ -14,7 +14,8 @@
       "phpstan/extension-installer": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "roave/you-are-using-it-wrong": true,
-      "veewee/composer-run-parallel": true
+      "veewee/composer-run-parallel": true,
+      "composer/package-versions-deprecated": true
     }
   },
   "autoload": {
