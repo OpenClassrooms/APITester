@@ -4,7 +4,6 @@
       <option name="ALIGN_PHPDOC_PARAM_NAMES" value="true" />
       <option name="COMMA_AFTER_LAST_ARRAY_ELEMENT" value="true" />
       <option name="PHPDOC_BLANK_LINES_AROUND_PARAMETERS" value="true" />
-      <option name="PHPDOC_WRAP_LONG_LINES" value="true" />
       <option name="BLANK_LINES_BETWEEN_IMPORTS" value="1" />
       <option name="THROWS_WEIGHT" value="1" />
       <option name="RETURN_WEIGHT" value="2" />

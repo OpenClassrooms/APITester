@@ -6,7 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Security;
@@ -20,14 +20,63 @@ use OpenAPITesting\Test\TestCase;
 
 abstract class TestCasesPreparator
 {
+    /**
+     * @var string[]
+     */
+    protected array $filters = [];
+
     protected Tokens $tokens;
+
+    /**
+     * @var string[]
+     */
+    protected array $excludedFields = [];
+
+    /**
+     * @var string[]
+     */
+    protected array $allowedConfigKeys = [
+        'excludedFields',
+    ];
+
+    public static function getName(): string
+    {
+        return mb_strtolower(
+            str_replace(
+                'TestCasesPreparator',
+                '',
+                (new \ReflectionClass(static::class))->getShortName()
+            )
+        );
+    }
+
+    public static function getConfigSchema(): string
+    {
+        return __DIR__ . '/Config/Schema/' . static::getName() . '.yml';
+    }
 
     /**
      * @throws PreparatorLoadingException
      *
      * @return iterable<array-key, TestCase>
      */
-    abstract public function prepare(Api $api): iterable;
+    public function prepare(Operations $operations): iterable
+    {
+        $testCases = $this->generateTestCases($operations);
+
+        foreach ($testCases as $testCase) {
+            $testCase->addExcludedFields($this->excludedFields);
+        }
+
+        return $testCases;
+    }
+
+    /**
+     * @throws PreparatorLoadingException
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    abstract protected function generateTestCases(Operations $operations): iterable;
 
     /**
      * @param array<array-key, mixed> $rawConfig
@@ -36,9 +85,23 @@ abstract class TestCasesPreparator
      */
     public function configure(array $rawConfig): void
     {
+        $this->checkConfig($rawConfig);
         $this->tokens = new Tokens();
-        if (isset($rawConfig['throw'])) {
-            throw new InvalidPreparatorConfigException();
+        if (isset($rawConfig['excludedFields']) && is_array($rawConfig['excludedFields'])) {
+            $this->excludedFields = $rawConfig['excludedFields'];
+        }
+    }
+
+    /**
+     * @param array<array-key, mixed> $rawConfig
+     *
+     * @throws InvalidPreparatorConfigException
+     */
+    private function checkConfig(array $rawConfig): void
+    {
+        $diff = \array_diff(\array_keys($rawConfig), $this->allowedConfigKeys);
+        if (count($diff) > 0) {
+            throw new InvalidPreparatorConfigException('Not allowed keys: ' . implode(', ', $diff));
         }
     }
 
@@ -56,31 +119,26 @@ abstract class TestCasesPreparator
         return $this;
     }
 
-    abstract public static function getName(): string;
-
     /**
-     * @return string[]
+     * @param string[] $filters
      */
-    protected function getGroups(Operation $operation): array
+    public function setFilters(array $filters): void
     {
-        return [
-            $operation->getId(),
-            $operation->getMethod(),
-            ...$operation->getTags()
-                ->select('name')
-                ->toArray(),
-            'preparator_' . static::getName(),
-        ];
+        $this->filters = $filters;
     }
 
     protected function authenticate(Request $request, Operation $operation): Request
     {
         foreach ($operation->getSecurities() as $security) {
+            $scopes = $security->getScopes()
+                ->where('name', '!=', 'current_user')
+                ->select('name')
+                ->toArray();
             /** @var Token|null $token */
             $token = $this->tokens->where(
                 'scopes',
                 'includes',
-                $security->getScopes()
+                $scopes
             )->first();
 
             if (null !== $token) {

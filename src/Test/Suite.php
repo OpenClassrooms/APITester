@@ -7,6 +7,8 @@ namespace OpenAPITesting\Test;
 use Carbon\Carbon;
 use OpenAPITesting\Config\FiltersConfig;
 use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Requester;
@@ -106,14 +108,68 @@ final class Suite implements Test
         $this->requester = $requester;
     }
 
-    public function includes(TestCase $testCase): bool
+    /**
+     * @throws PreparatorLoadingException
+     *
+     * @return TestCase[]
+     */
+    private function prepareTestCases(): iterable
     {
-        $include = true;
-        if (\count($this->filters->getIncludedGroups()) > 0) {
-            $include = \count(array_intersect($this->filters->getIncludedGroups(), $testCase->getGroups())) > 0;
+        $testCases = collect();
+        foreach ($this->preparators as $preparator) {
+            /** @var Operations $operations */
+            $operations = $this->api->getOperations()->map(
+                fn (Operation $op) => $op->addGroup('preparator:' . $preparator::getName())
+            );
+            $testCases = $testCases->merge(
+                $preparator->prepare($operations->filter([$this, 'includes']))
+            );
         }
 
-        if (\count(array_intersect($this->filters->getExcludedGroups(), $testCase->getGroups())) > 0) {
+        return $testCases;
+    }
+
+    /**
+     * @param iterable<TestCase> $testCases
+     *
+     * @throws PreparatorLoadingException
+     * @throws ClientExceptionInterface
+     */
+    private function launchTestCases(iterable $testCases): void
+    {
+        foreach ($testCases as $testCase) {
+            $testCase->setRequester($this->requester);
+            $testCase->setLogger($this->logger);
+            $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
+            $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
+            $testCase->launch();
+        }
+    }
+
+    /**
+     * @param iterable<TestCase> $testCases
+     *
+     * @return array<string, Result>
+     */
+    private function getTestCasesResults(iterable $testCases): array
+    {
+        $results = [];
+        foreach ($testCases as $testCase) {
+            $results += $testCase->getResult();
+        }
+
+        return $results;
+    }
+
+    public function includes(Operation $operation): bool
+    {
+        $groups = $operation->getGroups();
+        $include = true;
+        if (\count($this->filters->getIncludedGroups()) > 0) {
+            $include = \count(array_intersect($this->filters->getIncludedGroups(), $groups)) > 0;
+        }
+
+        if (\count(array_intersect($this->filters->getExcludedGroups(), $groups)) > 0) {
             $include = false;
         }
 
@@ -134,56 +190,5 @@ final class Suite implements Test
     public function setAfterTestCaseCallbacks(array $callbacks): void
     {
         $this->afterTestCaseCallbacks = $callbacks;
-    }
-
-    /**
-     * @throws PreparatorLoadingException
-     *
-     * @return TestCase[]
-     */
-    private function prepareTestCases(): array
-    {
-        $testCases = [];
-        foreach ($this->preparators as $preparator) {
-            foreach ($preparator->prepare($this->api) as $testCase) {
-                if ($this->includes($testCase)) {
-                    $testCases[] = $testCase;
-                }
-            }
-        }
-
-        return $testCases;
-    }
-
-    /**
-     * @param TestCase[] $testCases
-     *
-     * @throws PreparatorLoadingException
-     * @throws ClientExceptionInterface
-     */
-    private function launchTestCases(array $testCases): void
-    {
-        foreach ($testCases as $testCase) {
-            $testCase->setRequester($this->requester);
-            $testCase->setLogger($this->logger);
-            $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
-            $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
-            $testCase->launch();
-        }
-    }
-
-    /**
-     * @param TestCase[] $testCases
-     *
-     * @return array<string, Result>
-     */
-    private function getTestCasesResults(array $testCases): array
-    {
-        $results = [];
-        foreach ($testCases as $testCase) {
-            $results += $testCase->getResult();
-        }
-
-        return $results;
     }
 }

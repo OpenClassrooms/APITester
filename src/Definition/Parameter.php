@@ -9,6 +9,12 @@ use OpenAPITesting\Definition\Collection\ParameterExamples;
 
 final class Parameter
 {
+    public const TYPE_QUERY = 'query';
+
+    public const TYPE_PATH = 'path';
+
+    public const TYPE_HEADER = 'header';
+
     private Operation $parent;
 
     private string $name;

@@ -6,7 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Responses;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
@@ -17,23 +17,17 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Error404TestCasesPreparator extends TestCasesPreparator
 {
-    public static function getName(): string
-    {
-        return '404';
-    }
-
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): iterable
+    protected function generateTestCases(Operations $operations): iterable
     {
         /** @var Responses $responses */
-        $responses = $api->getOperations()
+        $responses = $operations
             ->select('responses.*')
             ->flatten()
             ->where('statusCode', 404)
-            ->values()
-        ;
+            ->values();
 
         return $responses
             ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
@@ -45,20 +39,18 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         $operation = $response->getParent();
 
         $request = new Request(
-            $response->getParent()
-                ->getMethod(),
-            $response->getParent()
-                ->getPath(
-                    array_fill(
-                        0,
-                        $response->getParent()
-                            ->getPathParameters()
-                            ->count(),
-                        -9999
-                    )
-                ),
+            $operation->getMethod(),
+            $operation->getPath(
+                array_fill(
+                    0,
+                    $response->getParent()
+                        ->getPathParameters()
+                        ->count(),
+                    -9999
+                )
+            ),
             [],
-            $this->generateBody($response->getParent()),
+            $this->generateBody($operation),
         );
 
         $request = $this->authenticate(
@@ -67,15 +59,13 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         );
 
         return new TestCase(
-            $operation->getId(),
+            $operation->getId() . '_404',
             $request,
             new Response(
                 404,
                 [],
                 $response->getDescription()
             ),
-            $this->getGroups($response->getParent()),
-            ['stream'],
         );
     }
 

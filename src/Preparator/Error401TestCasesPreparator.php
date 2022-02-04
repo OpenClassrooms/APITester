@@ -16,11 +16,6 @@ final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
 {
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
 
-    public static function getName(): string
-    {
-        return '401';
-    }
-
     protected function getStatusCode(): int
     {
         return 401;

@@ -6,7 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Config\PaginationErrorConfig;
 use OpenAPITesting\Preparator\Config\PaginationErrorConfigItem;
@@ -16,16 +16,21 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 {
     private PaginationErrorConfig $config;
 
-    abstract public static function getName(): string;
+    /**
+     * @var string[]
+     */
+    protected array $allowedConfigKeys = [
+        'excludedFields',
+        'range',
+    ];
 
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): iterable
+    protected function generateTestCases(Operations $operations): iterable
     {
-        $testCases = $api->getOperations()
-            ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
-        ;
+        $testCases = $operations
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation));
 
         return array_merge(...$testCases);
     }
@@ -100,12 +105,10 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
             if ($configItem->inQuery()) {
                 $lower = $operation->getQueryParameters()
                     ->where('name', $configItem->getLower())
-                    ->first()
-                ;
+                    ->first();
                 $upper = $operation->getQueryParameters()
                     ->where('name', $configItem->getUpper())
-                    ->first()
-                ;
+                    ->first();
 
                 if (null === $lower || null === $upper) {
                     continue;

@@ -22,7 +22,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      *
      * @param TestCase[] $expected
      */
-    public function test(Api $openApi, array $expected): void
+    public function test(Api $api, array $expected): void
     {
         $preparator = new Error403TestCasesPreparator();
         $preparator->configure([]);
@@ -59,7 +59,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($openApi),
+            $preparator->prepare($api->getOperations()),
             ['size', 'id', 'headerNames', 'groups', 'excludedFields']
         );
     }

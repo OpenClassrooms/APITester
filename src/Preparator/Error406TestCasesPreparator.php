@@ -6,7 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Responses;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Test\TestCase;
@@ -16,18 +16,14 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
 {
     private const INVALID_TEST_CASES_NUMBER = 3;
 
-    public static function getName(): string
-    {
-        return '406';
-    }
-
     /**
      * @inheritdoc
      */
-    public function prepare(Api $api): iterable
+    protected function generateTestCases(Operations $operations): iterable
     {
+        $operations = $operations->where('responses.*.statusCode', 'contains', 406);
         $testCases = collect();
-        foreach ($api->getOperations() as $operation) {
+        foreach ($operations as $operation) {
             /** @var Responses $responses */
             foreach ($operation->getResponses()->groupBy('statusCode') as $statusCode => $responses) {
                 $testCases = $testCases->merge(

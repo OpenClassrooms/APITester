@@ -6,7 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Securities;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Security;
@@ -17,14 +17,13 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
     /**
      * @inheritDoc
      */
-    public function prepare(Api $api): iterable
+    protected function generateTestCases(Operations $operations): iterable
     {
         /** @var Securities $securities */
-        $securities = $api->getOperations()
+        $securities = $operations
             ->where('responses.*.statusCode', 'contains', $this->getStatusCode())
             ->select('securities.*')
-            ->flatten()
-        ;
+            ->flatten();
 
         return $securities
             ->map(fn (Security $security) => $this->prepareTestCases($security))
@@ -61,9 +60,7 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
                     $operation->getId() . '_' . $this->getStatusCode() . '_' . $token->getAuthType(),
                     $request,
                     new Response($this->getStatusCode()),
-                    $this->getGroups($operation),
-                    ['stream']
-                )
+                ),
             );
         }
 

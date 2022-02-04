@@ -28,7 +28,7 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api),
+            $preparator->prepare($api->getOperations()),
             ['size', 'id', 'headerNames', 'groups', 'headers', 'name']
         );
     }

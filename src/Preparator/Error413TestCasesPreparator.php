@@ -12,11 +12,6 @@ final class Error413TestCasesPreparator extends PaginationErrorTestCasesPreparat
         'upper' => '1000000000',
     ];
 
-    public static function getName(): string
-    {
-        return '413';
-    }
-
     protected function getErrorCode(): int
     {
         return 413;

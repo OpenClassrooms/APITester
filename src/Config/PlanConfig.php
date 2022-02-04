@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Config;
 
 use OpenAPITesting\Config\Exception\ConfigurationException;
-use OpenAPITesting\Requester\HttpAsyncRequester;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Yaml\Yaml;
 
@@ -61,7 +60,7 @@ final class PlanConfig
                     $suite['definition']['format'],
                 ),
                 $suite['preparators'] ?? [],
-                $suite['requester'] ?? HttpAsyncRequester::getName(),
+                $suite['requester'] ?? null,
                 isset($suite['auth']) ? $this->getAuthConfigs($suite['auth']) : [],
                 new FiltersConfig(
                     $suite['filters']['include'] ?? [],

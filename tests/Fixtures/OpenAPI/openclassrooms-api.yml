@@ -3979,6 +3979,8 @@ paths:
             description: 'Get user path projects'
             operationId: oc_api_learning_activity_learning_path_projects_with_user_information_get
             responses:
+                405:
+                    description: '405'
                 404:
                     description: 'Not found'
                 200:
@@ -9927,6 +9929,7 @@ components:
                     tokenUrl: 'https://api.openclassrooms.lan/oauth/token'
                     scopes:
                         learning_content: 'Only this one in this flow'
+                        admin_student: 'This scope is mainly used by salesforce'
                 password:
                     tokenUrl: 'https://api.openclassrooms.lan/oauth2/token'
                     refreshUrl: 'https://api.openclassrooms.lan/oauth2/token'

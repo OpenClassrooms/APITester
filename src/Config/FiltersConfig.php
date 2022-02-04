@@ -7,18 +7,18 @@ namespace OpenAPITesting\Config;
 final class FiltersConfig
 {
     /**
-     * @var string[]
+     * @var string[][]
      */
     private array $includedGroups;
 
     /**
-     * @var string[]
+     * @var string[][]
      */
     private array $excludedGroups;
 
     /**
-     * @param string[] $includedGroups
-     * @param string[] $excludedGroups
+     * @param array<int, array<string, string>> $includedGroups
+     * @param array<int, array<string, string>> $excludedGroups
      */
     public function __construct(array $includedGroups, array $excludedGroups)
     {
@@ -43,20 +43,20 @@ final class FiltersConfig
     }
 
     /**
-     * @param string[] $includedGroups
+     * @param string[][] $includedGroups
      */
     public function addIncludedGroups(array $includedGroups): void
     {
-        /** @var string[] includedGroups */
+        /** @var string[][] includedGroups */
         $this->includedGroups = [...$includedGroups, ...$this->includedGroups];
     }
 
     /**
-     * @param string[] $excludedGroups
+     * @param string[][] $excludedGroups
      */
     public function addExcludedGroups(array $excludedGroups): void
     {
-        /** @var string[] excludedGroups */
+        /** @var string[][] excludedGroups */
         $this->excludedGroups = [...$excludedGroups, ...$this->excludedGroups];
     }
 }

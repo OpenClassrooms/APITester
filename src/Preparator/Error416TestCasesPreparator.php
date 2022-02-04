@@ -23,11 +23,6 @@ final class Error416TestCasesPreparator extends PaginationErrorTestCasesPreparat
         'upper' => '5',
     ];
 
-    public static function getName(): string
-    {
-        return '416';
-    }
-
     protected function getErrorCode(): int
     {
         return 416;

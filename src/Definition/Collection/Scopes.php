@@ -13,4 +13,11 @@ use OpenAPITesting\Util\Collection;
  */
 final class Scopes extends Collection
 {
+    /**
+     * @param string[] $names
+     */
+    public static function fromNames(array $names): self
+    {
+        return new self(array_map(static fn (string $n) => new Scope($n), $names));
+    }
 }

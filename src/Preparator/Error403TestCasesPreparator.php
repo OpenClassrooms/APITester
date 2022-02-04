@@ -11,11 +11,6 @@ use OpenAPITesting\Definition\Token;
 
 final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPreparator
 {
-    public static function getName(): string
-    {
-        return '403';
-    }
-
     protected function getStatusCode(): int
     {
         return 403;
@@ -27,10 +22,10 @@ final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
             return $this->tokens
                 ->filter(
                     fn (Token $x) => 0 === $security
-                        ->getScopes()
-                        ->select('name')
-                        ->intersect($x->getScopes())
-                        ->count()
+                            ->getScopes()
+                            ->select('name')
+                            ->intersect($x->getScopes())
+                            ->count()
                 )
             ;
         }

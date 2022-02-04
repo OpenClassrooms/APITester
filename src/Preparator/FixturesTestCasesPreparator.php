@@ -7,7 +7,7 @@ namespace OpenAPITesting\Preparator;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
@@ -24,7 +24,7 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
      *
      * @return TestCase[]
      */
-    public function prepare(Api $api): array
+    protected function generateTestCases(Operations $operations): array
     {
         /**
          * @var array<string,
@@ -38,12 +38,7 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
          */
         $fixtures = Yaml::parseFile(PROJECT_DIR . '/' . $this->path);
 
-        return $this->generateTestCases($fixtures, $api->getIndexedOperations());
-    }
-
-    public static function getName(): string
-    {
-        return 'fixtures';
+        return $this->prepareTestCases($fixtures, $operations->toPropIndexedArray());
     }
 
     public function configure(array $rawConfig): void
@@ -69,7 +64,7 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
      *
      * @return array<TestCase>
      */
-    private function generateTestCases(array $fixtures, array $groupedOperations): array
+    private function prepareTestCases(array $fixtures, array $groupedOperations): array
     {
         $testCases = [];
 
@@ -106,9 +101,6 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
                             $item['expectedResponse']['statusCode'] ?? 200,
                             $item['expectedResponse']['headers'] ?? [],
                             $this->formatBody($item['expectedResponse']['body'] ?? []),
-                        ),
-                        $this->getGroups(
-                            $operation,
                         ),
                     );
 

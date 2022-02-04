@@ -28,12 +28,13 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
      */
     public function test(array $expected): void
     {
-        $openApi = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
-        $testSuite = (new OpenApiExamplesTestCasesPreparator())->prepare($openApi);
+        $api = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
+        $preparator = new OpenApiExamplesTestCasesPreparator();
+        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,
-            $testSuite,
+            $preparator->prepare($api->getOperations()),
             ['size', 'id', 'headerNames']
         );
     }

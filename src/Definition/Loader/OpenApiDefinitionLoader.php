@@ -97,6 +97,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $requestBody = $operation->requestBody;
                 /** @var \cebe\openapi\spec\Response[]|null $responses */
                 $responses = $operation->responses;
+                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
+
 
                 $operations->add(
                     Operation::create(
@@ -111,7 +113,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setRequests($this->getRequests($requestBody))
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))
-                        ->setSecurities($this->getSecurities($securitySchemes, $operation->security ?? []))
+                        ->setSecurities($this->getSecurities($securitySchemes, $requirements))
                 );
             }
         }
@@ -149,6 +151,27 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         return new Tags($collection);
     }
 
+    /**
+     * @param SecurityRequirement[] $securityRequirements
+     *
+     * @return array<string, string[]>
+     */
+    private function getSecurityRequirementsScopes(array $securityRequirements): array
+    {
+        $requirements = [];
+        foreach ($securityRequirements as $requirement) {
+            /**
+             * @var string   $name
+             * @var string[] $data
+             */
+            foreach ((array) $requirement->getSerializableData() as $name => $data) {
+                $requirements[$name] = $data;
+            }
+        }
+
+        return $requirements;
+    }
+
     private function generateOperationId(string $path, string $method): string
     {
         return trim(str_replace('/', '_', $path) . '_' . $method, '_');
@@ -167,8 +190,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 continue;
             }
             $defParam = Parameter::create($parameter->name ?? $name)
-                ->setSchema($schema)
-            ;
+                ->setSchema($schema);
             foreach ($parameter->examples ?? [] as $exampleName => $example) {
                 $defParam->addExample(new ParameterExample($exampleName, (string) $example->value));
             }
@@ -239,8 +261,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $defResponse = Response::create()
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
-                    ->setDescription($response->description)
-                ;
+                    ->setDescription($response->description);
                 $collection->add($defResponse);
                 continue;
             }
@@ -257,8 +278,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
-                    ->setDescription($response->description)
-                ;
+                    ->setDescription($response->description);
 
                 /**
                  * @var string  $name
@@ -283,12 +303,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @param array<string, SecurityScheme>      $securitySchemes
-     * @param array<string, SecurityRequirement> $securityRequirements
+     * @param array<string, SecurityScheme> $securitySchemes
+     * @param array<string, string[]>       $requirements
      *
      * @throws DefinitionLoadingException
      */
-    private function getSecurities(array $securitySchemes, array $securityRequirements = []): Securities
+    private function getSecurities(array $securitySchemes, array $requirements = []): Securities
     {
         $collection = [];
         foreach ($securitySchemes as $name => $scheme) {
@@ -299,20 +319,22 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $collection[] = new HttpSecurity($name, $scheme->scheme, $scheme->bearerFormat);
             }
             if ('oauth2' === $scheme->type && null !== $scheme->flows) {
+                $notFoundRequirements = [];
                 /**
                  * @var string    $type
                  * @var OAuthFlow $flow
                  */
                 foreach ((array) $scheme->flows->getSerializableData() as $type => $flow) {
-                    $scopes = (array) ($securityRequirements[$name] ?? []);
+                    $scopes = $requirements[$name] ?? [];
                     /** @var object $flowScopes */
                     $flowScopes = $flow->scopes;
                     $diff = array_diff($scopes, array_keys((array) $flowScopes));
-                    $scopes = new Scopes($scopes);
                     if (\count($diff) > 0) {
-                        $diff = implode(',', $diff);
-                        throw new DefinitionLoadingException("Scopes '{$diff}' not configured in securitySchemes");
+                        $notFoundRequirements = $diff;
+                        continue;
                     }
+                    $notFoundRequirements = [];
+                    $scopes = Scopes::fromNames($scopes);
                     $name .= '_' . $type;
                     if ('implicit' === $type) {
                         $collection[] = new OAuth2ImplicitSecurity(
@@ -343,6 +365,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                             $scopes,
                         );
                     }
+                }
+                if (count($notFoundRequirements) > 0) {
+                    $notFoundRequirements = implode(',', $notFoundRequirements);
+                    throw new DefinitionLoadingException(
+                        "Scopes '{$notFoundRequirements}' not configured in securitySchemes"
+                    );
                 }
             }
         }

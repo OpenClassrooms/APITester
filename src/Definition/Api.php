@@ -85,23 +85,6 @@ final class Api
         return $this;
     }
 
-    /**
-     * @return array<string, array<Operation>>
-     */
-    public function getIndexedOperations(): array
-    {
-        $operations = [];
-        foreach ($this->getOperations() as $operation) {
-            $operations[$operation->getMethod()][] = $operation;
-            $operations[$operation->getId()][] = $operation;
-            foreach ($operation->getTags()->select('name') as $tag) {
-                $operations[(string) $tag][] = $operation;
-            }
-        }
-
-        return $operations;
-    }
-
     public function getOperations(): Operations
     {
         return $this->operations;

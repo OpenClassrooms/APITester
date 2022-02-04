@@ -7,7 +7,7 @@ namespace OpenAPITesting\Preparator;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Test\TestCase;
@@ -18,16 +18,15 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     /**
      * @return TestCase[]
      */
-    public function prepare(Api $api): array
+    protected function generateTestCases(Operations $operations): array
     {
         $testCases = [];
-        foreach ($api->getOperations()->where('responses.*') as $operation) {
+        foreach ($operations->where('responses.*') as $operation) {
             $requests = $this->buildRequests($operation);
             $responses = $this->buildResponses($operation);
             $testCases[] = $this->buildTestCases(
                 $requests,
                 $responses,
-                $this->getGroups($operation),
             );
         }
 
@@ -120,8 +119,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     /** @var ParameterExample|null $example */
                     $example = $header->getExamples()
                         ->where('name', $name)
-                        ->first()
-                    ;
+                        ->first();
                     if (null === $example) {
                         continue;
                     }
@@ -139,11 +137,10 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     /**
      * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
-     * @param string[]                $groups
      *
      * @return TestCase[]
      */
-    private function buildTestCases(array $requests, array $responses, array $groups): array
+    private function buildTestCases(array $requests, array $responses): array
     {
         $testCases = [];
         foreach ($requests as $key => $request) {
@@ -156,7 +153,6 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                 $key,
                 $request,
                 $responses[$key] ?? new Response(),
-                $groups,
             );
             $testCases[] = $fixture;
         }

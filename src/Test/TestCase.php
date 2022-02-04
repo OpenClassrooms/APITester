@@ -29,11 +29,6 @@ final class TestCase implements Test
 
     private string $name;
 
-    /**
-     * @var string[]
-     */
-    private array $groups;
-
     private ?Result $result = null;
 
     private ?Requester $requester = null;
@@ -63,17 +58,14 @@ final class TestCase implements Test
     private array $afterCallbacks = [];
 
     /**
-     * @param string[] $groups
      * @param string[] $excludedFields
      */
     public function __construct(
         string $name,
         RequestInterface $request,
         ResponseInterface $expectedResponse,
-        array $groups = [],
         array $excludedFields = []
     ) {
-        $this->groups = $groups;
         $this->request = $request;
         $this->expectedResponse = $expectedResponse;
         $this->name = $name;
@@ -138,56 +130,6 @@ final class TestCase implements Test
         $this->logger = $logger;
     }
 
-    public function getStatus(): string
-    {
-        $status = self::STATUS_NOT_LAUNCHED;
-
-        if (null !== $this->startedAt) {
-            $status = self::STATUS_LAUNCHED;
-        }
-        if (null === $this->result) {
-            return $status;
-        }
-        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
-            return self::STATUS_SUCCESS;
-        }
-
-        return self::STATUS_FAILED;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeCallbacks(array $callbacks): void
-    {
-        $this->beforeCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterCallbacks(array $callbacks): void
-    {
-        $this->afterCallbacks = $callbacks;
-    }
-
-    /**
-     * @param string[] $excludedFields
-     */
-    public function addExcludedFields(array $excludedFields): void
-    {
-        /** @var string[] excludedFields */
-        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
-    }
-
     private function assert(): void
     {
         if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
@@ -220,5 +162,67 @@ final class TestCase implements Test
             null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
             $msg
         );
+    }
+
+    public function getStatus(): string
+    {
+        $status = self::STATUS_NOT_LAUNCHED;
+
+        if (null !== $this->startedAt) {
+            $status = self::STATUS_LAUNCHED;
+        }
+        if (null === $this->result) {
+            return $status;
+        }
+        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
+            return self::STATUS_SUCCESS;
+        }
+
+        return self::STATUS_FAILED;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
+    {
+        $this->beforeCallbacks = $callbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
+    {
+        $this->afterCallbacks = $callbacks;
+    }
+
+    /**
+     * @param string[] $excludedFields
+     */
+    public function addExcludedFields(array $excludedFields): void
+    {
+        /** @var string[] excludedFields */
+        $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
+    }
+
+    public function withRequest(RequestInterface $request): self
+    {
+        $self = clone $this;
+        $self->request = $request;
+
+        return $self;
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    public function setRequest(RequestInterface $request): self
+    {
+        $this->request = $request;
+
+        return $this;
     }
 }

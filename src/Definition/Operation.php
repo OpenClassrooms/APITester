@@ -38,6 +38,11 @@ final class Operation
 
     private Securities $securities;
 
+    /**
+     * @var string[]
+     */
+    private array $addedGroups = [];
+
     public function __construct(
         string $id,
         string $path
@@ -128,6 +133,36 @@ final class Operation
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    private function substituteParams(array $params, string $in): array
+    {
+        $prop = "{$in}Parameters";
+        if (!isset($this->{$prop})) {
+            throw new \RuntimeException("Parameters in {$in} not handled.");
+        }
+        /** @var Parameters $parameters */
+        $parameters = $this->{$prop};
+        $result = [];
+        foreach ($params as $name => $value) {
+            if (\is_string($name)) {
+                $result[$name] = $value;
+            } else {
+                if (!isset($parameters[$name])) {
+                    continue;
+                }
+                /** @var Parameter $parameter */
+                $parameter = $parameters[$name];
+                $result[$parameter->getName()] = $value;
+            }
+        }
+
+        return $result;
     }
 
     public function getMethod(): string
@@ -297,6 +332,40 @@ final class Operation
         $this->parent = $parent;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getGroups(): array
+    {
+        return [
+            $this->id,
+            $this->path,
+            $this->method,
+            ...$this->responses->select('statusCode')->toArray(),
+            ...$this->tags->select('name')->toArray(),
+            ...$this->addedGroups,
+        ];
+    }
+
+    public function addGroup(string $group): self
+    {
+        $this->addedGroups[] = $group;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, Parameters>
+     */
+    public function getRequiredParameters(): array
+    {
+        return [
+            Parameter::TYPE_PATH => $this->getPathParameters()->where('required', true),
+            Parameter::TYPE_QUERY => $this->getQueryParameters()->where('required', true),
+            Parameter::TYPE_HEADER => $this->getHeaders()->where('required', true),
+        ];
+    }
+
     public function getHeaders(): Parameters
     {
         return $this->headers;
@@ -307,35 +376,5 @@ final class Operation
         $this->headers = $headers;
 
         return $this;
-    }
-
-    /**
-     * @param array<int|string, string|int> $params
-     *
-     * @return array<string, string|int>
-     */
-    private function substituteParams(array $params, string $in): array
-    {
-        $prop = "{$in}Parameters";
-        if (!isset($this->{$prop})) {
-            throw new \RuntimeException("Parameters in {$in} not handled.");
-        }
-        /** @var Parameters $parameters */
-        $parameters = $this->{$prop};
-        $result = [];
-        foreach ($params as $name => $value) {
-            if (\is_string($name)) {
-                $result[$name] = $value;
-            } else {
-                if (!isset($parameters[$name])) {
-                    continue;
-                }
-                /** @var Parameter $parameter */
-                $parameter = $parameters[$name];
-                $result[$parameter->getName()] = $value;
-            }
-        }
-
-        return $result;
     }
 }
