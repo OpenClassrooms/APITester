@@ -43,18 +43,6 @@ final class Parameter
         return $this->name;
     }
 
-    public function getSchema(): ?Schema
-    {
-        return $this->schema;
-    }
-
-    public function setSchema(?Schema $schema): self
-    {
-        $this->schema = $schema;
-
-        return $this;
-    }
-
     public function getExamples(): ParameterExamples
     {
         return $this->examples;
@@ -88,6 +76,29 @@ final class Parameter
     public function setRequired(bool $required): self
     {
         $this->required = $required;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        $schema = $this->getSchema();
+
+        if (null !== $schema && null !== $schema->type) {
+            return $schema->type;
+        }
+
+        return null;
+    }
+
+    public function getSchema(): ?Schema
+    {
+        return $this->schema;
+    }
+
+    public function setSchema(?Schema $schema): self
+    {
+        $this->schema = $schema;
 
         return $this;
     }

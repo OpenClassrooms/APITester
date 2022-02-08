@@ -214,7 +214,12 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'required_foo_param_missing_test',
+                    'required_foo_body_field_missing',
+                    new Request('POST', '/test', [], Json::encode([])),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_body_missing_test',
                     new Request('POST', '/test'),
                     new Response(400)
                 ),
@@ -237,21 +242,16 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 new Schema([
                                     'type' => 'object',
                                     'properties' => [
-                                        'foo_body' => [
+                                        'foo' => [
                                             'type' => 'string',
                                         ],
                                     ],
-                                    'required' => ['foo_body'],
+                                    'required' => ['foo'],
                                 ])
-                            ))->addExample(new RequestExample('foo_body', 'foo_body1'))
+                            ))->addExample(new RequestExample('foo', 'foo_body1'))
                         )
                 ),
             [
-                new TestCase(
-                    'required_foo_body_param_missing_test',
-                    new Request('POST', '/test?foo_query=foo1'),
-                    new Response(400)
-                ),
                 new TestCase(
                     'required_foo_query_param_missing_test',
                     new Request(
@@ -259,9 +259,83 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test',
                         [],
                         Json::encode([
-                            'foo_body' => 'foo_body1',
+                            'foo' => 'foo_body1',
                         ])
                     ),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_foo_body_field_missing',
+                    new Request('POST', '/test?foo_query=foo1', [], Json::encode([])),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_body_missing_test',
+                    new Request('POST', '/test?foo_query=foo1'),
+                    new Response(400)
+                ),
+            ],
+        ];
+
+        yield 'Multiple request body formats - other than JSON ignored' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test'
+                    )
+                        ->addQueryParameter(
+                            (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
+                        )
+                        ->addRequest(
+                            (new \OpenAPITesting\Definition\Request(
+                                'application/json',
+                                new Schema([
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'foo' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => ['foo'],
+                                ])
+                            ))->addExample(new RequestExample('foo', 'foo_body1'))
+                        )->addRequest(
+                            (new \OpenAPITesting\Definition\Request(
+                                'application/xml',
+                                new Schema([
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'foo' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => ['foo'],
+                                ])
+                            ))->addExample(new RequestExample('foo', 'foo_body1'))
+                        )
+                ),
+            [
+                new TestCase(
+                    'required_foo_query_param_missing_test',
+                    new Request(
+                        'POST',
+                        '/test',
+                        [],
+                        Json::encode([
+                            'foo' => 'foo_body1',
+                        ])
+                    ),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_foo_body_field_missing',
+                    new Request('POST', '/test?foo_query=foo1', [], Json::encode([])),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_body_missing_test',
+                    new Request('POST', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
             ],
