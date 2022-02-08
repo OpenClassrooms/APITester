@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
+use Nyholm\Psr7\Stream;
+use OpenAPITesting\Definition\Request;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Assert;
+use OpenAPITesting\Util\Json;
 use OpenAPITesting\Util\Traits\TimeBoundTrait;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Message\RequestInterface;
@@ -74,6 +77,49 @@ final class TestCase implements Test
         $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
     }
 
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
+    {
+        $this->beforeCallbacks = $callbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
+    {
+        $this->afterCallbacks = $callbacks;
+    }
+
+    /**
+     * @param string[] $excludedFields
+     */
+    public function addExcludedFields(array $excludedFields): void
+    {
+        /** @var string[] excludedFields */
+        $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
+    }
+
+    public function withRequest(RequestInterface $request): self
+    {
+        $self = clone $this;
+        $self->request = $request;
+
+        return $self;
+    }
+
+    public function withAddedRequestBody(Request $request): self
+    {
+        return new self(
+            $this->getName(),
+            $this->getRequest()
+                ->withBody(Stream::create(Json::encode($request->getBodyFromExamples()))),
+            $this->getExpectedResponse()
+        );
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -130,6 +176,23 @@ final class TestCase implements Test
         $this->logger = $logger;
     }
 
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    public function setRequest(RequestInterface $request): self
+    {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    public function getExpectedResponse(): ResponseInterface
+    {
+        return $this->expectedResponse;
+    }
+
     public function getStatus(): string
     {
         $status = self::STATUS_NOT_LAUNCHED;
@@ -145,51 +208,6 @@ final class TestCase implements Test
         }
 
         return self::STATUS_FAILED;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeCallbacks(array $callbacks): void
-    {
-        $this->beforeCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterCallbacks(array $callbacks): void
-    {
-        $this->afterCallbacks = $callbacks;
-    }
-
-    /**
-     * @param string[] $excludedFields
-     */
-    public function addExcludedFields(array $excludedFields): void
-    {
-        /** @var string[] excludedFields */
-        $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
-    }
-
-    public function withRequest(RequestInterface $request): self
-    {
-        $self = clone $this;
-        $self->request = $request;
-
-        return $self;
-    }
-
-    public function getRequest(): RequestInterface
-    {
-        return $this->request;
-    }
-
-    public function setRequest(RequestInterface $request): self
-    {
-        $this->request = $request;
-
-        return $this;
     }
 
     private function assert(): void

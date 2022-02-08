@@ -4,83 +4,59 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use Illuminate\Support\Collection;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
-use Nyholm\Psr7\Stream;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Parameters;
+use cebe\openapi\spec\Schema;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
+use OpenAPITesting\Definition\Request;
 
-final class Error400TypesTestCasesPreparator extends TestCasesPreparator
+final class Error400TypesTestCasesPreparator extends FieldLevelTestCasePreparator
 {
-    public const TYPE_STRING = 'string';
-    public const TYPE_NUMBER = 'number';
-    public const TYPE_INTEGER = 'integer';
-    public const TYPE_BOOLEAN = 'boolean';
-    public const TYPE_ARRAY = 'array';
-    public const TYPE_OBJECT = 'object';
+    public const STRING_TYPE = 'string';
+    public const NUMBER_TYPE = 'number';
+    public const INTEGER_TYPE = 'integer';
+    public const BOOLEAN_TYPE = 'boolean';
+    public const ARRAY_TYPE = 'array';
+    public const OBJECT_TYPE = 'object';
 
-    public const PARAMETER_ANY_TYPES = [
-        self::TYPE_STRING,
-        self::TYPE_NUMBER,
-        self::TYPE_INTEGER,
-        self::TYPE_BOOLEAN,
-        self::TYPE_ARRAY,
+    public const PARAMETER_TYPES = [
+        self::STRING_TYPE,
+        self::NUMBER_TYPE,
+        self::INTEGER_TYPE,
+        self::BOOLEAN_TYPE,
+        self::ARRAY_TYPE,
     ];
 
-    public const SCHEMA_ANY_TYPES = [
-        self::TYPE_STRING,
-        self::TYPE_NUMBER,
-        self::TYPE_INTEGER,
-        self::TYPE_BOOLEAN,
-        self::TYPE_ARRAY,
-        self::TYPE_OBJECT,
+    public const SCHEMA_TYPES = [
+        self::STRING_TYPE,
+        self::NUMBER_TYPE,
+        self::INTEGER_TYPE,
+        self::BOOLEAN_TYPE,
+        self::ARRAY_TYPE,
+        self::OBJECT_TYPE,
     ];
+
+    protected function getStatusCode(): int
+    {
+        return 400;
+    }
 
     /**
      * @inheritDoc
      */
-    protected function generateTestCases(Operations $operations): iterable
+    protected function prepareForParameters(array $definitionParams, Operation $operation): array
     {
-        return $operations
-            ->map(fn (Operation $op) => $this->prepareTestCases($op))
-            ->flatten()
-        ;
-    }
-
-    /**
-     * @return TestCase[]
-     */
-    private function prepareTestCases(Operation $operation): iterable
-    {
-        $testCases = $this->prepareForParameters($operation);
-
-        return $this->prepareForBody($testCases, $operation);
-    }
-
-    /**
-     * @return Collection<array-key, TestCase>
-     */
-    private function prepareForParameters(Operation $operation): Collection
-    {
-        $requiredParams = $operation->getRequiredParameters();
-
         $testCases = [];
-        foreach ($requiredParams as $in => $params) {
+        foreach ($definitionParams as $in => $params) {
             foreach ($params as $key => $param) {
-                if (self::TYPE_STRING === $param->getType()) {
+                if (self::STRING_TYPE === $param->getType()) {
                     continue;
                 }
-                foreach (self::PARAMETER_ANY_TYPES as $type) {
+                foreach (self::PARAMETER_TYPES as $type) {
                     if ($type === $param->getType()) {
                         continue;
                     }
-                    $parameters = $requiredParams;
+                    $parameters = $definitionParams;
                     $parameters[$in][$key] = $this->changeParameterType($param, $type);
                     $testCases[] = $this->createTestCase(
                         "{$param->getName()}_param_type_{$type}_{$operation->getId()}",
@@ -91,56 +67,37 @@ final class Error400TypesTestCasesPreparator extends TestCasesPreparator
             }
         }
 
-        return collect($testCases);
+        return $this->addRequestBody($testCases, $operation);
     }
 
     /**
-     * @param Collection<array-key, TestCase> $testCases
-     *
-     * @return Collection<array-key, TestCase>
+     * @inheritDoc
      */
-    private function prepareForBody(Collection $testCases, Operation $operation): Collection
-    {
-        if (!$operation->needsRequestBody()) {
-            return $testCases;
-        }
-
-        $requiredParameters = $operation->getRequiredParameters();
-
-        /** @var \OpenAPITesting\Definition\Request $definitionRequest */
-        foreach ($operation->getRequests()->where('required', true) as $definitionRequest) {
-            if (!str_contains($definitionRequest->getMediaType(), 'json')) {
-                continue;
-            }
-
-            $bodyExamples = $definitionRequest->getBodyFromExamples();
-
-            $testCases = $testCases->map(fn (TestCase $t) => new TestCase(
-                $t->getName(),
-                $t->getRequest()
-                    ->withBody(Stream::create(Json::encode($bodyExamples))),
-                $t->getExpectedResponse()
-            ));
-
-            foreach ($definitionRequest->getBody()->properties as $property => $schema) {
-                foreach (self::SCHEMA_ANY_TYPES as $type) {
-                    if ($type === $schema->type) {
-                        continue;
-                    }
-                    $body = $bodyExamples;
-                    $body[$property] = $this->getSchemaExample($type);
-
-                    $testCases[] = $this->createTestCase(
-                        "{$property}_body_field_type_{$type}_{$operation->getId()}",
-                        $operation,
-                        $requiredParameters,
-                        $body
-                    );
+    protected function prepareForBodyFields(
+        Request $definitionRequest,
+        array $parameters,
+        Operation $operation
+    ): array {
+        $testCases = [];
+        /** @var Schema $schema */
+        foreach ($definitionRequest->getBody()->properties as $property => $schema) {
+            foreach (self::SCHEMA_TYPES as $type) {
+                if ($type === $schema->type) {
+                    continue;
                 }
+                $body = $definitionRequest->getBodyFromExamples();
+                $body[$property] = $this->getSchemaExample($type);
+
+                $testCases[] = $this->createTestCase(
+                    "{$property}_body_field_type_{$type}_{$operation->getId()}",
+                    $operation,
+                    $parameters,
+                    $body
+                );
             }
         }
 
-        return collect($testCases);
+        return $testCases;
     }
 
     private function changeParameterType(Parameter $param, string $type): Parameter
@@ -150,51 +107,33 @@ final class Error400TypesTestCasesPreparator extends TestCasesPreparator
         );
     }
 
-    /**
-     * @param array<array-key, mixed>   $body
-     * @param array<string, Parameters> $parameters
-     */
-    private function createTestCase(string $name, Operation $operation, array $parameters, array $body = null): TestCase
-    {
-        return new TestCase(
-            $name,
-            new Request(
-                $operation->getMethod(),
-                $operation->getExamplePath(
-                    $parameters[Parameter::TYPE_PATH],
-                    $parameters[Parameter::TYPE_QUERY]
-                ),
-                $parameters[Parameter::TYPE_HEADER]->where('required', true)->toExampleArray(),
-                null === $body ? null : Json::encode($body)
-            ),
-            new Response(400)
-        );
-    }
-
-    private function getSchemaExample($type)
+    private function getParameterExamples(string $type): string
     {
         $examples = [
-            self::TYPE_STRING => 'foo',
-            self::TYPE_NUMBER => 1.234,
-            self::TYPE_INTEGER => 5,
-            self::TYPE_BOOLEAN => true,
-            self::TYPE_ARRAY => ['foo', 'bar'],
-            self::TYPE_OBJECT => [
-                'foo' => 'bar',
-            ],
+            self::STRING_TYPE => 'foo',
+            self::NUMBER_TYPE => '1.234',
+            self::INTEGER_TYPE => '5',
+            self::BOOLEAN_TYPE => 'true',
+            self::ARRAY_TYPE => 'foo,bar',
         ];
 
         return $examples[$type];
     }
 
-    private function getParameterExamples(string $type): string
+    /**
+     * @return mixed
+     */
+    private function getSchemaExample(string $type)
     {
         $examples = [
-            self::TYPE_STRING => 'foo',
-            self::TYPE_NUMBER => '1.234',
-            self::TYPE_INTEGER => '5',
-            self::TYPE_BOOLEAN => 'true',
-            self::TYPE_ARRAY => 'foo,bar',
+            self::STRING_TYPE => 'foo',
+            self::NUMBER_TYPE => 1.234,
+            self::INTEGER_TYPE => 5,
+            self::BOOLEAN_TYPE => true,
+            self::ARRAY_TYPE => ['foo', 'bar'],
+            self::OBJECT_TYPE => [
+                'foo' => 'bar',
+            ],
         ];
 
         return $examples[$type];

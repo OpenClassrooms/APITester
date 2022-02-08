@@ -4,129 +4,86 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use Illuminate\Support\Collection;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
-use Nyholm\Psr7\Stream;
-use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
+use OpenAPITesting\Definition\Request;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
 
-final class Error400TestCasesPreparator extends TestCasesPreparator
+final class Error400TestCasesPreparator extends FieldLevelTestCasePreparator
 {
-    /**
-     * @inheritDoc
-     */
-    protected function generateTestCases(Operations $operations): iterable
+    protected function getStatusCode(): int
     {
-        return $operations
-            ->map(fn (Operation $op) => $this->prepareTestCases($op))
-            ->flatten()
-        ;
+        return 400;
     }
 
     /**
      * @return TestCase[]
      */
-    private function prepareTestCases(Operation $operation): iterable
+    protected function prepareForParameters(array $definitionParams, Operation $operation): array
     {
-        $testCases = $this->prepareForParameters($operation);
-
-        return $this->prepareForBody($testCases, $operation);
-    }
-
-    /**
-     * @return Collection<array-key, TestCase>
-     */
-    private function prepareForParameters(Operation $operation): Collection
-    {
-        $requiredParams = $operation->getRequiredParameters();
-
         $testCases = [];
-        foreach ($requiredParams as $type => $params) {
-            if (Parameter::TYPE_PATH === $type) { // Path parameters are mandatory to match the route
+        foreach ($definitionParams as $in => $params) {
+            if (Parameter::TYPE_PATH === $in) { // Path parameters are mandatory to match the route
                 continue;
             }
+
             foreach ($params as $param) {
                 $testCases[] = $this->createTestCase(
                     "required_{$param->getName()}_param_missing_{$operation->getId()}",
                     $param->getParent(),
                     $this->excludeParameter(
-                        $requiredParams,
-                        $type,
+                        $definitionParams,
+                        $in,
                         $param
                     ),
                 );
             }
         }
 
-        return collect($testCases);
+        return $this->addRequestBody($testCases, $operation);
     }
 
     /**
-     * @param Collection<array-key, TestCase> $testCases
-     *
-     * @return Collection<array-key, TestCase>
+     * @inheritDoc
      */
-    private function prepareForBody(Collection $testCases, Operation $operation): Collection
+    protected function prepareForBodies(array $requiredParams, Operation $operation): array
     {
-        if (!$operation->needsRequestBody()) {
-            return $testCases;
+        $testCases = [];
+
+        $requestBodies = $operation->getRequests();
+
+        foreach ($requestBodies as $definitionRequest) {
+            $testCases[] = $this->prepareForBodyFields($definitionRequest, $requiredParams, $operation);
         }
 
-        $requiredParameters = $operation->getRequiredParameters();
+        $testCases = array_merge(...$testCases);
 
-        foreach ($operation->getRequests()->where('required', true) as $definitionRequest) {
-            if (!str_contains($definitionRequest->getMediaType(), 'json')) {
-                continue;
-            }
-
-            $body = $definitionRequest->getBodyFromExamples();
-
-            $testCases = $testCases->map(fn (TestCase $t) => new TestCase(
-                $t->getName(),
-                $t->getRequest()
-                    ->withBody(Stream::create(Json::encode($body))),
-                $t->getExpectedResponse()
-            ));
-
-            foreach ($body as $name => $value) {
-                $testCases[] = $this->createTestCase(
-                    "required_{$name}_body_field_missing",
-                    $operation,
-                    $requiredParameters,
-                    $this->excludeFieldFromBody($name, $body)
-                );
-            }
+        if ($requestBodies->count() > 0) {
+            $testCases[] = $this->prepareForEmptyBody($operation);
         }
 
-        $testCases[] = $this->prepareForEmptyBody($operation);
-
-        return collect($testCases);
+        return $testCases;
     }
 
-    /**
-     * @param array<array-key, mixed>   $body
-     * @param array<string, Parameters> $parameters
-     */
-    private function createTestCase(string $name, Operation $operation, array $parameters, array $body = null): TestCase
-    {
-        return new TestCase(
-            $name,
-            new Request(
-                $operation->getMethod(),
-                $operation->getExamplePath(
-                    $parameters[Parameter::TYPE_PATH],
-                    $parameters[Parameter::TYPE_QUERY]
-                ),
-                $parameters[Parameter::TYPE_HEADER]->where('required', true)->toExampleArray(),
-                null === $body ? null : Json::encode($body)
-            ),
-            new Response(400)
-        );
+    protected function prepareForBodyFields(
+        Request $definitionRequest,
+        array $parameters,
+        Operation $operation
+    ): array {
+        $testCases = [];
+
+        $body = $definitionRequest->getBodyFromExamples();
+        foreach ($body as $name => $value) {
+            $testCases[] = $this->createTestCase(
+                "required_{$name}_body_field_missing",
+                $operation,
+                $parameters,
+                $this->excludeFieldFromBody($name, $body)
+            );
+        }
+
+        return $testCases;
     }
 
     /**
@@ -141,6 +98,15 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
         return $parameters;
     }
 
+    private function prepareForEmptyBody(Operation $operation): TestCase
+    {
+        return $this->createTestCase(
+            "required_body_missing_{$operation->getId()}",
+            $operation,
+            $operation->getRequiredParameters()
+        );
+    }
+
     /**
      * @param array<string, mixed> $body
      *
@@ -151,14 +117,5 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
         unset($body[$name]);
 
         return $body;
-    }
-
-    private function prepareForEmptyBody(Operation $operation): TestCase
-    {
-        return $this->createTestCase(
-            "required_body_missing_{$operation->getId()}",
-            $operation,
-            $operation->getRequiredParameters()
-        );
     }
 }
