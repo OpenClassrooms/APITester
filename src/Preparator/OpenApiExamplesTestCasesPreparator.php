@@ -15,6 +15,11 @@ use OpenAPITesting\Util\Json;
 
 final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
 {
+    public static function getName(): string
+    {
+        return 'examples';
+    }
+
     /**
      * @return TestCase[]
      */
@@ -31,11 +36,6 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return array_filter(array_merge(...$testCases));
-    }
-
-    public static function getName(): string
-    {
-        return 'examples';
     }
 
     /**
@@ -119,7 +119,8 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     /** @var ParameterExample|null $example */
                     $example = $header->getExamples()
                         ->where('name', $name)
-                        ->first();
+                        ->first()
+                    ;
                     if (null === $example) {
                         continue;
                     }

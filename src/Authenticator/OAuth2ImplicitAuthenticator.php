@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Authenticator;
 
-use OpenAPITesting\Config\AuthConfig;
+use OpenAPITesting\Config\Auth;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Token;
 use OpenAPITesting\Requester\Requester;
@@ -19,7 +19,7 @@ final class OAuth2ImplicitAuthenticator extends Authenticator
     /**
      * @inheritdoc
      */
-    public function authenticate(AuthConfig $config, Api $api, Requester $requester): Token
+    public function authenticate(Auth $config, Api $api, Requester $requester): Token
     {
         return new Token(self::getName(), '');
     }

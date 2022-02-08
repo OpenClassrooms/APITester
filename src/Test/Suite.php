@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use OpenAPITesting\Config\FiltersConfig;
+use OpenAPITesting\Config\Filters;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
@@ -39,7 +39,7 @@ final class Suite implements Test
 
     private string $title;
 
-    private FiltersConfig $filters;
+    private Filters $filters;
 
     private Requester $requester;
 
@@ -63,7 +63,7 @@ final class Suite implements Test
         Api $api,
         array $preparators,
         Requester $requester,
-        ?FiltersConfig $filters = null,
+        ?Filters $filters = null,
         ?LoggerInterface $logger = null
     ) {
         $this->title = $title;
@@ -71,7 +71,7 @@ final class Suite implements Test
         $this->preparators = $preparators;
         $this->requester = $requester;
         $this->logger = $logger ?? new NullLogger();
-        $this->filters = $filters ?? new FiltersConfig([], []);
+        $this->filters = $filters ?? new Filters([], []);
     }
 
     public function launch(): void
@@ -108,6 +108,45 @@ final class Suite implements Test
         $this->requester = $requester;
     }
 
+    public function includes(Operation $operation): bool
+    {
+        $include = true;
+        foreach ($this->filters->getInclude() as $item) {
+            $include = true;
+            foreach ($item as $key => $value) {
+                if (!$operation->has($key, $value)) {
+                    $include = false;
+                }
+            }
+        }
+
+        foreach ($this->filters->getExclude() as $item) {
+            foreach ($item as $key => $value) {
+                if ($operation->has($key, $value)) {
+                    $include = false;
+                }
+            }
+        }
+
+        return $include;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeTestCaseCallbacks(array $callbacks): void
+    {
+        $this->beforeTestCaseCallbacks = $callbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterTestCaseCallbacks(array $callbacks): void
+    {
+        $this->afterTestCaseCallbacks = $callbacks;
+    }
+
     /**
      * @throws PreparatorLoadingException
      *
@@ -118,9 +157,11 @@ final class Suite implements Test
         $testCases = collect();
         foreach ($this->preparators as $preparator) {
             /** @var Operations $operations */
-            $operations = $this->api->getOperations()->map(
-                fn (Operation $op) => $op->addGroup('preparator:' . $preparator::getName())
-            );
+            $operations = $this->api->getOperations()
+                ->map(
+                    fn (Operation $op) => $op->setPreparator($preparator::getName())
+                )
+            ;
             $testCases = $testCases->merge(
                 $preparator->prepare($operations->filter([$this, 'includes']))
             );
@@ -159,36 +200,5 @@ final class Suite implements Test
         }
 
         return $results;
-    }
-
-    public function includes(Operation $operation): bool
-    {
-        $groups = $operation->getGroups();
-        $include = true;
-        if (\count($this->filters->getIncludedGroups()) > 0) {
-            $include = \count(array_intersect($this->filters->getIncludedGroups(), $groups)) > 0;
-        }
-
-        if (\count(array_intersect($this->filters->getExcludedGroups(), $groups)) > 0) {
-            $include = false;
-        }
-
-        return $include;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeTestCaseCallbacks(array $callbacks): void
-    {
-        $this->beforeTestCaseCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterTestCaseCallbacks(array $callbacks): void
-    {
-        $this->afterTestCaseCallbacks = $callbacks;
     }
 }

@@ -22,10 +22,10 @@ final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
             return $this->tokens
                 ->filter(
                     fn (Token $x) => 0 === $security
-                            ->getScopes()
-                            ->select('name')
-                            ->intersect($x->getScopes())
-                            ->count()
+                        ->getScopes()
+                        ->select('name')
+                        ->intersect($x->getScopes())
+                        ->count()
                 )
             ;
         }

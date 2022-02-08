@@ -99,7 +99,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $responses = $operation->responses;
                 $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
 
-
                 $operations->add(
                     Operation::create(
                         $operation->operationId ?? $this->generateOperationId($path, $method),
@@ -190,7 +189,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 continue;
             }
             $defParam = Parameter::create($parameter->name ?? $name)
-                ->setSchema($schema);
+                ->setSchema($schema)
+            ;
             foreach ($parameter->examples ?? [] as $exampleName => $example) {
                 $defParam->addExample(new ParameterExample($exampleName, (string) $example->value));
             }
@@ -261,7 +261,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $defResponse = Response::create()
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
-                    ->setDescription($response->description);
+                    ->setDescription($response->description)
+                ;
                 $collection->add($defResponse);
                 continue;
             }
@@ -278,7 +279,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
-                    ->setDescription($response->description);
+                    ->setDescription($response->description)
+                ;
 
                 /**
                  * @var string  $name
@@ -366,7 +368,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         );
                     }
                 }
-                if (count($notFoundRequirements) > 0) {
+                if (\count($notFoundRequirements) > 0) {
                     $notFoundRequirements = implode(',', $notFoundRequirements);
                     throw new DefinitionLoadingException(
                         "Scopes '{$notFoundRequirements}' not configured in securitySchemes"

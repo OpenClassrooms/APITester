@@ -27,7 +27,8 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             ->select('responses.*')
             ->flatten()
             ->where('statusCode', 404)
-            ->values();
+            ->values()
+        ;
 
         return $responses
             ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))

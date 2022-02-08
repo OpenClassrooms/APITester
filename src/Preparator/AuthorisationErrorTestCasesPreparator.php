@@ -23,7 +23,8 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
         $securities = $operations
             ->where('responses.*.statusCode', 'contains', $this->getStatusCode())
             ->select('securities.*')
-            ->flatten();
+            ->flatten()
+        ;
 
         return $securities
             ->map(fn (Security $security) => $this->prepareTestCases($security))

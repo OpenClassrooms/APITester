@@ -29,7 +29,7 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator = new Error400TestCasesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api),
+            $preparator->prepare($api->getOperations()),
             ['size', 'id', 'groups']
         );
     }

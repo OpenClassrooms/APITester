@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Config;
 
-final class DefinitionConfig
+final class Definition
 {
     private string $path;
 

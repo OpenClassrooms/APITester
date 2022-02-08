@@ -9,7 +9,6 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
@@ -39,14 +38,6 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
         $fixtures = Yaml::parseFile(PROJECT_DIR . '/' . $this->path);
 
         return $this->prepareTestCases($fixtures, $operations->toPropIndexedArray());
-    }
-
-    public function configure(array $rawConfig): void
-    {
-        if (!isset($rawConfig['path'])) {
-            throw new InvalidPreparatorConfigException('Missing config param "path"');
-        }
-        $this->path = (string) $rawConfig['path'];
     }
 
     /**

@@ -38,9 +38,6 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Parameters> $requiredParams
-     * @param array<string, mixed>      $body
-     *
      * @return TestCase[]
      */
     private function prepareForParameters(Operation $operation): Collection
@@ -122,7 +119,7 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
             }
         }
 
-        if ($testCases === []) {
+        if ([] === $testCases) {
             return [$testCase];
         }
 
@@ -136,7 +133,9 @@ final class Error400TestCasesPreparator extends TestCasesPreparator
             new Request(
                 $operation->getMethod(),
                 $operation->getExamplePath(),
-                $operation->getHeaders()->where('required', true)->toExampleArray(),
+                $operation->getHeaders()
+                    ->where('required', true)
+                    ->toExampleArray(),
             ),
             new Response(400)
         );

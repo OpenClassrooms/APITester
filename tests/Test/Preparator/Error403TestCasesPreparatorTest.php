@@ -25,7 +25,6 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error403TestCasesPreparator();
-        $preparator->configure([]);
         $preparator->addToken(
             new Token(
                 'oauth2_implicit',

@@ -27,7 +27,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error401TestCasesPreparator();
-        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,
@@ -114,8 +113,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/oauth2',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)
@@ -168,8 +167,8 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test/bearer',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
-                                    'test' => 1234,
-                                ], 'abcd'),
+                                'test' => 1234,
+                            ], 'abcd'),
                         ]
                     ),
                     new Response(401)

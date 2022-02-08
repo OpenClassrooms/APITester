@@ -188,7 +188,7 @@ class Collection extends \Illuminate\Support\Collection
                     return (\is_array($retrieved) && \in_array($value, $retrieved, true))
                         || (\is_string($retrieved) && str_contains($retrieved, (string) $value));
                 case 'includes':
-                    return (\is_array($retrieved) && \count(array_diff((array) $value, $retrieved)) === 0)
+                    return (\is_array($retrieved) && 0 === \count(array_diff((array) $value, $retrieved)))
                         || (\is_string($retrieved) && str_contains($retrieved, (string) $value));
             }
         };

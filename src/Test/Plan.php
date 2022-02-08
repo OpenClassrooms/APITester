@@ -8,9 +8,7 @@ use OpenAPITesting\Authenticator\Authenticator;
 use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
-use OpenAPITesting\Config\AuthConfig;
-use OpenAPITesting\Config\PlanConfig;
-use OpenAPITesting\Config\SuiteConfig;
+use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Loader\DefinitionLoader;
@@ -87,9 +85,9 @@ final class Plan
      * @throws AuthenticationLoadingException
      * @throws AuthenticationException
      */
-    public function execute(PlanConfig $testPlanConfig, ?string $suiteName = null): void
+    public function execute(Config\Plan $testPlanConfig, ?string $suiteName = null): void
     {
-        foreach ($testPlanConfig->getTestSuiteConfigs() as $suiteConfig) {
+        foreach ($testPlanConfig->getSuites() as $suiteConfig) {
             if ($suiteConfig->getName() !== $suiteName) {
                 continue;
             }
@@ -152,7 +150,7 @@ final class Plan
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
      */
-    private function getApi(SuiteConfig $config, Requester $requester): Api
+    private function getApi(Config\Suite $config, Requester $requester): Api
     {
         $definitionLoader = $this->getConfiguredLoader(
             $config->getDefinition()
@@ -173,7 +171,7 @@ final class Plan
      * @throws AuthenticatorNotFoundException
      * @throws AuthenticationException
      */
-    private function Authenticate(SuiteConfig $config, Api $api, Requester $requester): Tokens
+    private function Authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
     {
         $tokens = new Tokens();
         foreach ($config->getAuthentifications() as $authConf) {
@@ -200,7 +198,7 @@ final class Plan
         foreach ($this->preparators as $p) {
             $config = $preparators[$p::getName()] ?? null;
             if (null !== $config) {
-                $p->configure($config);
+                $p->configure(new Config\Preparator($config));
             }
             $p->setTokens($tokens);
             if (\array_key_exists($p::getName(), $preparators)) {
@@ -236,7 +234,7 @@ final class Plan
     /**
      * @throws AuthenticatorNotFoundException
      */
-    private function getConfiguredAuthenticator(AuthConfig $config): Authenticator
+    private function getConfiguredAuthenticator(Config\Auth $config): Authenticator
     {
         foreach ($this->authenticators as $authenticator) {
             if ($authenticator::getName() === $config->getType()) {

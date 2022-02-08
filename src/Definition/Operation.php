@@ -38,10 +38,7 @@ final class Operation
 
     private Securities $securities;
 
-    /**
-     * @var string[]
-     */
-    private array $addedGroups = [];
+    private string $preparator;
 
     public function __construct(
         string $id,
@@ -133,36 +130,6 @@ final class Operation
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
-    }
-
-    /**
-     * @param array<int|string, string|int> $params
-     *
-     * @return array<string, string|int>
-     */
-    private function substituteParams(array $params, string $in): array
-    {
-        $prop = "{$in}Parameters";
-        if (!isset($this->{$prop})) {
-            throw new \RuntimeException("Parameters in {$in} not handled.");
-        }
-        /** @var Parameters $parameters */
-        $parameters = $this->{$prop};
-        $result = [];
-        foreach ($params as $name => $value) {
-            if (\is_string($name)) {
-                $result[$name] = $value;
-            } else {
-                if (!isset($parameters[$name])) {
-                    continue;
-                }
-                /** @var Parameter $parameter */
-                $parameter = $parameters[$name];
-                $result[$parameter->getName()] = $value;
-            }
-        }
-
-        return $result;
     }
 
     public function getMethod(): string
@@ -333,28 +300,6 @@ final class Operation
     }
 
     /**
-     * @return string[]
-     */
-    public function getGroups(): array
-    {
-        return [
-            $this->id,
-            $this->path,
-            $this->method,
-            ...$this->responses->select('statusCode')->toArray(),
-            ...$this->tags->select('name')->toArray(),
-            ...$this->addedGroups,
-        ];
-    }
-
-    public function addGroup(string $group): self
-    {
-        $this->addedGroups[] = $group;
-
-        return $this;
-    }
-
-    /**
      * @return array<string, Parameters>
      */
     public function getRequiredParameters(): array
@@ -376,5 +321,63 @@ final class Operation
         $this->headers = $headers;
 
         return $this;
+    }
+
+    public function getPreparator(): string
+    {
+        return $this->preparator;
+    }
+
+    public function setPreparator(string $string): self
+    {
+        $this->preparator = $string;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function has(string $prop, $value): bool
+    {
+        $operation = collect([$this]);
+        $operator = '=';
+        if (str_contains($prop, '*')) {
+            $operator = 'contains';
+        }
+
+        return null !== $operation->where($prop, $operator, $value)
+            ->first()
+        ;
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    private function substituteParams(array $params, string $in): array
+    {
+        $prop = "{$in}Parameters";
+        if (!isset($this->{$prop})) {
+            throw new \RuntimeException("Parameters in {$in} not handled.");
+        }
+        /** @var Parameters $parameters */
+        $parameters = $this->{$prop};
+        $result = [];
+        foreach ($params as $name => $value) {
+            if (\is_string($name)) {
+                $result[$name] = $value;
+            } else {
+                if (!isset($parameters[$name])) {
+                    continue;
+                }
+                /** @var Parameter $parameter */
+                $parameter = $parameters[$name];
+                $result[$parameter->getName()] = $value;
+            }
+        }
+
+        return $result;
     }
 }

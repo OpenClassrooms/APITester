@@ -6,12 +6,12 @@ namespace OpenAPITesting\Config;
 
 use OpenAPITesting\Requester\HttpAsyncRequester;
 
-final class SuiteConfig
+final class Suite
 {
-    private DefinitionConfig $definition;
+    private Definition $definition;
 
     /**
-     * @var AuthConfig[]
+     * @var Auth[]
      */
     private array $auth;
 
@@ -22,44 +22,31 @@ final class SuiteConfig
 
     private string $requester;
 
-    private FiltersConfig $filters;
+    private Filters $filters;
 
     private string $name;
 
     /**
      * @var \Closure[]
      */
-    private array $beforeTestCaseCallbacks;
+    private array $beforeTestCaseCallbacks = [];
 
     /**
      * @var \Closure[]
      */
-    private array $afterTestCaseCallbacks;
+    private array $afterTestCaseCallbacks = [];
 
-    /**
-     * @param \Closure[]                          $beforeTestCaseCallbacks
-     * @param \Closure[]                          $afterTestCaseCallbacks
-     * @param array<string, array<string, mixed>> $preparators
-     * @param array<string, AuthConfig>           $auth
-     */
-    public function __construct(
-        string $name,
-        DefinitionConfig $definition,
-        array $preparators = [],
-        ?string $requester = null,
-        array $auth = [],
-        ?FiltersConfig $filters = null,
-        array $beforeTestCaseCallbacks = [],
-        array $afterTestCaseCallbacks = []
-    ) {
+    public function __construct(string $name, Definition $definition)
+    {
         $this->name = $name;
         $this->definition = $definition;
-        $this->preparators = $preparators;
-        $this->auth = $auth;
-        $this->filters = $filters ?? new FiltersConfig([], []);
-        $this->requester = $requester ?? HttpAsyncRequester::getName();
-        $this->beforeTestCaseCallbacks = $beforeTestCaseCallbacks;
-        $this->afterTestCaseCallbacks = $afterTestCaseCallbacks;
+        $this->filters = new Filters();
+        $this->requester = HttpAsyncRequester::getName();
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /**
@@ -70,37 +57,40 @@ final class SuiteConfig
         return $this->preparators;
     }
 
-    public function getDefinition(): DefinitionConfig
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     */
+    public function setPreparators(array $preparators): void
+    {
+        $this->preparators = $preparators;
+    }
+
+    public function getDefinition(): Definition
     {
         return $this->definition;
     }
 
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getFilters(): FiltersConfig
+    public function getFilters(): Filters
     {
         return $this->filters;
     }
 
     /**
-     * @param string[] $exclusions
+     * @param array<array<string, string>> $exclusions
      */
     public function exclude(array $exclusions): self
     {
-        $this->filters->addExcludedGroups($exclusions);
+        $this->filters->addExclude($exclusions);
 
         return $this;
     }
 
     /**
-     * @param string[] $inclusions
+     * @param array<array<string, string>> $inclusions
      */
     public function include(array $inclusions): self
     {
-        $this->filters->addIncludedGroups($inclusions);
+        $this->filters->addInclude($inclusions);
 
         return $this;
     }
@@ -143,10 +133,23 @@ final class SuiteConfig
     }
 
     /**
-     * @return AuthConfig[]
+     * @return Auth[]
      */
     public function getAuthentifications(): array
     {
         return $this->auth;
+    }
+
+    /**
+     * @param array<string, Auth> $auth
+     */
+    public function setAuth(array $auth): void
+    {
+        $this->auth = $auth;
+    }
+
+    public function setFilters(Filters $filters): void
+    {
+        $this->filters = $filters;
     }
 }

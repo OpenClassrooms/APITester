@@ -6,7 +6,7 @@ namespace OpenAPITesting\Authenticator;
 
 use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Config\AuthConfig;
+use OpenAPITesting\Config\Auth;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Security;
 use OpenAPITesting\Definition\Token;
@@ -25,7 +25,7 @@ abstract class Authenticator
      * @throws AuthenticationException
      * @throws AuthenticationLoadingException
      */
-    abstract public function authenticate(AuthConfig $config, Api $api, Requester $requester): Token;
+    abstract public function authenticate(Auth $config, Api $api, Requester $requester): Token;
 
     /**
      * @throws AuthenticationLoadingException

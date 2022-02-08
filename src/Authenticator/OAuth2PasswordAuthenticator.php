@@ -6,7 +6,7 @@ namespace OpenAPITesting\Authenticator;
 
 use Nyholm\Psr7\Request;
 use OpenAPITesting\Authenticator\Exception\AuthenticationException;
-use OpenAPITesting\Config\AuthConfig;
+use OpenAPITesting\Config\Auth;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use OpenAPITesting\Definition\Token;
@@ -25,7 +25,7 @@ final class OAuth2PasswordAuthenticator extends Authenticator
     /**
      * @inheritdoc
      */
-    public function authenticate(AuthConfig $config, Api $api, Requester $requester): Token
+    public function authenticate(Auth $config, Api $api, Requester $requester): Token
     {
         /** @var OAuth2PasswordSecurity $security */
         $security = $this->getSecurity($api, $config->getType());
@@ -51,7 +51,7 @@ final class OAuth2PasswordAuthenticator extends Authenticator
         );
     }
 
-    private function buildRequest(OAuth2PasswordSecurity $security, AuthConfig $config): Request
+    private function buildRequest(OAuth2PasswordSecurity $security, Auth $config): Request
     {
         return new Request(
             'POST',
@@ -69,7 +69,7 @@ final class OAuth2PasswordAuthenticator extends Authenticator
     /**
      * @throws AuthenticationException
      */
-    private function request(Requester $requester, Request $request, AuthConfig $config): ResponseInterface
+    private function request(Requester $requester, Request $request, Auth $config): ResponseInterface
     {
         $id = uniqid('auth_', false);
         try {

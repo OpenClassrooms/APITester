@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator\Config;
 
-final class PaginationErrorConfigItem
+final class Range
 {
     public const HEADER_RANGE = 'header';
     public const QUERY_PARAM_RANGE = 'query';
@@ -28,7 +28,7 @@ final class PaginationErrorConfigItem
         $this->unit = $unit;
 
         if (!$this->validate()) {
-            throw new \InvalidArgumentException('Invalid Pagination Error Config');
+            throw new \InvalidArgumentException('Invalid Range Error Config');
         }
     }
 

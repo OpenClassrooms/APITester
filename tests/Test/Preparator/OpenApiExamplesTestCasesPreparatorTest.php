@@ -30,7 +30,6 @@ final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\Te
     {
         $api = (new OpenApiDefinitionLoader())->load(self::OPENAPI_LOCATION);
         $preparator = new OpenApiExamplesTestCasesPreparator();
-        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,

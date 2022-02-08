@@ -25,20 +25,18 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
     ];
 
     /**
-     * @var array<array-key, mixed>
-     */
-    private array $responseBody = [];
-
-    /**
      * @inheritdoc
      */
     protected function generateTestCases(Operations $operations): iterable
     {
-        $operations = $operations->where('responses.*.statusCode', 'contains', 405)
-            ->groupBy('path', true);
+        $grouped = $operations
+            ->where('responses.*.statusCode', 'contains', 405)
+            ->groupBy('path', true)
+        ;
+
         $testCases = collect();
         /** @var Operations $pathOperations */
-        foreach ($operations as $path => $pathOperations) {
+        foreach ($grouped as $path => $pathOperations) {
             $testCases = $testCases->merge(
                 $pathOperations
                     ->select('method')
@@ -51,15 +49,6 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
         }
 
         return $testCases;
-    }
-
-    public function configure(array $rawConfig): void
-    {
-        parent::configure($rawConfig);
-
-        if (isset($rawConfig['responseBody']) && \is_array($rawConfig['responseBody'])) {
-            $this->responseBody = $rawConfig['responseBody'];
-        }
     }
 
     private function prepareTestCase(string $path, string $method): TestCase

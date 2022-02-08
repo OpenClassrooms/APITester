@@ -6,7 +6,7 @@ namespace OpenAPITesting\Tests\Test;
 
 use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
 use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
-use OpenAPITesting\Config\PlanConfig;
+use OpenAPITesting\Config\Loader\PlanConfigLoader;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
 use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Preparator\Error403TestCasesPreparator;
@@ -57,8 +57,18 @@ final class PlanTest extends TestCase
 
     public function testPetStore(): void
     {
-        $config = new PlanConfig(FixturesLocation::CONFIG_OPENAPI);
+        $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
         $this->testPlan->execute($config, 'petstore');
+        $this->testPlan->assert();
+    }
+
+    /**
+     * @group local
+     */
+    public function testOC(): void
+    {
+        $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
+        $this->testPlan->execute($config, 'oc');
         $this->testPlan->assert();
     }
 }

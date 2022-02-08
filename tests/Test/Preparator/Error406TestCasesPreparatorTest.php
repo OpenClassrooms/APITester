@@ -24,7 +24,6 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error406TestCasesPreparator();
-        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,

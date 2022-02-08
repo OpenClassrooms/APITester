@@ -10,8 +10,8 @@ use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
 use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
 use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
+use OpenAPITesting\Config;
 use OpenAPITesting\Config\Exception\ConfigurationException;
-use OpenAPITesting\Config\PlanConfig;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
@@ -102,7 +102,7 @@ final class ExecutePlanCommand extends Command
             $this->authenticators,
             new ConsoleLogger($output),
         );
-        $config = new PlanConfig($configFilePath);
+        $config = Config\Loader\PlanConfigLoader::load($configFilePath);
         $testPlan->execute($config);
 
 //        $suite = new TestSuite();

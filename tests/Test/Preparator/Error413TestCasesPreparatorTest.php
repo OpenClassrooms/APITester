@@ -6,6 +6,7 @@ namespace OpenAPITesting\Tests\Test\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
@@ -18,13 +19,13 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param array<array-key, mixed> $config
-     * @param TestCase[]              $expected
+     * @param array<string, array<mixed>> $config
+     * @param TestCase[]                  $expected
      */
     public function test(array $config, Api $api, array $expected): void
     {
         $preparator = new Error413TestCasesPreparator();
-        $preparator->configure($config);
+        $preparator->configure(new Config\Preparator($config));
 
         Assert::objectsEqual(
             $expected,

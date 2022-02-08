@@ -1,5 +1,5 @@
 suites:
-    petstore:
+    -   name: 'petstore'
         definition:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
@@ -8,14 +8,14 @@ suites:
             examples: ~
             #            fixtures:
             #                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
-            401: ~
-            404: ~
-            405:
+            error401: ~
+            error404: ~
+            error405:
                 responseBody:
                     code: 405
                     message: 'HTTP 405 Method Not Allowed'
-            406: ~
-            416:
+            error406: ~
+            error416:
                 range: # Possible range parameters across the API
                     -   in: header # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
                         names: [ 'Range' ]
@@ -26,17 +26,17 @@ suites:
                         names: [ 'from', 'to' ]
         filters:
             exclude:
-                - 'getUserByName'
-                - 'updatePet'
-                - 'deleteOrder'
-                - 'deleteUser'
+                - {id: 'getUserByName'}
+                - {id: 'updatePet'}
+                - {id: 'deleteOrder'}
+                - {id: 'deleteUser'}
         auth:
-            user_1:
+            -   name: 'user_1'
                 type: 'oauth2_implicit'
                 headers:
                     Authorization: '%ENV(CLIENT_BASIC)%'
 
-    oc:
+    -   name: 'oc'
         definition:
             path: 'tests/Fixtures/OpenAPI/openclassrooms-api.yml'
             format: 'openapi'
@@ -67,14 +67,14 @@ suites:
                         unit: items
         filters:
             include:
-                #                - 'oc_api_student_cirr_status_get'
-                - 'oc_api_learning_activity_learning_path_projects_with_user_information_get'
-                    - {'responses.*.statusCode': '405'}
+                #- 'oc_api_student_cirr_status_get'
+                #                - {"id": 'oc_api_learning_activity_learning_path_projects_with_user_information_get'}
+                - {responses.*.statusCode: 405, preparator: 'error405'}
             exclude:
-                - 'preparator:error405'
-        #                - {'preparator': '405', 'id': '/.*_user_information_get/'}
+        #                - {"preparator": 'error405'}
+        #                - {"preparator": '405', "id": '/.*_user_information_get/'}
         auth:
-            user_1:
+            -   name: 'user_1'
                 type: 'oauth2_password'
                 username: '%env(USER1_USERNAME)%'
                 password: '%env(USER1_PASSWORD)%'

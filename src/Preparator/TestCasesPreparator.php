@@ -6,6 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Operation;
@@ -17,6 +18,8 @@ use OpenAPITesting\Definition\Token;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Serializer;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 abstract class TestCasesPreparator
 {
@@ -33,11 +36,11 @@ abstract class TestCasesPreparator
     protected array $excludedFields = [];
 
     /**
-     * @var string[]
+     * @var array<array-key, mixed>
      */
-    protected array $allowedConfigKeys = [
-        'excludedFields',
-    ];
+    protected array $responseBody = [];
+
+    protected ?object $config = null;
 
     public static function getName(): string
     {
@@ -48,11 +51,6 @@ abstract class TestCasesPreparator
                 (new \ReflectionClass(static::class))->getShortName()
             )
         );
-    }
-
-    public static function getConfigSchema(): string
-    {
-        return __DIR__ . '/Config/Schema/' . static::getName() . '.yml';
     }
 
     /**
@@ -72,36 +70,24 @@ abstract class TestCasesPreparator
     }
 
     /**
-     * @throws PreparatorLoadingException
-     *
-     * @return iterable<array-key, TestCase>
-     */
-    abstract protected function generateTestCases(Operations $operations): iterable;
-
-    /**
-     * @param array<array-key, mixed> $rawConfig
-     *
      * @throws InvalidPreparatorConfigException
      */
-    public function configure(array $rawConfig): void
+    public function configure(Config\Preparator $config): void
     {
-        $this->checkConfig($rawConfig);
         $this->tokens = new Tokens();
-        if (isset($rawConfig['excludedFields']) && is_array($rawConfig['excludedFields'])) {
-            $this->excludedFields = $rawConfig['excludedFields'];
-        }
-    }
-
-    /**
-     * @param array<array-key, mixed> $rawConfig
-     *
-     * @throws InvalidPreparatorConfigException
-     */
-    private function checkConfig(array $rawConfig): void
-    {
-        $diff = \array_diff(\array_keys($rawConfig), $this->allowedConfigKeys);
-        if (count($diff) > 0) {
-            throw new InvalidPreparatorConfigException('Not allowed keys: ' . implode(', ', $diff));
+        $this->excludedFields = $config->excludedFields;
+        $this->responseBody = $config->responseBody;
+        if (class_exists(static::getConfigFQCN())) {
+            try {
+                $this->config = Serializer::create()
+                    ->denormalize(
+                        $config->subConfig,
+                        static::getConfigFQCN()
+                    )
+                ;
+            } catch (ExceptionInterface $e) {
+                throw new InvalidPreparatorConfigException(static::class, 0, $e);
+            }
         }
     }
 
@@ -127,13 +113,35 @@ abstract class TestCasesPreparator
         $this->filters = $filters;
     }
 
+    /**
+     * @throws PreparatorLoadingException
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    abstract protected function generateTestCases(Operations $operations): iterable;
+
+    protected static function getConfigFQCN(): string
+    {
+        return __NAMESPACE__ . '\\Config\\' . static::getConfigClassName();
+    }
+
+    protected static function getConfigClassName(): string
+    {
+        return str_replace(
+            'TestCasesPreparator',
+            '',
+            (new \ReflectionClass(static::class))->getShortName(),
+        );
+    }
+
     protected function authenticate(Request $request, Operation $operation): Request
     {
         foreach ($operation->getSecurities() as $security) {
             $scopes = $security->getScopes()
                 ->where('name', '!=', 'current_user')
                 ->select('name')
-                ->toArray();
+                ->toArray()
+            ;
             /** @var Token|null $token */
             $token = $this->tokens->where(
                 'scopes',
