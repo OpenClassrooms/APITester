@@ -35,7 +35,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "cebe/php-openapi": "^1.5",
-    "fakerphp/faker": "^1.17",
+    "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^5.3.0",
     "guzzlehttp/promises": "~1.4.0",
     "illuminate/collections": " ^8.0",
