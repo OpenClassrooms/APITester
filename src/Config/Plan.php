@@ -11,15 +11,12 @@ final class Plan
      */
     private array $suites;
 
-    private ?object $callbackObject;
-
     /**
      * @param Suite[] $suites
      */
-    public function __construct(array $suites, ?object $callbackObject = null)
+    public function __construct(array $suites)
     {
         $this->suites = $suites;
-        $this->callbackObject = $callbackObject;
     }
 
     /**
@@ -30,24 +27,21 @@ final class Plan
         return $this->suites;
     }
 
-    /**
-     * @param array{beforeTestCase?: string[], afterTestCase?: string[]} $allCallbacks
-     *
-     * @return array{beforeTestCase?: \Closure[], afterTestCase?: \Closure[]}
-     */
-    private function callableFromConfig(array $allCallbacks): array
+    public function addBeforeTestCaseCallback(\Closure $callback): self
     {
-        $closures = [];
-        foreach ($allCallbacks as $type => $callbacks) {
-            foreach ($callbacks as $callback) {
-                if (null !== $this->callbackObject) {
-                    $callback = [$this->callbackObject, $callback];
-                }
-                /** @var callable $callback */
-                $closures[$type][] = \Closure::fromCallable($callback);
-            }
+        foreach ($this->suites as $suite) {
+            $suite->addBeforeTestCaseCallback($callback);
         }
 
-        return $closures;
+        return $this;
+    }
+
+    public function addAfterTestCaseCallback(\Closure $callback): self
+    {
+        foreach ($this->suites as $suite) {
+            $suite->addAfterTestCaseCallback($callback);
+        }
+
+        return $this;
     }
 }

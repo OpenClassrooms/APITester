@@ -75,6 +75,11 @@ final class Suite
         return $this->filters;
     }
 
+    public function setFilters(Filters $filters): void
+    {
+        $this->filters = $filters;
+    }
+
     /**
      * @param array<array<string, string>> $exclusions
      */
@@ -148,8 +153,13 @@ final class Suite
         $this->auth = $auth;
     }
 
-    public function setFilters(Filters $filters): void
+    public function addBeforeTestCaseCallback(\Closure $callback): void
     {
-        $this->filters = $filters;
+        $this->beforeTestCaseCallbacks[] = $callback;
+    }
+
+    public function addAfterTestCaseCallback(\Closure $callback): void
+    {
+        $this->afterTestCaseCallbacks[] = $callback;
     }
 }
