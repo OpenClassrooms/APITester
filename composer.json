@@ -41,7 +41,7 @@
     "illuminate/collections": " ^8.0",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
-    "nesbot/carbon": "^2.55",
+    "nesbot/carbon": "^2.48",
     "nyholm/psr7": "1.*",
     "php-http/httplug": "^2.2",
     "phpunit/phpunit": "^9.5",
@@ -54,7 +54,7 @@
     "symfony/http-kernel": "^4.4",
     "symfony/property-access": " ^4.4",
     "symfony/property-info": " ^4.4",
-    "symfony/psr-http-message-bridge": "2.*",
+    "symfony/psr-http-message-bridge": "^1.0",
     "symfony/serializer": " ^4.4",
     "symfony/yaml": " ^4.4"
   },
