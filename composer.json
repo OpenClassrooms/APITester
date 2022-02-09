@@ -36,7 +36,7 @@
     "ext-json": "*",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.17",
-    "firebase/php-jwt": "^5.5",
+    "firebase/php-jwt": "^5.3.0",
     "guzzlehttp/promises": "~1.4.0",
     "illuminate/collections": " ^8.0",
     "monolog/monolog": "^1.25.1",
