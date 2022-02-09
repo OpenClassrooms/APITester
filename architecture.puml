@@ -1,0 +1,36 @@
+@startuml
+
+class Api
+interface Authenticator
+interface Requester
+interface Preparator
+interface DefinitionLoader
+interface Test
+
+class Plan
+class Suite
+class TestCase
+class Result
+class Definition\Api
+
+TestCase <|-- Test
+Suite <|-- Test
+
+Preparator <|-- Error401Preparator
+
+Requester <|-- HttpAsyncRequester
+Requester <|-- SymfonyKernelRequester
+
+DefinitionLoader <|-- OpenApiDefinitionLoader
+
+Plan *-- Preparator
+Plan *-- Requester
+Plan *-- DefinitionLoader
+
+Definition\Api *-- DefinitionLoader
+
+Preparator --> "produce" TestCase
+DefinitionLoader --> "produce" Definition\Api
+
+
+@enduml

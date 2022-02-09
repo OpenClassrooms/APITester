@@ -27,6 +27,9 @@ parameters:
         - '/Class ".+" is not allowed to extend ".+"./'
         - '/Variable property access on .+./'
         - '/Method .+ is not final, but since the containing class is abstract, it should be./'
+        - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @var for variable .+ is not subtype of template type T of object of class ReflectionClass./'
+        - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @return is not subtype of template type T of object of class ReflectionClass/'
+        - '/Method OpenAPITesting\\Util\\Object_::getSubTypesOf\(\) should return .+ but returns .+/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
     exceptions:
         check:

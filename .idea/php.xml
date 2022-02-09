@@ -175,6 +175,14 @@
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php72" />
       <path value="$PROJECT_DIR$/vendor/symfony/inflector" />
       <path value="$PROJECT_DIR$/vendor/symfony/debug" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-strict-equality" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-elvis-begone" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-insane-comparison" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-type-setters-params" />
+      <path value="$PROJECT_DIR$/vendor/psalm/plugin-phpunit" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-use-constants" />
+      <path value="$PROJECT_DIR$/vendor/orklah/psalm-strict-types" />
+      <path value="$PROJECT_DIR$/vendor/hanneskod/classtools" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4">

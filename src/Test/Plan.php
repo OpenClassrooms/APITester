@@ -20,6 +20,7 @@ use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Assert;
+use OpenAPITesting\Util\Object_;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
@@ -61,16 +62,16 @@ final class Plan
      * @param Authenticator[]       $authenticators
      */
     public function __construct(
-        array $preparators,
-        array $requesters,
-        array $definitionLoaders,
-        array $authenticators = [],
+        ?array $preparators = null,
+        ?array $requesters = null,
+        ?array $definitionLoaders = null,
+        ?array $authenticators = null,
         ?LoggerInterface $logger = null
     ) {
-        $this->preparators = $preparators;
-        $this->requesters = $requesters;
-        $this->definitionLoaders = $definitionLoaders;
-        $this->authenticators = $authenticators;
+        $this->preparators = $preparators ?? Object_::getImplementations(TestCasesPreparator::class);
+        $this->requesters = $requesters ?? Object_::getImplementations(Requester::class);
+        $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
+        $this->authenticators = $authenticators ?? Object_::getImplementations(Authenticator::class);
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -130,6 +131,18 @@ final class Plan
     public function getResults(): array
     {
         return $this->results;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function addRequester(Requester $requester): self
+    {
+        $this->requesters[] = $requester;
+
+        return $this;
     }
 
     /**

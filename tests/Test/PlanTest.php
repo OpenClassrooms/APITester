@@ -4,20 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Test;
 
-use OpenAPITesting\Authenticator\OAuth2ImplicitAuthenticator;
-use OpenAPITesting\Authenticator\OAuth2PasswordAuthenticator;
 use OpenAPITesting\Config\Loader\PlanConfigLoader;
-use OpenAPITesting\Definition\Loader\OpenApiDefinitionLoader;
-use OpenAPITesting\Preparator\Error401TestCasesPreparator;
-use OpenAPITesting\Preparator\Error403TestCasesPreparator;
-use OpenAPITesting\Preparator\Error404TestCasesPreparator;
-use OpenAPITesting\Preparator\Error405TestCasesPreparator;
-use OpenAPITesting\Preparator\Error406TestCasesPreparator;
-use OpenAPITesting\Preparator\Error413TestCasesPreparator;
-use OpenAPITesting\Preparator\Error416TestCasesPreparator;
-use OpenAPITesting\Preparator\FixturesTestCasesPreparator;
-use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
-use OpenAPITesting\Requester\HttpAsyncRequester;
 use OpenAPITesting\Test\Plan;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
@@ -36,22 +23,9 @@ final class PlanTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testPlan = new Plan(
-            [
-                new Error401TestCasesPreparator(),
-                new Error403TestCasesPreparator(),
-                new Error404TestCasesPreparator(),
-                new Error405TestCasesPreparator(),
-                new Error406TestCasesPreparator(),
-                new Error413TestCasesPreparator(),
-                new Error416TestCasesPreparator(),
-                new OpenApiExamplesTestCasesPreparator(),
-                new FixturesTestCasesPreparator(),
-            ],
-            [new HttpAsyncRequester()],
-            [new OpenApiDefinitionLoader()],
-            [new OAuth2PasswordAuthenticator(), new OAuth2ImplicitAuthenticator()],
-            new ConsoleLogger(new ConsoleOutput(OutputInterface::VERBOSITY_VERY_VERBOSE)),
+        $this->testPlan = new Plan();
+        $this->testPlan->setLogger(
+            new ConsoleLogger(new ConsoleOutput(OutputInterface::VERBOSITY_VERY_VERBOSE))
         );
     }
 
