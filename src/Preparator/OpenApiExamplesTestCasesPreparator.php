@@ -4,96 +4,94 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\Header;
-use cebe\openapi\spec\MediaType;
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Operation;
-use cebe\openapi\spec\Parameter;
-use cebe\openapi\spec\RequestBody;
-use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
 final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
 {
-    /**
-     * @return TestCase[]
-     */
-    public function prepare(OpenApi $openApi): array
-    {
-        $testCases = [];
-        /** @var string $path */
-        foreach ($openApi->paths as $path => $pathInfo) {
-            /** @var string $method */
-            foreach ($pathInfo->getOperations() as $method => $operation) {
-                if (null === $operation->responses) {
-                    continue;
-                }
-                $requests = $this->buildRequests($operation, $method, $path);
-                $responses = $this->buildResponses($operation);
-                $testCases[] = $this->buildTestCases(
-                    $requests,
-                    $responses,
-                    $this->getGroups($operation, $method),
-                );
-            }
-        }
-
-        return array_filter(array_merge(...$testCases));
-    }
-
     public static function getName(): string
     {
         return 'examples';
     }
 
     /**
+     * @return TestCase[]
+     */
+    protected function generateTestCases(Operations $operations): array
+    {
+        $testCases = [];
+        foreach ($operations->where('responses.*') as $operation) {
+            $requests = $this->buildRequests($operation);
+            $responses = $this->buildResponses($operation);
+            $testCases[] = $this->buildTestCases(
+                $requests,
+                $responses,
+            );
+        }
+
+        return array_filter(array_merge(...$testCases));
+    }
+
+    /**
      * @return array<string, Request>
      */
-    private function buildRequests(Operation $operation, string $method, string $path): array
+    private function buildRequests(Operation $operation): array
     {
-        $defaultHeaders = null !== $this->token ? [
-            'authorization' => "Bearer {$this->token}",
-        ] : [];
         $requests = [];
-        if (null !== $operation->requestBody) {
-            /** @var RequestBody $requestBody */
-            $requestBody = $operation->requestBody;
-            foreach ($requestBody->content as $mediaType => $content) {
-                $examples = $this->getExamples($content);
-                foreach ($examples as $expectedResponse => $body) {
-                    $requests[$expectedResponse] = new Request(
-                        mb_strtoupper($method),
-                        $path . '?1=1',
-                        array_merge(
-                            [
-                                'content-type' => $mediaType,
-                            ],
-                            $defaultHeaders
-                        ),
-                        Json::encode($body),
-                    );
-                }
+        foreach ($operation->getRequests() as $request) {
+            foreach ($request->getExamples() as $example) {
+                $requests[$example->getName()] = new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
+                    [
+                        'content-type' => $request->getMediaType(),
+                    ],
+                    Json::encode((array) $example->getValue()),
+                );
             }
         }
 
-        /** @var Parameter $parameter */
-        foreach ($operation->parameters as $parameter) {
-            /** @var array<string, array<string|int>> $examples */
-            $examples = $this->getExamples($parameter);
-            foreach ($examples as $expectedResponse => $example) {
-                $requests[$expectedResponse] ??= new Request(
-                    mb_strtoupper($method),
-                    $path . '?1=1',
-                    $defaultHeaders,
+        foreach ($operation->getPathParameters() as $parameter) {
+            foreach ($parameter->getExamples() as $example) {
+                $name = $example->getName();
+                $requests[$name] ??= new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
                 );
-                $requests[$expectedResponse] = $this->addParameterToRequest(
-                    $requests[$expectedResponse],
-                    $parameter,
-                    (string) $example[0],
+                $requests[$name]->withUri(
+                    new Uri(
+                        $operation->getPath(
+                            [
+                                $parameter->getName() => $example->getValue(),
+                            ]
+                        )
+                    )
+                );
+            }
+        }
+
+        foreach ($operation->getQueryParameters() as $parameter) {
+            foreach ($parameter->getExamples() as $example) {
+                $name = $example->getName();
+                $requests[$name] ??= new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
+                );
+                $request = $requests[$name];
+                $request->withUri(
+                    new Uri(
+                        $operation->getPath(
+                            [
+                                $parameter->getName() => $example->getValue(),
+                            ]
+                        )
+                    )
                 );
             }
         }
@@ -106,31 +104,30 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
      */
     private function buildResponses(Operation $operation): array
     {
-        if (!isset($operation->responses)) {
-            return [];
-        }
         $responses = [];
-        foreach ($operation->responses as $statusCode => $response) {
-            /** @var MediaType $content */
-            foreach ($response->content as $mediaType => $content) {
-                $examples = $this->getExamples($content, (string) $statusCode, false);
-                foreach ($examples as $label => $body) {
-                    $key = $statusCode === $label ? $statusCode : $statusCode . '.' . $label;
-                    /** @var int $code */
-                    $code = $body['code'] ?? 0;
-                    $responses[$key] = new Response(
-                        (int) $statusCode ?: $code,
-                        [
-                            'content-type' => $mediaType,
-                        ],
-                        Json::encode($body)
-                    );
-                    /** @var Header $value */
-                    foreach ($response->headers as $name => $value) {
-                        /** @var string $example */
-                        $example = $value->example;
-                        $responses[$key] = $responses[$key]->withAddedHeader($name, $example);
+        foreach ($operation->getResponses() as $response) {
+            foreach ($response->getExamples() as $example) {
+                $name = $example->getName();
+                $responses[$name] = new Response(
+                    $response->getStatusCode(),
+                    [
+                        'content-type' => $response->getMediaType(),
+                    ],
+                    Json::encode($example)
+                );
+                foreach ($response->getHeaders() as $header) {
+                    /** @var ParameterExample|null $example */
+                    $example = $header->getExamples()
+                        ->where('name', $name)
+                        ->first()
+                    ;
+                    if (null === $example) {
+                        continue;
                     }
+                    $responses[$name] = $responses[$name]->withAddedHeader(
+                        $header->getName(),
+                        $example->getValue()
+                    );
                 }
             }
         }
@@ -141,11 +138,10 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     /**
      * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
-     * @param string[]                $groups
      *
      * @return TestCase[]
      */
-    private function buildTestCases(array $requests, array $responses, array $groups): array
+    private function buildTestCases(array $requests, array $responses): array
     {
         $testCases = [];
         foreach ($requests as $key => $request) {
@@ -158,65 +154,10 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                 $key,
                 $request,
                 $responses[$key] ?? new Response(),
-                $groups,
             );
             $testCases[] = $fixture;
         }
 
         return $testCases;
-    }
-
-    private function addParameterToRequest(Request $request, Parameter $parameter, string $example): Request
-    {
-        if ('query' === $parameter->in) {
-            $newRequest = $request->withUri(
-                new Uri(((string) $request->getUri()) . "&{$parameter->name}={$example}")
-            );
-        } elseif ('path' === $parameter->in) {
-            $newRequest = $request->withUri(
-                new Uri(
-                    str_replace(
-                        "%7B{$parameter->name}%7D",
-                        $example,
-                        (string) $request->getUri()
-                    )
-                )
-            );
-        } else {
-            $newRequest = $request->withAddedHeader($parameter->name, $example);
-        }
-
-        return $newRequest;
-    }
-
-    /**
-     * @param MediaType|Schema|Parameter $object
-     *
-     * @return array<string, mixed[]>
-     */
-    private function getExamples(object $object, string $defaultKey = 'default', bool $useSummary = true): array
-    {
-        $examples = [];
-
-        if (isset($object->example)) {
-            $examples[$defaultKey] = (array) $object->example;
-        }
-
-        if (isset($object->example) && \is_object($object->example) && isset($object->example->value)) {
-            $examples[$defaultKey] = (array) $object->example->value;
-        }
-
-        if (isset($object->schema->example)) {
-            $examples[$defaultKey] = (array) $object->schema->example;
-        }
-
-        if (isset($object->examples)) {
-            foreach ($object->examples as $label => $example) {
-                $key = (string) ($useSummary ? $example->summary : $label);
-                $examples[$key] = (array) $example->value;
-            }
-        }
-
-        return $examples;
     }
 }

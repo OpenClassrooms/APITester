@@ -9,11 +9,19 @@
     "preferred-install": {
       "*": "dist"
     },
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "roave/you-are-using-it-wrong": true,
+      "veewee/composer-run-parallel": true,
+      "composer/package-versions-deprecated": true
+    }
   },
   "autoload": {
     "psr-4": {
-      "OpenAPITesting\\": "src/"
+      "OpenAPITesting\\": "src/",
+      "OpenAPITesting\\Symfony\\Component\\PropertyInfo\\": "lib/property-info/"
     }
   },
   "autoload-dev": {
@@ -30,6 +38,7 @@
     "fakerphp/faker": "^1.17",
     "firebase/php-jwt": "^5.5",
     "guzzlehttp/promises": "~1.4.0",
+    "illuminate/collections": " ^8.0",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.55",
@@ -38,39 +47,35 @@
     "phpunit/phpunit": "^9.5",
     "psr/http-client": "^1.0",
     "psr/http-message": "1.*",
-    "roave/you-are-using-it-wrong": "1.7.*",
+    "roave/you-are-using-it-wrong": "^1.7",
     "symfony/console": "^4.4",
     "symfony/dotenv": " ^4.4",
     "symfony/http-client": "^4.4",
     "symfony/http-kernel": "^4.4",
     "symfony/property-access": " ^4.4",
+    "symfony/property-info": " ^4.4",
     "symfony/psr-http-message-bridge": "2.*",
-    "symfony/serializer": "^4.4",
+    "symfony/serializer": " ^4.4",
     "symfony/yaml": " ^4.4"
   },
   "require-dev": {
     "canvural/php-openapi-faker": "^1.0",
     "ergebnis/phpstan-rules": "^1.0",
     "korbeil/phpstan-generic-rules": "^1.0",
-    "orklah/psalm-elvis-begone": "^1.0",
-    "orklah/psalm-insane-comparison": "^1.0",
-    "orklah/psalm-strict-equality": "^2.0",
-    "orklah/psalm-type-setters-params": "^1.0",
+    "nunomaduro/phpinsights": "^2.1",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.2",
+    "phpstan/phpstan": "dev-master",
     "phpstan/phpstan-beberlei-assert": "^1.0",
     "phpstan/phpstan-deprecation-rules": "^1.0",
     "phpstan/phpstan-phpunit": "^1.0",
     "phpstan/phpstan-strict-rules": "^1.1",
     "phpstan/phpstan-symfony": "^1.0",
-    "psalm/plugin-phpunit": "^0.16.1",
     "roave/security-advisories": "dev-latest",
     "spaze/phpstan-disallowed-calls": "^2.1",
     "symfony/var-dumper": "^4.4",
     "symplify/easy-coding-standard": "^9.4",
     "thecodingmachine/phpstan-strict-rules": "^1.0",
-    "veewee/composer-run-parallel": "^1.1",
-    "vimeo/psalm": "^4.14"
+    "veewee/composer-run-parallel": "^1.1"
   },
   "scripts": {
     "check": [
@@ -92,13 +97,12 @@
       "vendor/bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
     ],
     "check-static": [
-      "@psalm",
       "@phpstan"
     ],
     "test": [
       "@unit"
     ],
-    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
+    "unit": "bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"

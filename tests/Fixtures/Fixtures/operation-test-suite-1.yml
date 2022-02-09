@@ -2,13 +2,13 @@
 
 OperationTestCase1:
     #todo add description
-    description: 'test test'
+    description: 'GHERKIN'
 
     for: [ 'findPetsByStatus' ]
 
     #todo handle data loaders
     dataLoad:
-        pre: [ '!git:pre.sql', 'group.alice' ]
+        pre: [ '%wonderland:senario1', 'group.alice' ]
         post: [ 'post.sql' ]
 
     #todo handle auth
@@ -21,6 +21,7 @@ OperationTestCase1:
     request:
         parameters:
             query:
+                id: '%fixtures.UserWithAllRoles.id%' #todo handle variables from fixtures
                 status: 'available'
         headers:
             accept: application/json

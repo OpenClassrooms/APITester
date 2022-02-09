@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use DateTimeInterface;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Requester\Requester;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 
 interface Test
@@ -19,8 +21,8 @@ interface Test
     public const STATUS_SUCCESS = 'success';
 
     /**
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
+     * @throws ClientExceptionInterface
+     * @throws PreparatorLoadingException
      */
     public function launch(): void;
 

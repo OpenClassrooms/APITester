@@ -7,6 +7,7 @@ namespace OpenAPITesting\Util;
 use OpenAPITesting\Util\Normalizer\StreamNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
 use PHPUnit\Framework\ExpectationFailedException;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
@@ -20,11 +21,11 @@ use Symfony\Component\Serializer\Serializer;
 final class Assert
 {
     /**
-     * @param object|array<mixed> $expected
-     * @param object|array<mixed> $actual
-     * @param array<string>       $exclude
+     * @param iterable<mixed>|object $expected
+     * @param iterable<mixed>|object $actual
+     * @param array<string>          $exclude
      *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws InvalidArgumentException
      * @throws ExpectationFailedException
      */
     public static function objectsEqual(

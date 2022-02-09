@@ -14,5 +14,7 @@ final class FixturesLocation
 
     public const OPEN_API_PETSTORE_YAML = __DIR__ . '/OpenAPI/petstore.yaml';
 
+    public const OPEN_API_OC_YAML = __DIR__ . '/OpenAPI/petstore.yaml';
+
     public const CONFIG_OPENAPI = __DIR__ . '/Config/api-tester.yaml';
 }

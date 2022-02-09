@@ -1928,7 +1928,7 @@ paths:
                 schema:
                     type: string
                     nullable: false
-                    example: 'https://www.openclassrooms.com/fr/dashboard'
+                    example: 'https://www.openclassrooms.lan/fr/dashboard'
 
     '/saml/{connectionPublicId}/scim/ServiceProviderConfig':
         get:
@@ -2339,9 +2339,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ApiError'
                 400:
-                    description: 'UserIsNotFollowingALearningPathAssociatedWithProjectException | ProjectSessionAlreadyHadValidationException
-          | UserIsNotFollowingAnyLearningPathsException| InvalidMentoringSessionException | SessionStatusIsNotPendingException
-          | SessionStatusIsStillPendingException | InvalidStudentPremiumPlusException'
+                    description: ''
                     content:
                         text/json:
                             schema:
@@ -2779,7 +2777,7 @@ paths:
                                 When the scheme in response is SAML, you'll also get a Link header with a rel type *saml.provider*
                                 containing a route you can call for further processing, as well as two attributes: *identifier* and
                                 *connectionId* that are those referenced in the url.
-                                Example: <https://api.openclassrooms.com/saml/openclassrooms/authentication-request/john.doe@example.com>;rel="saml.provider";identifier="john.doe%40example.com";connectionId="openclassrooms"
+                                Example: <https://api.openclassrooms.lan/saml/openclassrooms/authentication-request/john.doe@example.com>;rel="saml.provider";identifier="john.doe%40example.com";connectionId="openclassrooms"
                     content:
                         application/json:
                             schema:
@@ -3952,7 +3950,7 @@ paths:
                         format: int32
                         type: integer
                         nullable: false
-                        example: 12345
+                        example: 1111111
             responses:
                 200:
                     description: OK
@@ -3960,12 +3958,17 @@ paths:
                         text/json:
                             schema:
                                 $ref: '#/components/schemas/Student.Cirr.Status'
+                401:
+                    description: 'Invalid token'
                 403:
                     description: 'Student is not following any learning path or is trying to fetch another user''s status'
+                404:
+                    description: 'Not found'
                 422:
                     description: 'Unprocessable: several answers already exist'
             security:
                 -   OAuth2: [ openclassrooms_client, current_user ]
+
     '/users/{userId}/paths/{pathId}/projects':
         get:
             tags:
@@ -3976,9 +3979,10 @@ paths:
             description: 'Get user path projects'
             operationId: oc_api_learning_activity_learning_path_projects_with_user_information_get
             responses:
+                405:
+                    description: '405'
                 404:
                     description: 'Not found'
-
                 200:
                     description: Ok
                     content:
@@ -5257,7 +5261,7 @@ components:
                 email:
                     type: string
                     nullable: false
-                    example: 'zozor@openclassrooms.com'
+                    example: 'zozor@openclassrooms.lan'
                 organizationName:
                     type: string
                     nullable: true
@@ -5486,7 +5490,7 @@ components:
                 profilePicture:
                     type: string
                     nullable: false
-                    example: 'https://openclassrooms.com/bundles/common/images/avatar_defaut.png'
+                    example: 'https://openclassrooms.lan/bundles/common/images/avatar_defaut.png'
         Team.TeamViewModelDetail:
             type: object
             properties:
@@ -5521,7 +5525,7 @@ components:
                 email:
                     type: string
                     nullable: false
-                    example: john.doe@openclassrooms.com
+                    example: john.doe@openclassrooms.lan
                 firstName:
                     type: string
                     nullable: false
@@ -5557,7 +5561,7 @@ components:
                 email:
                     type: string
                     nullable: false
-                    example: john.doe@openclassrooms.com
+                    example: john.doe@openclassrooms.lan
                 firstName:
                     type: string
                     nullable: false
@@ -6152,7 +6156,7 @@ components:
                 OpenClassroomsUrl:
                     type: string
                     nullable: false
-                    example: 'https://stage.openclassrooms.com/fr/courses/1603881-apprenez-a-creer-votre-site-web-avec-html5-et-css3/1604791-inserez-des-images'
+                    example: 'https://stage.openclassrooms.lan/fr/courses/1603881-apprenez-a-creer-votre-site-web-avec-html5-et-css3/1604791-inserez-des-images'
                 title:
                     type: string
                     nullable: false
@@ -6163,7 +6167,7 @@ components:
                 OpenClassroomsUrl:
                     type: string
                     nullable: false
-                    example: 'https://openclassrooms.com/fr/courses/4929676-redigez-des-ecrits-professionnels'
+                    example: 'https://openclassrooms.lan/fr/courses/4929676-redigez-des-ecrits-professionnels'
                 category:
                     $ref: '#/components/schemas/Course.Category.Category'
                 difficulty:
@@ -6438,7 +6442,7 @@ components:
                 OpenClassroomsUrl:
                     type: string
                     nullable: false
-                    example: 'https://openclassrooms.com/fr/paths/206-python-developer'
+                    example: 'https://openclassrooms.lan/fr/paths/206-python-developer'
                 openedAt:
                     type: string
                     nullable: false
@@ -6513,7 +6517,7 @@ components:
                 OpenClassroomsUrl:
                     type: string
                     nullable: false
-                    example: 'https://openclassrooms.com/fr/paths/206-python-developer'
+                    example: 'https://openclassrooms.lan/fr/paths/206-python-developer'
                 openedAt:
                     type: string
                     nullable: false
@@ -7085,7 +7089,7 @@ components:
                 email:
                     type: string
                     nullable: false
-                    example: john.doe@openclassrooms.com
+                    example: john.doe@openclassrooms.lan
                 enrollment:
                     type: string
                     nullable: false
@@ -7948,9 +7952,9 @@ components:
                     items:
                         type: string
                         nullable: false
-                        example: test1@openclassrooms.com
+                        example: test1@openclassrooms.lan
                     example:
-                        - test1@openclassrooms.com
+                        - test1@openclassrooms.lan
                         - test2@example.com
         User.BirthInformation.PatchBirthInformation:
             type: object
@@ -8028,7 +8032,7 @@ components:
                 email:
                     type: string
                     nullable: false
-                    example: user-new-email@openclassrooms.com
+                    example: user-new-email@openclassrooms.lan
         User.Communication.PatchCommunicationSettings:
             type: object
             required:
@@ -8607,7 +8611,7 @@ components:
                             type: string
                             format: uri
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/ServiceProviderConfig'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/ServiceProviderConfig'
                         resourceType:
                             type: string
                             example: 'ServiceProviderConfig'
@@ -8702,7 +8706,7 @@ components:
                         location:
                             type: string
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/Schemas/urn:ietf:params:scim:schemas:core:2.0:User'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/Schemas/urn:ietf:params:scim:schemas:core:2.0:User'
             required:
                 - id
                 - name
@@ -8798,7 +8802,7 @@ components:
                         location:
                             type: string
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/Schemas/urn:ietf:params:scim:schemas:core:2.0:Group'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/Schemas/urn:ietf:params:scim:schemas:core:2.0:Group'
             required:
                 - id
                 - name
@@ -8911,7 +8915,7 @@ components:
                         location:
                             type: string
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/ResourceTypes/User'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/ResourceTypes/User'
                 schemaExtensions:
                     type: object
                     properties:
@@ -8961,7 +8965,7 @@ components:
                         location:
                             type: string
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/ResourceTypes/Group'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/ResourceTypes/Group'
             required:
                 - name
                 - endpoint
@@ -9026,7 +9030,7 @@ components:
                         location:
                             type: string
                             nullable: false
-                            example: 'https://api.openclassrooms.com/saml/{connectionPublicId}/scim/Users/3rrf5dfdt3478'
+                            example: 'https://api.openclassrooms.lan/saml/{connectionPublicId}/scim/Users/3rrf5dfdt3478'
             required:
                 - schemas
                 - id
@@ -9914,20 +9918,21 @@ components:
             type: oauth2
             flows:
                 authorizationCode:
-                    authorizationUrl: 'https://openclassrooms.com/oauth2/authorize'
-                    tokenUrl: 'https://api.openclassrooms.com/oauth2/token'
+                    authorizationUrl: 'https://stage.openclassrooms.lan/oauth2/authorize'
+                    tokenUrl: 'https://api.openclassrooms.lan/oauth2/token'
                     scopes:
                         user_public_profile: 'Access to public profile'
                         user_email: 'Access to user email'
                         user_learning_activity: 'Access to user learning activity'
                         analytics: 'Access to analytics'
                 clientCredentials:
-                    tokenUrl: 'https://api.openclassrooms.com/oauth/token'
+                    tokenUrl: 'https://api.openclassrooms.lan/oauth/token'
                     scopes:
                         learning_content: 'Only this one in this flow'
+                        admin_student: 'This scope is mainly used by salesforce'
                 password:
-                    tokenUrl: 'https://api.openclassrooms.com/oauth2/token'
-                    refreshUrl: 'https://api.openclassrooms.com/oauth2/token'
+                    tokenUrl: 'https://api.openclassrooms.lan/oauth2/token'
+                    refreshUrl: 'https://api.openclassrooms.lan/oauth2/token'
                     scopes:
                         learning_content: 'Access to learning content'
                         user_public_profile: 'Access to public profile'
@@ -10020,17 +10025,17 @@ tags:
     -   name: Project
         description: 'All project related endpoints'
     -   name: ProjectExternalResource
-        description: 'All projectexternalresource related endpoints'
+        description: 'All project external resource related endpoints'
     -   name: ProjectSession
-        description: 'All projectsession related endpoints'
+        description: 'All project session related endpoints'
     -   name: ProjectSkill
-        description: 'All projectskill related endpoints'
+        description: 'All project skill related endpoints'
     -   name: Reports
         description: 'All reports related endpoints'
     -   name: Security
         description: 'All security related endpoints'
     -   name: SecurityToken
-        description: 'All securitytoken related endpoints'
+        description: 'All security token related endpoints'
     -   name: SAML
         description: 'All SSO SAML related endpoints'
     -   name: Session
@@ -10044,7 +10049,7 @@ tags:
     -   name: Skills
         description: 'All skills related endpoints'
     -   name: StudentPathDossier
-        description: 'All studentpathdossier related endpoints'
+        description: 'All student path dossier related endpoints'
     -   name: Support
         description: 'All support related endpoints'
     -   name: Team
@@ -10052,5 +10057,5 @@ tags:
     -   name: User
         description: 'All user related endpoints'
 servers:
-    -   url: 'https://stage.openclassrooms.com/api'
+    -   url: 'https://api.openclassrooms.lan/'
         description: 'Development server'

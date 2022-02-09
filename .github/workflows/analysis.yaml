@@ -18,9 +18,6 @@ jobs:
                     -   name: PHPStan
                         run: composer phpstan
 
-                    -   name: Psalm
-                        run: composer psalm
-
                     -   name: Ecs
                         run: composer check-cs
 

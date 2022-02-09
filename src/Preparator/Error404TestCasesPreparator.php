@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Operation;
-use cebe\openapi\spec\Parameter;
-use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Collection\Responses;
+use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 use Vural\OpenAPIFaker\Options;
@@ -17,68 +17,73 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Error404TestCasesPreparator extends TestCasesPreparator
 {
-    public static function getName(): string
-    {
-        return '404';
-    }
-
     /**
      * @inheritDoc
      */
-    public function prepare(OpenApi $openApi): array
+    protected function generateTestCases(Operations $operations): iterable
     {
-        $testCases = [];
-        /** @var string $path */
-        foreach ($openApi->paths as $path => $pathInfo) {
-            /** @var string $method */
-            foreach ($pathInfo->getOperations() as $method => $operation) {
-                if (!isset($operation->responses) || !isset($operation->responses['404'])) {
-                    continue;
-                }
+        /** @var Responses $responses */
+        $responses = $operations
+            ->select('responses.*')
+            ->flatten()
+            ->where('statusCode', 404)
+            ->values()
+        ;
 
-                /** @var \cebe\openapi\spec\Response $response */
-                $response = $operation->responses['404'];
-                $testCases[] = new TestCase(
-                    $operation->operationId,
-                    new Request(
-                        mb_strtoupper($method),
-                        $this->processPath($path, $operation),
-                        [],
-                        $this->generateBody($operation),
-                    ),
-                    new Response(
-                        404,
-                        [],
-                        $response->description
-                    ),
-                    $this->getGroups($operation, $method),
-                );
-            }
-        }
-
-        return array_filter($testCases);
+        return $responses
+            ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+        ;
     }
 
-    private function processPath(string $path, Operation $operation): string
+    private function prepareTestCase(DefinitionResponse $response): TestCase
     {
-        /** @var Parameter $parameter */
-        foreach ($operation->parameters as $parameter) {
-            if ('path' === $parameter->in) {
-                $path = str_replace("{{$parameter->name}}", '-9999', $path);
-            }
-        }
+        $operation = $response->getParent();
 
-        return $path;
+        $request = new Request(
+            $operation->getMethod(),
+            $operation->getPath(
+                array_fill(
+                    0,
+                    $response->getParent()
+                        ->getPathParameters()
+                        ->count(),
+                    -9999
+                )
+            ),
+            [],
+            $this->generateBody($operation),
+        );
+
+        $request = $this->authenticate(
+            $request,
+            $operation,
+        );
+
+        return new TestCase(
+            $operation->getId() . '_404',
+            $request,
+            new Response(
+                404,
+                [],
+                $response->getDescription()
+            ),
+        );
     }
 
     private function generateBody(Operation $operation): ?string
     {
-        if (!isset($operation->requestBody->content) || !isset($operation->requestBody->content['application/json'])) {
+        $request = $operation->getRequest('application/json');
+
+        if (null === $request) {
             return null;
         }
-        /** @var Schema $schema */
-        $schema = $operation->requestBody->content['application/json']->schema;
 
-        return Json::encode((array) (new SchemaFaker($schema, new Options(), true))->generate());
+        return Json::encode(
+            (array) (new SchemaFaker(
+                $request->getBody(),
+                new Options(),
+                true
+            ))->generate()
+        );
     }
 }

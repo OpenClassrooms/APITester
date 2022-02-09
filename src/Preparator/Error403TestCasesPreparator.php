@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OpenAPITesting\Preparator;
+
+use OpenAPITesting\Definition\Collection\Tokens;
+use OpenAPITesting\Definition\Security;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
+use OpenAPITesting\Definition\Token;
+
+final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPreparator
+{
+    protected function getStatusCode(): int
+    {
+        return 403;
+    }
+
+    protected function getTestTokens(Security $security): Tokens
+    {
+        if ($security instanceof OAuth2Security) {
+            return $this->tokens
+                ->filter(
+                    fn (Token $x) => 0 === $security
+                        ->getScopes()
+                        ->select('name')
+                        ->intersect($x->getScopes())
+                        ->count()
+                )
+            ;
+        }
+
+        throw new \LogicException('Unhandled security instance of type ' . \get_class($security));
+    }
+}

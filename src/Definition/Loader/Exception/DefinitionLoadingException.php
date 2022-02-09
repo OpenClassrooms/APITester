@@ -6,8 +6,8 @@ namespace OpenAPITesting\Definition\Loader\Exception;
 
 final class DefinitionLoadingException extends \Exception
 {
-    public function __construct(?\Throwable $previous = null)
+    public function __construct(string $msg = '', ?\Throwable $previous = null)
     {
-        parent::__construct('', 0, $previous);
+        parent::__construct($msg, 0, $previous);
     }
 }

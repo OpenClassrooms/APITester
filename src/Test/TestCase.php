@@ -29,11 +29,6 @@ final class TestCase implements Test
 
     private string $name;
 
-    /**
-     * @var string[]
-     */
-    private array $groups;
-
     private ?Result $result = null;
 
     private ?Requester $requester = null;
@@ -63,20 +58,20 @@ final class TestCase implements Test
     private array $afterCallbacks = [];
 
     /**
-     * @param string[] $groups
+     * @param string[] $excludedFields
      */
     public function __construct(
         string $name,
         RequestInterface $request,
         ResponseInterface $expectedResponse,
-        array $groups = []
+        array $excludedFields = []
     ) {
-        $this->groups = $groups;
         $this->request = $request;
         $this->expectedResponse = $expectedResponse;
         $this->name = $name;
         $this->logger = new NullLogger();
         $this->id = uniqid('testcase_', false);
+        $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
     }
 
     public function getName(): string
@@ -98,7 +93,7 @@ final class TestCase implements Test
             $this->log("[{$startedAt}] {$this->result}");
         }
 
-        /** @var \OpenAPITesting\Test\Result $result */
+        /** @var Result $result */
         $result = $this->result;
 
         return [
@@ -133,14 +128,6 @@ final class TestCase implements Test
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
     }
 
     public function getStatus(): string
@@ -182,7 +169,27 @@ final class TestCase implements Test
     public function addExcludedFields(array $excludedFields): void
     {
         /** @var string[] excludedFields */
-        $this->excludedFields = [...$excludedFields, ...$this->excludedFields];
+        $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
+    }
+
+    public function withRequest(RequestInterface $request): self
+    {
+        $self = clone $this;
+        $self->request = $request;
+
+        return $self;
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    public function setRequest(RequestInterface $request): self
+    {
+        $this->request = $request;
+
+        return $this;
     }
 
     private function assert(): void

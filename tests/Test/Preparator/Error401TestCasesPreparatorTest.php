@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Tests\Test\Preparator;
 
-use cebe\openapi\spec\OpenApi;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
+use OpenAPITesting\Definition\Security\ApiKeySecurity;
+use OpenAPITesting\Definition\Security\HttpSecurity;
+use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
 use OpenAPITesting\Preparator\Error401TestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -17,159 +22,95 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getData
      *
-     * @param \OpenAPITesting\Test\TestCase[] $expected
+     * @param TestCase[] $expected
      */
-    public function test(OpenApi $openApi, array $expected): void
+    public function test(Api $api, array $expected): void
     {
         $preparator = new Error401TestCasesPreparator();
-        $preparator->configure([]);
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($openApi),
-            ['size', 'id', 'headerNames', 'groups']
+            $preparator->prepare($api->getOperations()),
+            ['size', 'id', 'headerNames', 'groups', 'excludedFields']
         );
     }
 
     /**
-     * @return iterable<int, array{OpenApi, array<TestCase>}>
+     * @return iterable<int, array{Api, array<TestCase>}>
      */
     public function getData(): iterable
     {
         yield [
-            new OpenApi([
-                'openapi' => '3.0.2',
-                'info' => [
-                    'title' => 'Test API',
-                    'version' => '1.0.0',
-                ],
-                'paths' => [
-                    '/test/oauth2' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'oauth2_test' => ['write:pets'],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '/test/api/key/header' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_header' => [],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '/test/api/key/cookie' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_cookie' => [],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '/test/api/key/query' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'api_key_query' => [],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '/test/basic' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'basic_test' => [],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '/test/bearer' => [
-                        'get' => [
-                            'operationId' => 'test',
-                            'responses' => [
-                                '401' => [],
-                            ],
-                            'security' => [
-                                [
-                                    'bearer_test' => [
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                'components' => [
-                    'securitySchemes' => [
-                        'oauth2_test' => [
-                            'type' => 'oauth2',
-                            'flows' => [
-                                'implicit' => [
-                                    'authorizationUrl' => 'https://petstore3.swagger.io/oauth/authorize',
-                                    'scopes' => [
-                                        'write:pets' => 'modify pets in your account',
-                                        'read:pets' => 'read your pets',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'api_key_header' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'header',
-                        ],
-                        'api_key_cookie' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'cookie',
-                        ],
-                        'api_key_query' => [
-                            'type' => 'apiKey',
-                            'name' => 'api_key',
-                            'in' => 'query',
-                        ],
-                        'basic_test' => [
-                            'type' => 'http',
-                            'scheme' => 'basic',
-                        ],
-                        'bearer_test' => [
-                            'type' => 'http',
-                            'scheme' => 'bearer',
-                        ],
-                    ],
-                ],
-            ]),
+            Api::create()
+                ->addOperation(
+                    Operation::create('test1', '/test/oauth2')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            OAuth2ImplicitSecurity::create(
+                                'oauth2_test',
+                                'https://petstore3.swagger.io/oauth/authorize',
+                            )->addScopeFromString('write:pets')
+                        )
+                )
+                ->addOperation(
+                    Operation::create('test2', '/test/api/key/header')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            ApiKeySecurity::create(
+                                'api_key_header',
+                                'api_key',
+                                'header',
+                            )
+                        )
+                )
+                ->addOperation(
+                    Operation::create('test3', '/test/api/key/cookie')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            ApiKeySecurity::create(
+                                'api_key_cookie',
+                                'api_key',
+                                'cookie',
+                            )
+                        )
+                )
+                ->addOperation(
+                    Operation::create('test4', '/test/api/key/query')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            ApiKeySecurity::create(
+                                'api_key_query',
+                                'api_key',
+                                'query',
+                            )
+                        )
+                )
+                ->addOperation(
+                    Operation::create('test5', '/test/basic')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            HttpSecurity::create(
+                                'basic_test',
+                                'basic',
+                            )
+                        )
+                )
+                ->addOperation(
+                    Operation::create('test6', '/test/bearer')
+                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addSecurity(
+                            HttpSecurity::create(
+                                'bearer_test',
+                                'bearer',
+                            )
+                        )
+                ),
             [
                 new TestCase(
-                    'test',
+                    'test1_401_oauth2_implicit',
                     new Request(
                         'GET',
-                        '/test/oauth2?1=1',
+                        '/test/oauth2',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,
@@ -179,10 +120,10 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test',
+                    'test2_401_apikey',
                     new Request(
                         'GET',
-                        '/test/api/key/header?1=1',
+                        '/test/api/key/header',
                         [
                             'api_key' => Error401TestCasesPreparator::FAKE_API_KEY,
                         ]
@@ -190,10 +131,10 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test',
+                    'test3_401_apikey',
                     new Request(
                         'GET',
-                        '/test/api/key/cookie?1=1',
+                        '/test/api/key/cookie',
                         [
                             'Cookie' => 'api_key=' . Error401TestCasesPreparator::FAKE_API_KEY,
                         ]
@@ -201,18 +142,18 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test',
+                    'test4_401_apikey',
                     new Request(
                         'GET',
-                        '/test/api/key/query?1=1&api_key=' . Error401TestCasesPreparator::FAKE_API_KEY
+                        '/test/api/key/query?api_key=' . Error401TestCasesPreparator::FAKE_API_KEY
                     ),
                     new Response(401)
                 ),
                 new TestCase(
-                    'test',
+                    'test5_401_http_basic',
                     new Request(
                         'GET',
-                        '/test/basic?1=1',
+                        '/test/basic',
                         [
                             'Authorization' => 'Basic ' . base64_encode('aaaa:bbbbb'),
                         ]
@@ -220,10 +161,10 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test',
+                    'test6_401_http_basic',
                     new Request(
                         'GET',
-                        '/test/bearer?1=1',
+                        '/test/bearer',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,

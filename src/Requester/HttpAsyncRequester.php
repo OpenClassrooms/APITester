@@ -9,7 +9,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpClient\HttplugClient;
 
-final class HttpAsyncRequester implements Requester
+final class HttpAsyncRequester extends Requester
 {
     private string $baseUri;
 
@@ -30,11 +30,17 @@ final class HttpAsyncRequester implements Requester
         $this->baseUri = rtrim($baseUri, '/');
     }
 
+    public static function getName(): string
+    {
+        return 'http-async';
+    }
+
     /**
      * @inheritDoc
      */
     public function request(RequestInterface $request, string $id): void
     {
+        $this->launched = false;
         $this->requests[$id] = $request;
     }
 
@@ -42,14 +48,10 @@ final class HttpAsyncRequester implements Requester
     {
         if (false === $this->launched) {
             $this->call();
+            unset($this->requests[$id]);
         }
 
         return $this->responses[$id];
-    }
-
-    public static function getName(): string
-    {
-        return 'http-async';
     }
 
     public function setBaseUri(string $baseUri): void
@@ -61,7 +63,11 @@ final class HttpAsyncRequester implements Requester
     {
         $httpClient = new HttplugClient();
         foreach ($this->requests as $id => $request) {
-            $request = $request->withUri(new Uri($this->baseUri . $request->getUri()));
+            $request = $request->withUri(
+                str_contains((string) $request->getUri(), 'https://') ? $request->getUri() : new Uri(
+                    trim($this->baseUri, '/') . '/' . trim((string) $request->getUri(), '/')
+                )
+            );
             try {
                 $httpClient
                     ->sendAsyncRequest($request)
@@ -70,6 +76,7 @@ final class HttpAsyncRequester implements Requester
                             $this->responses[$id] = $response;
                         },
                         function (\Throwable $exception) {
+                            echo "Error: {$exception->getMessage()}\n";
                             throw $exception;
                         }
                     )

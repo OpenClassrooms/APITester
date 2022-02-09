@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
-use cebe\openapi\spec\OpenApi;
-use OpenAPITesting\Config\FiltersConfig;
+use OpenAPITesting\Config\Filters;
+use OpenAPITesting\Definition\Api;
+use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Traits\TimeBoundTrait;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -21,7 +25,7 @@ final class Suite implements Test
 {
     use TimeBoundTrait;
 
-    private OpenApi $openApi;
+    private Api $api;
 
     /**
      * @var array<TestCasesPreparator>
@@ -35,7 +39,7 @@ final class Suite implements Test
 
     private string $title;
 
-    private FiltersConfig $filters;
+    private Filters $filters;
 
     private Requester $requester;
 
@@ -56,18 +60,18 @@ final class Suite implements Test
      */
     public function __construct(
         string $title,
-        OpenApi $openApi,
+        Api $api,
         array $preparators,
         Requester $requester,
-        ?FiltersConfig $filters = null,
+        ?Filters $filters = null,
         ?LoggerInterface $logger = null
     ) {
         $this->title = $title;
-        $this->openApi = $openApi;
+        $this->api = $api;
         $this->preparators = $preparators;
         $this->requester = $requester;
         $this->logger = $logger ?? new NullLogger();
-        $this->filters = $filters ?? new FiltersConfig([], []);
+        $this->filters = $filters ?? new Filters([], []);
     }
 
     public function launch(): void
@@ -104,15 +108,24 @@ final class Suite implements Test
         $this->requester = $requester;
     }
 
-    public function includes(TestCase $testCase): bool
+    public function includes(Operation $operation): bool
     {
         $include = true;
-        if (\count($this->filters->getIncludedGroups()) > 0) {
-            $include = \count(array_intersect($this->filters->getIncludedGroups(), $testCase->getGroups())) > 0;
+        foreach ($this->filters->getInclude() as $item) {
+            $include = true;
+            foreach ($item as $key => $value) {
+                if (!$operation->has($key, $value)) {
+                    $include = false;
+                }
+            }
         }
 
-        if (\count(array_intersect($this->filters->getExcludedGroups(), $testCase->getGroups())) > 0) {
-            $include = false;
+        foreach ($this->filters->getExclude() as $item) {
+            foreach ($item as $key => $value) {
+                if ($operation->has($key, $value)) {
+                    $include = false;
+                }
+            }
         }
 
         return $include;
@@ -135,12 +148,35 @@ final class Suite implements Test
     }
 
     /**
-     * @param TestCase[] $testCases
+     * @throws PreparatorLoadingException
      *
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @return TestCase[]
      */
-    private function launchTestCases(array $testCases): void
+    private function prepareTestCases(): iterable
+    {
+        $testCases = collect();
+        foreach ($this->preparators as $preparator) {
+            /** @var Operations $operations */
+            $operations = $this->api->getOperations()
+                ->map(
+                    fn (Operation $op) => $op->setPreparator($preparator::getName())
+                )
+            ;
+            $testCases = $testCases->merge(
+                $preparator->prepare($operations->filter([$this, 'includes']))
+            );
+        }
+
+        return $testCases;
+    }
+
+    /**
+     * @param iterable<TestCase> $testCases
+     *
+     * @throws PreparatorLoadingException
+     * @throws ClientExceptionInterface
+     */
+    private function launchTestCases(iterable $testCases): void
     {
         foreach ($testCases as $testCase) {
             $testCase->setRequester($this->requester);
@@ -152,11 +188,11 @@ final class Suite implements Test
     }
 
     /**
-     * @param TestCase[] $testCases
+     * @param iterable<TestCase> $testCases
      *
      * @return array<string, Result>
      */
-    private function getTestCasesResults(array $testCases): array
+    private function getTestCasesResults(iterable $testCases): array
     {
         $results = [];
         foreach ($testCases as $testCase) {
@@ -164,23 +200,5 @@ final class Suite implements Test
         }
 
         return $results;
-    }
-
-    /**
-     * @throws \OpenAPITesting\Preparator\Exception\PreparatorLoadingException
-     *
-     * @return TestCase[]
-     */
-    private function prepareTestCases(): array
-    {
-        $testCases = [];
-        foreach ($this->preparators as $preparator) {
-            $testCases[] = array_filter(
-                $preparator->prepare($this->openApi),
-                [$this, 'includes']
-            );
-        }
-
-        return array_merge(...$testCases);
     }
 }

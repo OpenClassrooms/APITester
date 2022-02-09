@@ -43,5 +43,13 @@
         <DuplicateArrayKey errorLevel="suppress"/>
         <InternalClass errorLevel="suppress"/>
         <UndefinedConstant errorLevel="suppress"/>
+        <MixedArrayAccess errorLevel="suppress"/>
+        <MixedAssignment errorLevel="suppress"/>
+        <MixedArrayAssignment errorLevel="suppress"/>
+        <MixedArgument errorLevel="suppress"/>
+        <MixedArgumentTypeCoercion errorLevel="suppress"/>
+        <UndefinedDocblockClass errorLevel="suppress"/>
+        <UnnecessaryVarAnnotation errorLevel="suppress"/>
+        <PropertyNotSetInConstructor errorLevel="suppress"/>
     </issueHandlers>
 </psalm>
