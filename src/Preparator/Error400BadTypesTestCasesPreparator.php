@@ -10,7 +10,7 @@ use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Definition\Request;
 
-final class Error400TypesTestCasesPreparator extends FieldLevelTestCasePreparator
+final class Error400BadTypesTestCasesPreparator extends FieldLevelTestCasePreparator
 {
     public const STRING_TYPE = 'string';
     public const NUMBER_TYPE = 'number';

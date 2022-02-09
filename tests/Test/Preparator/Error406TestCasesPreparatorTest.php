@@ -55,6 +55,7 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                                     ],
                                 ])
                             )
+                            ->setStatusCode(406)
                     )
                 ),
             [

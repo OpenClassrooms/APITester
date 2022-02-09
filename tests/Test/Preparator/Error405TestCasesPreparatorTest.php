@@ -41,46 +41,49 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield [
             Api::create()->addOperation(
                 Operation::create('test', '/test')
-                    ->addResponse(DefinitionResponse::create())
+                    ->addResponse(
+                        DefinitionResponse::create()
+                            ->setStatusCode(405)
+                    )
             ),
             [
                 new TestCase(
-                    'POST_/test',
+                    'POST_/test_405',
                     new Request('POST', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'PUT_/test',
+                    'PUT_/test_405',
                     new Request('PUT', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'PATCH_/test',
+                    'PATCH_/test_405',
                     new Request('PATCH', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'DELETE_/test',
+                    'DELETE_/test_405',
                     new Request('DELETE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'HEAD_/test',
+                    'HEAD_/test_405',
                     new Request('HEAD', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'OPTIONS_/test',
+                    'OPTIONS_/test_405',
                     new Request('OPTIONS', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'TRACE_/test',
+                    'TRACE_/test_405',
                     new Request('TRACE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'CONNECT_/test',
+                    'CONNECT_/test_405',
                     new Request('CONNECT', '/test'),
                     new Response(405)
                 ),

@@ -53,7 +53,7 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'getTest',
+                    'getTest_404',
                     new Request('GET', '/test/-9999'),
                     new Response(404, [], 'description test')
                 ),
@@ -86,7 +86,7 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'postTest',
+                    'postTest_404',
                     new Request(
                         'POST',
                         '/test',

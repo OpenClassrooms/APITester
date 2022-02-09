@@ -10,7 +10,7 @@ use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\Request;
 use OpenAPITesting\Test\TestCase;
 
-final class Error400TestCasesPreparator extends FieldLevelTestCasePreparator
+final class Error400RequiredFieldsTestCasesPreparator extends FieldLevelTestCasePreparator
 {
     protected function getStatusCode(): int
     {

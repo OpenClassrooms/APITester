@@ -25,11 +25,6 @@ class Collection extends \Illuminate\Support\Collection
         parent::__construct($items);
     }
 
-    public static function staticMerge(self $a, self $b): self
-    {
-        return $a->merge($b);
-    }
-
     /**
      * @param TKey $key
      *

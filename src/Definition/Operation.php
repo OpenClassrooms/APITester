@@ -323,13 +323,6 @@ final class Operation
         return $this;
     }
 
-    public function needsRequestBody(): bool
-    {
-        return $this->getRequests()
-            ->where('required', true)
-            ->count() > 0;
-    }
-
     public function getPreparator(): string
     {
         return $this->preparator;

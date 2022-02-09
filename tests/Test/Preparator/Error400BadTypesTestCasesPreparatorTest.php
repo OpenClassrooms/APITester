@@ -11,12 +11,12 @@ use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Preparator\Error400TypesTestCasesPreparator;
+use OpenAPITesting\Preparator\Error400BadTypesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
 
-final class Error400TypesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
+final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getData
@@ -25,7 +25,7 @@ final class Error400TypesTestCasesPreparatorTest extends \PHPUnit\Framework\Test
      */
     public function test(Api $api, array $expected): void
     {
-        $preparator = new Error400TypesTestCasesPreparator();
+        $preparator = new Error400BadTypesTestCasesPreparator();
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),
