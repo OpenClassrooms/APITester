@@ -12,12 +12,12 @@ use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Preparator\Error400TestCasesPreparator;
+use OpenAPITesting\Preparator\Error400RequiredFieldsTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
 
-final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
+final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getData
@@ -26,7 +26,7 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      */
     public function test(Api $api, array $expected): void
     {
-        $preparator = new Error400TestCasesPreparator();
+        $preparator = new Error400RequiredFieldsTestCasesPreparator();
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),
@@ -214,7 +214,12 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'required_foo_param_missing_test',
+                    'required_foo_body_field_missing',
+                    new Request('POST', '/test', [], Json::encode([])),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_body_missing_test',
                     new Request('POST', '/test'),
                     new Response(400)
                 ),
@@ -237,21 +242,16 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 new Schema([
                                     'type' => 'object',
                                     'properties' => [
-                                        'foo_body' => [
+                                        'foo' => [
                                             'type' => 'string',
                                         ],
                                     ],
-                                    'required' => ['foo_body'],
+                                    'required' => ['foo'],
                                 ])
-                            ))->addExample(new RequestExample('foo_body', 'foo_body1'))
+                            ))->addExample(new RequestExample('foo', 'foo_body1'))
                         )
                 ),
             [
-                new TestCase(
-                    'required_foo_body_param_missing_test',
-                    new Request('POST', '/test?foo_query=foo1'),
-                    new Response(400)
-                ),
                 new TestCase(
                     'required_foo_query_param_missing_test',
                     new Request(
@@ -259,9 +259,19 @@ final class Error400TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         '/test',
                         [],
                         Json::encode([
-                            'foo_body' => 'foo_body1',
+                            'foo' => 'foo_body1',
                         ])
                     ),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_foo_body_field_missing',
+                    new Request('POST', '/test?foo_query=foo1', [], Json::encode([])),
+                    new Response(400)
+                ),
+                new TestCase(
+                    'required_body_missing_test',
+                    new Request('POST', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
             ],
