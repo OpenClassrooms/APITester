@@ -33,7 +33,8 @@ final class Parameters extends Collection
         foreach ($this->items as $item) {
             /** @var ParameterExample|null $example */
             $example = $item->getExamples()
-                ->first();
+                ->first()
+            ;
             if (null !== $example) {
                 $examples[] = $example;
             }

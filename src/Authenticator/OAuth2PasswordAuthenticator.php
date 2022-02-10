@@ -12,7 +12,6 @@ use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use OpenAPITesting\Definition\Token;
 use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Json;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 
 final class OAuth2PasswordAuthenticator extends Authenticator
@@ -74,7 +73,7 @@ final class OAuth2PasswordAuthenticator extends Authenticator
         $id = uniqid('auth_', false);
         try {
             $requester->request($request, $id);
-        } catch (ClientExceptionInterface $e) {
+        } catch (\Throwable $e) {
             throw new AuthenticationException(
                 "Could not authenticate with config {$config->getName()}",
                 0,

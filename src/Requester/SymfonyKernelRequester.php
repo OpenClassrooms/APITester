@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Requester;
 
+use http\Exception\RuntimeException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
 use Nyholm\Psr7\Uri;
@@ -11,22 +12,20 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
-use Symfony\Component\HttpClient\Exception\ClientException;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 final class SymfonyKernelRequester extends Requester
 {
+    private string $baseUri;
+
     private KernelInterface $kernel;
 
     /**
      * @var ResponseInterface[]
      */
     private array $responses = [];
-
-    private string $baseUri;
 
     public function __construct(KernelInterface $kernel, string $baseUri = '')
     {
@@ -39,13 +38,15 @@ final class SymfonyKernelRequester extends Requester
      */
     public function request(RequestInterface $request, string $id): void
     {
-        $request = $request->withUri(new Uri($this->baseUri . $request->getUri()));
+        if (!str_starts_with((string) $request->getUri(), 'http')) {
+            $request = $request->withUri(new Uri(trim($this->baseUri . '/' . $request->getUri())));
+        }
         try {
             $this->responses[$id] = $this->symfonyToPsrResponse(
                 $this->kernel->handle($this->psrToSymfonyRequest($request))
             );
         } catch (\Exception $e) {
-            throw new ClientException(new MockResponse((string) $e));
+            throw new RuntimeException('Error while executing kernel request', 0, $e);
         }
     }
 

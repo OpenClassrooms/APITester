@@ -18,8 +18,11 @@ use OpenAPITesting\Definition\Token;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
+use OpenAPITesting\Util\Json;
 use OpenAPITesting\Util\Serializer;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Vural\OpenAPIFaker\Options;
+use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 abstract class TestCasesPreparator
 {
@@ -164,17 +167,17 @@ abstract class TestCasesPreparator
     protected function setAuthentication(Request $request, Security $security, Token $token): Request
     {
         if ($security instanceof HttpSecurity && $security->isBasic()) {
-            $request = $request->withAddedHeader(
+            $request = $request->withHeader(
                 'Authorization',
                 "Basic {$token->getAccessToken()}",
             );
         } elseif ($security instanceof HttpSecurity && $security->isBearer()) {
-            $request = $request->withAddedHeader(
+            $request = $request->withHeader(
                 'Authorization',
                 "Bearer {$token->getAccessToken()}",
             );
         } elseif ($security instanceof OAuth2Security) {
-            $request = $request->withAddedHeader(
+            $request = $request->withHeader(
                 'Authorization',
                 "Bearer {$token->getAccessToken()}",
             );
@@ -189,13 +192,30 @@ abstract class TestCasesPreparator
         return $request;
     }
 
+    protected function generateRandomBody(Operation $operation): ?string
+    {
+        $request = $operation->getRequest('application/json');
+
+        if (null === $request) {
+            return null;
+        }
+
+        return Json::encode(
+            (array) (new SchemaFaker(
+                $request->getBody(),
+                new Options(),
+                true
+            ))->generate()
+        );
+    }
+
     private function addApiKeyToRequest(Request $request, ApiKeySecurity $security, string $apiKey): Request
     {
         $newRequest = $request;
         if ('header' === $security->getIn()) {
-            $newRequest = $request->withAddedHeader($security->getKeyName(), $apiKey);
+            $newRequest = $request->withHeader($security->getKeyName(), $apiKey);
         } elseif ('cookie' === $security->getIn()) {
-            $newRequest = $request->withAddedHeader('Cookie', "{$security->getKeyName()}={$apiKey}");
+            $newRequest = $request->withHeader('Cookie', "{$security->getKeyName()}={$apiKey}");
         } elseif ('query' === $security->getIn()) {
             $oldUri = (string) $request->getUri();
             $prefix = str_contains($oldUri, '?') ? '&' : '?';
