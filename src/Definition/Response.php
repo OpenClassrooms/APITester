@@ -12,7 +12,7 @@ final class Response
 {
     private Operation $parent;
 
-    private string $mediaType = 'application/json';
+    private ?string $mediaType = null;
 
     private int $statusCode = 200;
 
@@ -35,7 +35,7 @@ final class Response
         return new self();
     }
 
-    public function getMediaType(): string
+    public function getMediaType(): ?string
     {
         return $this->mediaType;
     }

@@ -6,6 +6,7 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
@@ -26,7 +27,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     protected function generateTestCases(Operations $operations): array
     {
         $testCases = [];
-        foreach ($operations->where('responses.*') as $operation) {
+        foreach ($operations->where('responses.*', '!==', null) as $operation) {
             $requests = $this->buildRequests($operation);
             $responses = $this->buildResponses($operation);
             $testCases[] = $this->buildTestCases(
@@ -83,10 +84,10 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     $operation->getMethod(),
                     $operation->getPath(),
                 );
-                $request = $requests[$name];
-                $request->withUri(
+                $requests[$name] = $requests[$name]->withUri(
                     new Uri(
                         $operation->getPath(
+                            [],
                             [
                                 $parameter->getName() => $example->getValue(),
                             ]
@@ -109,12 +110,11 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
             foreach ($response->getExamples() as $example) {
                 $name = $example->getName();
                 $responses[$name] = new Response(
-                    $response->getStatusCode(),
-                    [
-                        'content-type' => $response->getMediaType(),
-                    ],
-                    Json::encode($example)
+                    $response->getStatusCode()
                 );
+                if (null !== $example->getValue()) {
+                    $responses[$name]->withBody(Stream::create(Json::encode($example->getValue())));
+                }
                 foreach ($response->getHeaders() as $header) {
                     /** @var ParameterExample|null $example */
                     $example = $header->getExamples()
