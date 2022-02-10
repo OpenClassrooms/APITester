@@ -287,15 +287,17 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                  * @var Example $example
                  */
                 foreach ($mediaType->examples ?? [] as $name => $example) {
-                    $defResponse->addExample(new ResponseExample($name, $example->value));
+                    $defResponse->addExample(new ResponseExample($name, (array) $example->value));
                 }
-                if (null !== $mediaType->example) {
-                    $defResponse->addExample(new ResponseExample('default', $mediaType->example));
+                /** @var Example|null $example */
+                $example = $mediaType->example;
+                if (null !== $example) {
+                    $defResponse->addExample(new ResponseExample('default', (array) $example->value));
                 }
                 if ($mediaType->schema instanceof Schema
                     && null !== $mediaType->schema->example
                 ) {
-                    $defResponse->addExample(new ResponseExample('default', $mediaType->schema->example));
+                    $defResponse->addExample(new ResponseExample('default', (array) $mediaType->schema->example));
                 }
                 $collection->add($defResponse);
             }

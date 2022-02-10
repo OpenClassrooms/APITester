@@ -116,7 +116,7 @@ final class Operation
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
      */
-    public function getPath(array $params = [], array $query = []): string
+    public function getPath(array $params = [], array $query = [], string $providedPath = null): string
     {
         $params = $this->substituteParams($params, 'path');
         $query = $this->substituteParams($query, 'query');
@@ -126,7 +126,7 @@ final class Operation
                 array_keys($params),
             ),
             array_values($params),
-            $this->path
+            $providedPath ?? $this->path
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');

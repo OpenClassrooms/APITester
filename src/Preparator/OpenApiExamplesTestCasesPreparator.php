@@ -65,12 +65,14 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     $operation->getMethod(),
                     $operation->getPath(),
                 );
-                $requests[$name]->withUri(
+                $requests[$name] = $requests[$name]->withUri(
                     new Uri(
                         $operation->getPath(
                             [
                                 $parameter->getName() => $example->getValue(),
-                            ]
+                            ],
+                            [],
+                            urldecode($requests[$name]->getUri()->getPath())
                         )
                     )
                 );
@@ -97,6 +99,17 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
             }
         }
 
+        foreach ($operation->getHeaders() as $parameter) {
+            foreach ($parameter->getExamples() as $example) {
+                $name = $example->getName();
+                $requests[$name] ??= new Request(
+                    $operation->getMethod(),
+                    $operation->getPath(),
+                );
+                $requests[$name] = $requests[$name]->withAddedHeader($parameter->getName(), $example->getValue());
+            }
+        }
+
         return $requests;
     }
 
@@ -113,7 +126,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     $response->getStatusCode()
                 );
                 if (null !== $example->getValue()) {
-                    $responses[$name]->withBody(Stream::create(Json::encode($example->getValue())));
+                    $responses[$name] = $responses[$name]->withBody(Stream::create(Json::encode($example->getValue())));
                 }
                 foreach ($response->getHeaders() as $header) {
                     /** @var ParameterExample|null $example */
