@@ -102,4 +102,15 @@ final class Parameter
 
         return $this;
     }
+
+    public function getFormat(): ?string
+    {
+        $schema = $this->getSchema();
+
+        if (null !== $schema && null !== $schema->format) {
+            return $schema->format;
+        }
+
+        return null;
+    }
 }

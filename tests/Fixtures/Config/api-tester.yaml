@@ -12,6 +12,7 @@ suites:
             error404: ~
             error400RequiredFields: ~
             error400BadTypes: ~
+            error400BadFormat: ~
             error405:
                 responseBody:
                     code: 405
