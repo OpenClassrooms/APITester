@@ -81,10 +81,16 @@ final class Request
         $body = [];
 
         foreach ($this->body->properties as $property => $schema) {
-            if ($onlyRequired && !\in_array($property, $this->body->required, true)) {
+            if ($onlyRequired && !\in_array($property, $this->body->required ?? [], true)) {
                 continue;
             }
-            $body[$property] = $this->getExamples()->where('name', $property)->toArray()[0]->getValue();
+            $examples = $this->getExamples()
+                ->where('name', $property)
+                ->toArray()
+            ;
+            if (\count($examples) > 0) {
+                $body[$property] = $examples[0]->getValue();
+            }
         }
 
         return $body;

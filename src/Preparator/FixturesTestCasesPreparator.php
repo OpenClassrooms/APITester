@@ -25,17 +25,22 @@ final class FixturesTestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): array
     {
-        /**
-         * @var array<string,
-         *              array{'name': string,
-         *                    'for': array<string>,
-         *                    'request': array{
-         *                          'parameters'?: array{'path'?: array<string, string>,'query'?: array<string, string>},
-         *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
-         *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
-         *              }> $fixtures
-         */
-        $fixtures = Yaml::parseFile(PROJECT_DIR . '/' . $this->path);
+        $file = PROJECT_DIR . '/' . $this->path;
+        try {
+            /**
+             * @var array<string,
+             *              array{'name': string,
+             *                    'for': array<string>,
+             *                    'request': array{
+             *                          'parameters'?: array{'path'?: array<string, string>,'query'?: array<string, string>},
+             *                          'headers'?: array<string, string>, 'body'?: array<mixed>},
+             *                    'expectedResponse'?: array{'statusCode'?: int, 'headers'?: array<string>, 'body'?: array<mixed>}
+             *              }> $fixtures
+             */
+            $fixtures = Yaml::parseFile($file);
+        } catch (\Throwable $e) {
+            throw new PreparatorLoadingException(self::getName(), $e);
+        }
 
         return $this->prepareTestCases($fixtures, $operations->toPropIndexedArray());
     }

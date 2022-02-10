@@ -68,6 +68,9 @@ final class Plan
         ?array $authenticators = null,
         ?LoggerInterface $logger = null
     ) {
+        if (!\defined('PROJECT_DIR')) {
+            \define('PROJECT_DIR', \dirname(__DIR__, 2));
+        }
         $this->preparators = $preparators ?? Object_::getImplementations(TestCasesPreparator::class);
         $this->requesters = $requesters ?? Object_::getImplementations(Requester::class);
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
@@ -89,7 +92,7 @@ final class Plan
     public function execute(Config\Plan $testPlanConfig, ?string $suiteName = null): void
     {
         foreach ($testPlanConfig->getSuites() as $suiteConfig) {
-            if ($suiteConfig->getName() !== $suiteName) {
+            if (null !== $suiteName && $suiteConfig->getName() !== $suiteName) {
                 continue;
             }
             $requester = $this->getRequester($suiteConfig->getRequester());

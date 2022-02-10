@@ -26,6 +26,7 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
             ->flatten()
         ;
 
+        /** @var iterable<array-key, TestCase> */
         return $securities
             ->map(fn (Security $security) => $this->prepareTestCases($security))
             ->flatten()

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition;
 
+use Illuminate\Support\Collection;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Servers;
 use OpenAPITesting\Definition\Collection\Tags;
-use OpenAPITesting\Util\Collection;
 
 final class Api
 {

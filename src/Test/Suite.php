@@ -148,8 +148,6 @@ final class Suite implements Test
     }
 
     /**
-     * @throws PreparatorLoadingException
-     *
      * @return TestCase[]
      */
     private function prepareTestCases(): iterable
@@ -162,9 +160,13 @@ final class Suite implements Test
                     fn (Operation $op) => $op->setPreparator($preparator::getName())
                 )
             ;
-            $testCases = $testCases->merge(
-                $preparator->prepare($operations->filter([$this, 'includes']))
-            );
+            try {
+                $testCases = $testCases->merge(
+                    $preparator->prepare($operations->filter([$this, 'includes']))
+                );
+            } catch (PreparatorLoadingException $e) {
+                $this->logger->error($e->getMessage());
+            }
         }
 
         return $testCases;

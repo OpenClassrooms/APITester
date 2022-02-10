@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
+use Illuminate\Support\Collection;
 use OpenAPITesting\Definition\Server;
-use OpenAPITesting\Util\Collection;
 
 /**
  * @method Server[] getIterator()

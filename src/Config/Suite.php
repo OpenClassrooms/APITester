@@ -13,12 +13,12 @@ final class Suite
     /**
      * @var Auth[]
      */
-    private array $auth;
+    private array $auth = [];
 
     /**
      * @var array<string, array<string, mixed>>
      */
-    private array $preparators;
+    private array $preparators = [];
 
     private string $requester;
 

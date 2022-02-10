@@ -42,6 +42,11 @@ abstract class TestCasesPreparator
 
     protected ?object $config = null;
 
+    public function __construct()
+    {
+        $this->tokens = new Tokens();
+    }
+
     public static function getName(): string
     {
         return mb_strtolower(
@@ -74,7 +79,6 @@ abstract class TestCasesPreparator
      */
     public function configure(Config\Preparator $config): void
     {
-        $this->tokens = new Tokens();
         $this->excludedFields = $config->excludedFields;
         $this->responseBody = $config->responseBody;
         if (class_exists(static::getConfigFQCN())) {

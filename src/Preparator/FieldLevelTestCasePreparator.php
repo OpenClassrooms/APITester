@@ -20,6 +20,7 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): iterable
     {
+        /** @var TestCase[] */
         return $operations
             ->map(fn (Operation $op) => $this->prepareTestCases($op))
             ->flatten()

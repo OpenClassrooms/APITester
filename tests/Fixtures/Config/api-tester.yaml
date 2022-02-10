@@ -4,35 +4,14 @@ suites:
             path: 'tests/Fixtures/OpenAPI/petstore.yaml'
             format: 'openapi'
         requester: 'http-async'
-        preparators:
-            examples: ~
-            #            fixtures:
-            #                path: 'tests/Fixtures/Fixtures/operation-test-suite-1.yml'
-            error401: ~
-            error404: ~
-            error400RequiredFields: ~
-            error400BadTypes: ~
-            error400BadFormat: ~
-            error405:
-                responseBody:
-                    code: 405
-                    message: 'HTTP 405 Method Not Allowed'
-            error406: ~
-            error416:
-                range: # Possible range parameters across the API
-                    -   in: header # For range set in header, give header name and unit (cf. https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
-                        names: [ 'Range' ]
-                        unit: items
-                    -   in: query # For range in query params, give lower and upper parameter names
-                        names: [ 'offset', 'limit' ]
-                    -   in: query
-                        names: [ 'from', 'to' ]
         filters:
             exclude:
-                - {id: 'getUserByName'}
-                - {id: 'updatePet'}
-                - {id: 'deleteOrder'}
-                - {id: 'deleteUser'}
+                - {id: getPetById, preparator: error404}
+                - {id: getUserByName}
+                - {id: updatePet}
+                - {id: deleteOrder}
+                - {id: deleteUser}
+        #                - {preparator: error405}
         auth:
             -   name: 'user_1'
                 type: 'oauth2_implicit'

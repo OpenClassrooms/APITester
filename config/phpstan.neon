@@ -8,7 +8,6 @@ includes:
 parameters:
     bootstrapFiles:
         - constants.php
-        - ../src/Util/functions.php
     level: 9
     paths:
         - ../src
@@ -30,6 +29,8 @@ parameters:
         - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @var for variable .+ is not subtype of template type T of object of class ReflectionClass./'
         - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @return is not subtype of template type T of object of class ReflectionClass/'
         - '/Method OpenAPITesting\\Util\\Object_::getSubTypesOf\(\) should return .+ but returns .+/'
+        - '/Unable to resolve the template type TKey in call to function collect/'
+        - '/Unable to resolve the template type TValue in call to function collect/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
     exceptions:
         check:

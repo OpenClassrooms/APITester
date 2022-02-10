@@ -3,8 +3,6 @@
 
 declare(strict_types=1);
 
-require dirname(__DIR__) . '/bootstrap.php';
-
 use OpenAPITesting\Command\ExecutePlanCommand;
 use Symfony\Component\Console\Application;
 

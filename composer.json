@@ -22,7 +22,10 @@
     "psr-4": {
       "OpenAPITesting\\": "src/",
       "OpenAPITesting\\Symfony\\Component\\PropertyInfo\\": "lib/property-info/"
-    }
+    },
+    "files": [
+      "config/constants.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
@@ -39,7 +42,7 @@
     "firebase/php-jwt": "^5.3.0",
     "guzzlehttp/promises": "~1.4.0",
     "hanneskod/classtools": "^1.2",
-    "illuminate/collections": " ^8.0",
+    "illuminate/collections": "v8.99.9",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.48",
@@ -79,6 +82,12 @@
     "thecodingmachine/phpstan-strict-rules": "^1.0",
     "veewee/composer-run-parallel": "^1.1"
   },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "git@github.com:sidux/collections.git"
+    }
+  ],
   "scripts": {
     "check": [
       "@fix-cs",
@@ -104,7 +113,7 @@
     "test": [
       "@unit"
     ],
-    "unit": "bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
+    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"

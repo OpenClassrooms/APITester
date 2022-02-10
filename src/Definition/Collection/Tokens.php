@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Definition\Collection;
 
+use Illuminate\Support\Collection;
 use OpenAPITesting\Definition\Token;
-use OpenAPITesting\Util\Collection;
 
 /**
  * @method Token[] getIterator()

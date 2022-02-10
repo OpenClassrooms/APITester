@@ -4,28 +4,33 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Config;
 
+use Composer\Autoload\ClassLoader;
+
 final class Definition
 {
-    private string $path;
-
     private string $format;
+
+    private string $path;
 
     public function __construct(string $path, string $format)
     {
+        $path = trim($path, '/');
+        $fullPath = $path;
         if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
-            $path = PROJECT_DIR . '/' . trim($path, '/');
+            $reflection = new \ReflectionClass(ClassLoader::class);
+            $fullPath = \dirname((string) $reflection->getFileName(), 3) . '/' . $path;
         }
-        $this->path = $path;
+        $this->path = $fullPath;
         $this->format = $format;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
     }
 
     public function getFormat(): string
     {
         return $this->format;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
     }
 }

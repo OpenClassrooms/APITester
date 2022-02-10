@@ -6,14 +6,16 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
+use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Config\PaginationError;
 use OpenAPITesting\Preparator\Config\Range;
+use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 
 /**
- * @property PaginationError $config
+ * @property PaginationError&Preparator $config
  */
 abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 {
@@ -46,37 +48,9 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
      */
     abstract protected function getHeaderValues(): array;
 
-//    /**
-//     * @inheritDoc
-//     */
-//    public function configure(Config\Preparator $config): void
-//    {
-//        parent::configure($config);
-//
-//        if (!isset($config['range'])) {
-//            throw new \InvalidArgumentException('A range config must be defined to use ' . __CLASS__);
-//        }
-//
-//        if (!\is_array($config['range'])) {
-//            throw new \InvalidArgumentException('Range config must be an array to use ' . __CLASS__);
-//        }
-//
-//        $config = new PaginationError();
-//
-//        foreach ($config['range'] as $rawConfigItem) {
-//            $config->addItem(
-//                new Range(
-//                    $rawConfigItem['in'],
-//                    $rawConfigItem['names'],
-//                    $rawConfigItem['unit'] ?? null
-//                )
-//            );
-//        }
-//
-//        $this->config = $config;
-//    }
-
     /**
+     * @throws PreparatorLoadingException
+     *
      * @return TestCase[]
      */
     private function prepareTestCases(Operation $operation): array
@@ -98,8 +72,14 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
         return [];
     }
 
+    /**
+     * @throws PreparatorLoadingException
+     */
     private function getRangeConfig(Operation $operation): ?Range
     {
+        if (null === $this->config) {
+            throw new PreparatorLoadingException(self::getName());
+        }
         foreach ($this->config->getRange() as $configItem) {
             if ($configItem->inQuery()) {
                 $lower = $operation->getQueryParameters()

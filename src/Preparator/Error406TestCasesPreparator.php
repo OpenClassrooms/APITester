@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
+use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
@@ -26,9 +27,10 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
         foreach ($operations as $operation) {
             /** @var Responses $responses */
             foreach ($operation->getResponses()->groupBy('statusCode') as $statusCode => $responses) {
+                /** @var Collection<int, string> $mediaTypes */
+                $mediaTypes = $responses->select('mediaType');
                 $testCases = $testCases->merge(
-                    $responses
-                        ->select('mediaType')
+                    $mediaTypes
                         ->compare(Mime::TYPES)
                         ->random(self::INVALID_TEST_CASES_NUMBER)
                         ->map(fn (string $type) => $this->prepareTestCase(

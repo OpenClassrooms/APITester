@@ -36,9 +36,6 @@ final class PlanTest extends TestCase
         $this->testPlan->assert();
     }
 
-    /**
-     * @group local
-     */
     public function testOC(): void
     {
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
