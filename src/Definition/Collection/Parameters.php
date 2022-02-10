@@ -21,7 +21,7 @@ final class Parameters extends Collection
     {
         $params = [];
         foreach ($this->getExamples() as $example) {
-            $params[$example->getName()] = $example->getValue();
+            $params[$example->getParent()->getName()] = $example->getValue();
         }
 
         return $params;
@@ -33,8 +33,7 @@ final class Parameters extends Collection
         foreach ($this->items as $item) {
             /** @var ParameterExample|null $example */
             $example = $item->getExamples()
-                ->first()
-            ;
+                ->first();
             if (null !== $example) {
                 $examples[] = $example;
             }
