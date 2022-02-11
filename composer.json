@@ -1,4 +1,5 @@
 {
+  "name": "openclassrooms/open-api-testing",
   "type": "project",
   "license": "proprietary",
   "minimum-stability": "dev",
