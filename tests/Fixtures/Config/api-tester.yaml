@@ -51,8 +51,9 @@ suites:
             include:
                 #- 'oc_api_student_cirr_status_get'
                 #                - {"id": 'oc_api_learning_activity_learning_path_projects_with_user_information_get'}
-                - {responses.*.statusCode: 405, preparator: 'error405'}
-            exclude:
+                #                - {responses.*.statusCode: 405, preparator: 'error405'}
+                - {tags.*.name: 'Invitation'}
+        #            exclude:
         #                - {"preparator": 'error405'}
         #                - {"preparator": '405', "id": '/.*_user_information_get/'}
         auth:

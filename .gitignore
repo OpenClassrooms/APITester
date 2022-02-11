@@ -75,5 +75,7 @@ fabric.properties
 .env.local.php
 .env.*.local
 /vendor/
+/bin/
 /build/
 composer.lock
+!bin/api-tester
