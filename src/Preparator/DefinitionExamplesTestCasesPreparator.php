@@ -8,13 +8,19 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Loader\Exception\InvalidExampleFixturesException;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
+use OpenAPITesting\Preparator\Config\DefinitionExamples;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
-final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
+/**
+ * @property DefinitionExamples&Preparator $config
+ */
+final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
 {
     public static function getName(): string
     {
@@ -22,10 +28,17 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
+     * @throws InvalidExampleFixturesException
+     *
      * @return TestCase[]
      */
     protected function generateTestCases(Operations $operations): array
     {
+//        $operations = (new FixturesLoader())
+//            ->load(Yaml::concatFromDirectory($this->getFixturesPath()))
+//            ->append($operations)
+//        ;
+
         $testCases = [];
         foreach ($operations->where('responses.*', '!==', null) as $operation) {
             $requests = $this->buildRequests($operation);
@@ -132,8 +145,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
                     /** @var ParameterExample|null $example */
                     $example = $header->getExamples()
                         ->where('name', $name)
-                        ->first()
-                    ;
+                        ->first();
                     if (null === $example) {
                         continue;
                     }
@@ -149,7 +161,7 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request>  $requests
+     * @param array<string, Request> $requests
      * @param array<string, Response> $responses
      *
      * @return TestCase[]
@@ -172,5 +184,10 @@ final class OpenApiExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return $testCases;
+    }
+
+    private function getFixturesPath(): string
+    {
+        return $this->config->getFixturesPath();
     }
 }

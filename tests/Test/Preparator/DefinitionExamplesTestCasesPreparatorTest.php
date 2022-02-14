@@ -17,7 +17,7 @@ use OpenAPITesting\Definition\Request as DefinitionRequest;
 use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\ResponseExample;
-use OpenAPITesting\Preparator\OpenApiExamplesTestCasesPreparator;
+use OpenAPITesting\Preparator\DefinitionExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
@@ -26,16 +26,16 @@ use OpenAPITesting\Util\Json;
  * @internal
  * @coversDefaultClass
  */
-final class OpenApiExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
+final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider getExpectedTestSuites
      *
      * @param TestCase[] $expected
      */
-    public function test(Api $api, array $expected): void
+    public function testPrepare(Api $api, array $expected): void
     {
-        $preparator = new OpenApiExamplesTestCasesPreparator();
+        $preparator = new DefinitionExamplesTestCasesPreparator();
 
         Assert::objectsEqual(
             $expected,

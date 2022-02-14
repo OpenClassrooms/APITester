@@ -47,6 +47,8 @@ suites:
                     -   in: header
                         names: [ 'Range' ]
                         unit: items
+            definitionExamples:
+                fixturesPath: tests/Fixtures/Fixtures/oc
         filters:
             include:
                 #- 'oc_api_student_cirr_status_get'

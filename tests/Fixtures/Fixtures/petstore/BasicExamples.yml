@@ -1,0 +1,18 @@
+updatePet400:
+    operationId: updatePet
+    parameters:
+        id: 123
+        status: aaa
+    requestBody: ~
+    statusCode: 400
+    responseBody: ~
+
+listPets400:
+    operationId: listPets
+    parameters:
+        id: 123
+        status: aaa
+    requestBody: ~
+    statusCode: 400
+    responseBody:
+        message: Bad request
