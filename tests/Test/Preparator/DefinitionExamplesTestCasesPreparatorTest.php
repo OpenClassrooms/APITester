@@ -8,6 +8,7 @@ use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
+use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Operation;
@@ -37,6 +38,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
     {
         $preparator = new DefinitionExamplesTestCasesPreparator();
 
+        $preparator->configure(new Preparator([
+            'fixturesPath' => null,
+        ]));
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),

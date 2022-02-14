@@ -11,11 +11,13 @@ use Nyholm\Psr7\Uri;
 use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Loader\Exception\InvalidExampleFixturesException;
+use OpenAPITesting\Definition\Loader\FixturesLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Preparator\Config\DefinitionExamples;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
+use OpenAPITesting\Util\Yaml;
 
 /**
  * @property DefinitionExamples&Preparator $config
@@ -34,10 +36,10 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): array
     {
-//        $operations = (new FixturesLoader())
-//            ->load(Yaml::concatFromDirectory($this->getFixturesPath()))
-//            ->append($operations)
-//        ;
+        $operations = (new FixturesLoader())
+            ->load(Yaml::concatFromDirectory($this->getFixturesPath()))
+            ->append($operations)
+        ;
 
         $testCases = [];
         foreach ($operations->where('responses.*', '!==', null) as $operation) {
@@ -50,6 +52,11 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return array_filter(array_merge(...$testCases));
+    }
+
+    private function getFixturesPath(): ?string
+    {
+        return $this->config->getFixturesPath();
     }
 
     /**
@@ -145,7 +152,8 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
                     /** @var ParameterExample|null $example */
                     $example = $header->getExamples()
                         ->where('name', $name)
-                        ->first();
+                        ->first()
+                    ;
                     if (null === $example) {
                         continue;
                     }
@@ -161,7 +169,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request> $requests
+     * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
      *
      * @return TestCase[]
@@ -184,10 +192,5 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return $testCases;
-    }
-
-    private function getFixturesPath(): string
-    {
-        return $this->config->getFixturesPath();
     }
 }

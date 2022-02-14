@@ -35,8 +35,12 @@ final class Yaml
     /**
      * @return array<array-key, mixed>
      */
-    public static function concatFromDirectory(string $path): array
+    public static function concatFromDirectory(?string $path): array
     {
+        if (null === $path) {
+            return [];
+        }
+
         $directory = __DIR__ . '/../../../' . $path;
 
         $data = [];
