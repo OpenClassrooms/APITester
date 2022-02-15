@@ -49,13 +49,10 @@ suites:
                         unit: items
         filters:
             include:
-                #- 'oc_api_student_cirr_status_get'
-                #                - {"id": 'oc_api_learning_activity_learning_path_projects_with_user_information_get'}
-                #                - {responses.*.statusCode: 405, preparator: 'error405'}
-                - {tags.*.name: 'Invitation'}
-        #            exclude:
-        #                - {"preparator": 'error405'}
-        #                - {"preparator": '405', "id": '/.*_user_information_get/'}
+                - {id: oc_api_learning_activity_learning_path_projects_with_user_information_get}
+                - {tags.*.name: Invitation}
+            exclude:
+                - {id: oc_api_learning_activity_learning_path_projects_with_user_information_get, preparator: error405}
         auth:
             -   name: 'user_1'
                 type: 'oauth2_password'

@@ -261,7 +261,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $defResponse = Response::create()
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
-                    ->setDescription($response->description)
+                    ->setDescription((string) $response->description)
                 ;
                 $collection->add($defResponse);
                 continue;
@@ -279,7 +279,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
-                    ->setDescription($response->description)
+                    ->setDescription((string) $response->description)
                 ;
 
                 /**

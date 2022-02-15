@@ -116,16 +116,24 @@ final class Suite implements Test
             foreach ($item as $key => $value) {
                 if (!$operation->has($key, $value)) {
                     $include = false;
+                    continue 2;
                 }
             }
+            break;
+        }
+
+        if (!$include) {
+            return false;
         }
 
         foreach ($this->filters->getExclude() as $item) {
             foreach ($item as $key => $value) {
-                if ($operation->has($key, $value)) {
-                    $include = false;
+                if (!$operation->has($key, $value)) {
+                    continue 2;
                 }
             }
+            $include = false;
+            break;
         }
 
         return $include;
