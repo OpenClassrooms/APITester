@@ -9,6 +9,7 @@ use OpenAPITesting\Definition\Operation;
 
 /**
  * @method Operation[] getIterator()
+ * @method Operations  map(callable $c)
  * @extends Collection<array-key, Operation>
  */
 final class Operations extends Collection

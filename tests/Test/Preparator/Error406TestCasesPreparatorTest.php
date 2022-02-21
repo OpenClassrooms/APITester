@@ -44,7 +44,7 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         'test',
                         '/test'
                     )->addResponse(
-                        DefinitionResponse::create()
+                        DefinitionResponse::create(406)
                             ->setBody(
                                 new Schema([
                                     'type' => 'object',
@@ -55,7 +55,6 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                                     ],
                                 ])
                             )
-                            ->setStatusCode(406)
                     )
                 ),
             [

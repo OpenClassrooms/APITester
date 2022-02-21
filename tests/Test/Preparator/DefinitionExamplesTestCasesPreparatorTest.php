@@ -38,9 +38,11 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
     {
         $preparator = new DefinitionExamplesTestCasesPreparator();
 
-        $preparator->configure(new Preparator([
-            'fixturesPath' => null,
-        ]));
+        $preparator->configure(
+            new Preparator([
+                'fixturesPath' => null,
+            ])
+        );
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),
@@ -57,9 +59,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test'
+                    '/test',
+                    'GET'
                 )
-                    ->setMethod('GET')
                     ->addQueryParameter(
                         (new Parameter(
                             'foo',
@@ -70,8 +72,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                         ))->addExample(new ParameterExample('200.default', 'bar'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(200)
+                        DefinitionResponse::create(200)
                             ->addExample(new ResponseExample('200.default'))
                     )
             ),
@@ -93,9 +94,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test'
+                    '/test',
+                    'GET'
                 )
-                    ->setMethod('GET')
                     ->addQueryParameter(
                         (new Parameter(
                             'foo',
@@ -107,13 +108,11 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             ->addExample(new ParameterExample('400', '1234'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(200)
+                        DefinitionResponse::create(200)
                             ->addExample(new ResponseExample('200.default'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(400)
+                        DefinitionResponse::create(400)
                             ->addExample(
                                 new ResponseExample('400', [
                                     'message' => 'Bad request',
@@ -153,9 +152,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test'
+                    '/test',
+                    'POST'
                 )
-                    ->setMethod('POST')
                     ->addRequest(
                         DefinitionRequest::create(
                             'application/json',
@@ -183,13 +182,11 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             )
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(201)
+                        DefinitionResponse::create(201)
                             ->addExample(new ResponseExample('201'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(400)
+                        DefinitionResponse::create(400)
                             ->addExample(
                                 new ResponseExample('400.missingParameter', [
                                     'message' => 'Missing parameter',
@@ -249,9 +246,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/user/{userId}/comment/{commentId}'
+                    '/user/{userId}/comment/{commentId}',
+                    'GET'
                 )
-                    ->setMethod('GET')
                     ->addPathParameter(
                         Parameter::create('userId', true)->setSchema(
                             new Schema([
@@ -271,8 +268,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             ->addExample(new ParameterExample('400.default', 'bar'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(200)
+                        DefinitionResponse::create(200)
                             ->addExample(
                                 new ResponseExample('200', [
                                     'title' => 'foo',
@@ -281,8 +277,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             )
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(400)
+                        DefinitionResponse::create(400)
                             ->addExample(
                                 new ResponseExample('400.default', [
                                     'message' => 'Bad request',
@@ -332,9 +327,9 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test'
+                    '/test',
+                    'GET'
                 )
-                    ->setMethod('GET')
                     ->addHeader(
                         Parameter::create('x-next', true)->setSchema(
                             new Schema([
@@ -345,8 +340,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             ->addExample(new ParameterExample('400', '123'))
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(200)
+                        DefinitionResponse::create(200)
                             ->addExample(
                                 new ResponseExample('200', [
                                     'title' => 'foo',
@@ -360,8 +354,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                             )
                     )
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(400)
+                        DefinitionResponse::create(400)
                             ->addExample(
                                 new ResponseExample('400', [
                                     'message' => 'Bad request',

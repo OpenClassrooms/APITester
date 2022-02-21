@@ -258,8 +258,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $headers = $response->headers;
 
             if (0 === \count($response->content)) {
-                $defResponse = Response::create()
-                    ->setStatusCode((int) $status)
+                $defResponse = Response::create((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setDescription($response->description)
                 ;
@@ -274,9 +273,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             foreach ($response->content as $type => $mediaType) {
                 /** @var Schema|null $schema */
                 $schema = $mediaType->schema;
-                $defResponse = Response::create()
+                $defResponse = Response::create((int) $status)
                     ->setMediaType($type)
-                    ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
                     ->setDescription($response->description)

@@ -1,18 +1,21 @@
-updatePet400:
-    operationId: updatePet
-    parameters:
-        id: 123
-        status: aaa
-    requestBody: ~
-    statusCode: 400
-    responseBody: ~
-
 listPets400:
     operationId: listPets
-    parameters:
-        id: 123
-        status: aaa
-    requestBody: ~
-    statusCode: 400
-    responseBody:
-        message: Bad request
+    request:
+        path:
+            id: 123
+        query:
+            id: 123
+        headers:
+            id: 123
+        body:
+            mediaType: application/json
+            content:
+                id: 123
+    response:
+        statusCode: 400
+        headers:
+            id: 123
+        body:
+            mediaType: application/json
+            content:
+                message: Bad request

@@ -13,4 +13,8 @@ use OpenAPITesting\Definition\ResponseExample;
  */
 final class ResponseExamples extends Collection
 {
+    /**
+     * @var ResponseExample[]
+     */
+    protected $items;
 }

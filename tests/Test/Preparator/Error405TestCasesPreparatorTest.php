@@ -42,8 +42,7 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             Api::create()->addOperation(
                 Operation::create('test', '/test')
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(405)
+                        DefinitionResponse::create(405)
                     )
             ),
             [

@@ -23,14 +23,21 @@ final class ParameterExample
         return $this->name;
     }
 
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
     public function getValue(): string
     {
         return $this->value;
     }
 
-    public function setParent(Parameter $parent): self
+    public function setValue(string $value): self
     {
-        $this->parent = $parent;
+        $this->value = $value;
 
         return $this;
     }
@@ -38,5 +45,12 @@ final class ParameterExample
     public function getParent(): Parameter
     {
         return $this->parent;
+    }
+
+    public function setParent(Parameter $parent): self
+    {
+        $this->parent = $parent;
+
+        return $this;
     }
 }

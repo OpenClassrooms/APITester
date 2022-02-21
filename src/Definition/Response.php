@@ -14,7 +14,7 @@ final class Response
 
     private ?string $mediaType = null;
 
-    private int $statusCode = 200;
+    private int $statusCode;
 
     private Parameters $headers;
 
@@ -24,15 +24,16 @@ final class Response
 
     private string $description = '';
 
-    public function __construct()
+    public function __construct(int $statusCode)
     {
+        $this->statusCode = $statusCode;
         $this->headers = new Parameters();
         $this->examples = new ResponseExamples();
     }
 
-    public static function create(): self
+    public static function create(int $statusCode): self
     {
-        return new self();
+        return new self($statusCode);
     }
 
     public function getMediaType(): ?string

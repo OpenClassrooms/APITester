@@ -15,6 +15,11 @@ use OpenAPITesting\Definition\ParameterExample;
 final class Parameters extends Collection
 {
     /**
+     * @var Parameter[]
+     */
+    protected $items;
+
+    /**
      * @return array<string, string>
      */
     public function toExampleArray(): array
