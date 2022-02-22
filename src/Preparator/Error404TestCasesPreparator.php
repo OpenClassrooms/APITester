@@ -59,9 +59,9 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             $operation->getId() . '_404',
             $request,
             new Response(
-                404,
-                [],
-                $response->getDescription()
+                $this->config->response->statusCode ?? 404,
+                $this->config->response->headers ?? [],
+                $this->config->response->body ?? $response->getDescription()
             ),
         );
     }

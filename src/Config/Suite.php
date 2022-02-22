@@ -78,6 +78,14 @@ final class Suite
     }
 
     /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterTestCaseCallbacks(array $callbacks): void
+    {
+        $this->afterTestCaseCallbacks = $callbacks;
+    }
+
+    /**
      * @return Auth[]
      */
     public function getAuthentifications(): array
@@ -93,6 +101,14 @@ final class Suite
         return $this->beforeTestCaseCallbacks;
     }
 
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeTestCaseCallbacks(array $callbacks): void
+    {
+        $this->beforeTestCaseCallbacks = $callbacks;
+    }
+
     public function getDefinition(): Definition
     {
         return $this->definition;
@@ -103,17 +119,38 @@ final class Suite
         return $this->filters;
     }
 
+    public function setFilters(Filters $filters): void
+    {
+        $this->filters = $filters;
+    }
+
     /**
      * @return array<string, array<string, mixed>>
      */
     public function getPreparators(): array
     {
-        return $this->preparators;
+        return collect($this->preparators)
+            ->keyBy('name')
+            ->toArray()
+        ;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     */
+    public function setPreparators(array $preparators): void
+    {
+        $this->preparators = $preparators;
     }
 
     public function getRequester(): string
     {
         return $this->requester;
+    }
+
+    public function setRequester(string $requester): void
+    {
+        $this->requester = $requester;
     }
 
     /**
@@ -127,44 +164,10 @@ final class Suite
     }
 
     /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterTestCaseCallbacks(array $callbacks): void
-    {
-        $this->afterTestCaseCallbacks = $callbacks;
-    }
-
-    /**
      * @param array<string, Auth> $auth
      */
     public function setAuth(array $auth): void
     {
         $this->auth = $auth;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeTestCaseCallbacks(array $callbacks): void
-    {
-        $this->beforeTestCaseCallbacks = $callbacks;
-    }
-
-    public function setFilters(Filters $filters): void
-    {
-        $this->filters = $filters;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $preparators
-     */
-    public function setPreparators(array $preparators): void
-    {
-        $this->preparators = $preparators;
-    }
-
-    public function setRequester(string $requester): void
-    {
-        $this->requester = $requester;
     }
 }

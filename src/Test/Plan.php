@@ -19,6 +19,7 @@ use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\Requester;
+use OpenAPITesting\Test\Exception\SuiteNotFoundException;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Object_;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -88,13 +89,13 @@ final class Plan
      * @throws AuthenticatorNotFoundException
      * @throws AuthenticationLoadingException
      * @throws AuthenticationException
+     * @throws SuiteNotFoundException
      */
     public function execute(Config\Plan $testPlanConfig, ?string $suiteName = null): void
     {
-        foreach ($testPlanConfig->getSuites() as $suiteConfig) {
-            if (null !== $suiteName && $suiteConfig->getName() !== $suiteName) {
-                continue;
-            }
+        $suites = $testPlanConfig->getSuites();
+        $suites = $this->selectSuite($suiteName, $suites);
+        foreach ($suites as $suiteConfig) {
             $requester = $this->getRequester($suiteConfig->getRequester());
             $api = $this->getApi($suiteConfig, $requester);
             $tokens = $this->Authenticate($suiteConfig, $api, $requester);
@@ -117,35 +118,22 @@ final class Plan
     }
 
     /**
-     * @throws ExpectationFailedException
+     * @throws SuiteNotFoundException
      */
-    public function assert(): void
+    private function selectSuite(?string $suiteName, array $suites)
     {
-        foreach ($this->getResults() as $suite) {
-            foreach ($suite as $result) {
-                Assert::true($result->hasSucceeded(), (string) $result);
+        if ($suiteName !== null) {
+            $indexSuites = collect($suites)
+                ->keyBy('name')
+            ;
+            if ($indexSuites->has($suiteName)) {
+                $suites = $indexSuites->where('name', $suiteName);
+            } else {
+                throw new SuiteNotFoundException();
             }
         }
-    }
 
-    /**
-     * @return array<string, array<string, Result>>
-     */
-    public function getResults(): array
-    {
-        return $this->results;
-    }
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    public function addRequester(Requester $requester): self
-    {
-        $this->requesters[] = $requester;
-
-        return $this;
+        return $suites;
     }
 
     /**
@@ -212,10 +200,7 @@ final class Plan
         }
         $configuredPreparators = [];
         foreach ($this->preparators as $p) {
-            $config = $preparators[$p::getName()] ?? null;
-            if (null !== $config) {
-                $p->configure(new Config\Preparator($config));
-            }
+            $p->configure($preparators[$p::getName()] ?? []);
             $p->setTokens($tokens);
             if (\array_key_exists($p::getName(), $preparators)) {
                 $configuredPreparators[] = $p;
@@ -259,5 +244,37 @@ final class Plan
         }
 
         throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
+    }
+
+    /**
+     * @throws ExpectationFailedException
+     */
+    public function assert(): void
+    {
+        foreach ($this->getResults() as $suite) {
+            foreach ($suite as $result) {
+                Assert::true($result->hasSucceeded(), (string) $result);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array<string, Result>>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function addRequester(Requester $requester): self
+    {
+        $this->requesters[] = $requester;
+
+        return $this;
     }
 }

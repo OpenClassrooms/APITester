@@ -6,7 +6,6 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Tokens;
 use OpenAPITesting\Definition\Operation;
@@ -15,39 +14,27 @@ use OpenAPITesting\Definition\Security\ApiKeySecurity;
 use OpenAPITesting\Definition\Security\HttpSecurity;
 use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
 use OpenAPITesting\Definition\Token;
+use OpenAPITesting\Preparator\Config\PreparatorConfig;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
-use OpenAPITesting\Util\Serializer;
+use OpenAPITesting\Util\Object_;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 abstract class TestCasesPreparator
 {
-    /**
-     * @var string[]
-     */
-    protected array $filters = [];
-
     protected Tokens $tokens;
 
-    /**
-     * @var string[]
-     */
-    protected array $excludedFields = [];
-
-    /**
-     * @var array<array-key, mixed>
-     */
-    protected array $responseBody = [];
-
-    protected ?object $config = null;
+    protected PreparatorConfig $config;
 
     public function __construct()
     {
         $this->tokens = new Tokens();
+        $class = static::getConfigFQCN();
+        $this->config = new $class();
     }
 
     public static function getName(): string
@@ -71,31 +58,48 @@ abstract class TestCasesPreparator
         $testCases = $this->generateTestCases($operations);
 
         foreach ($testCases as $testCase) {
-            $testCase->addExcludedFields($this->excludedFields);
+            $testCase->addExcludedFields($this->config->excludedFields);
         }
 
         return $testCases;
     }
 
     /**
+     * @throws PreparatorLoadingException
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    abstract protected function generateTestCases(Operations $operations): iterable;
+
+    /**
      * @throws InvalidPreparatorConfigException
      */
-    public function configure(Config\Preparator $config): void
+    public function configure(array $config): void
     {
-        $this->excludedFields = $config->excludedFields;
-        $this->responseBody = $config->responseBody;
-        if (class_exists(static::getConfigFQCN())) {
-            try {
-                $this->config = Serializer::create()
-                    ->denormalize(
-                        $config->subConfig,
-                        static::getConfigFQCN()
-                    )
-                ;
-            } catch (ExceptionInterface $e) {
-                throw new InvalidPreparatorConfigException(static::class, 0, $e);
-            }
+        try {
+            $this->config = Object_::fromArray($config, static::getConfigFQCN());
+        } catch (ExceptionInterface $e) {
+            throw new InvalidPreparatorConfigException(static::class, 0, $e);
         }
+    }
+
+    protected static function getConfigFQCN(): string
+    {
+        $configClass = __NAMESPACE__ . '\\Config\\' . static::getConfigClassName();
+        if (!class_exists($configClass)) {
+            $configClass = PreparatorConfig::class;
+        }
+
+        return $configClass;
+    }
+
+    protected static function getConfigClassName(): string
+    {
+        return str_replace(
+            'TestCasesPreparator',
+            '',
+            (new \ReflectionClass(static::class))->getShortName(),
+        );
     }
 
     public function setTokens(Tokens $tokens): self
@@ -112,33 +116,9 @@ abstract class TestCasesPreparator
         return $this;
     }
 
-    /**
-     * @param string[] $filters
-     */
-    public function setFilters(array $filters): void
+    public function getConfig(): PreparatorConfig
     {
-        $this->filters = $filters;
-    }
-
-    /**
-     * @throws PreparatorLoadingException
-     *
-     * @return iterable<array-key, TestCase>
-     */
-    abstract protected function generateTestCases(Operations $operations): iterable;
-
-    protected static function getConfigFQCN(): string
-    {
-        return __NAMESPACE__ . '\\Config\\' . static::getConfigClassName();
-    }
-
-    protected static function getConfigClassName(): string
-    {
-        return str_replace(
-            'TestCasesPreparator',
-            '',
-            (new \ReflectionClass(static::class))->getShortName(),
-        );
+        return $this->config;
     }
 
     protected function authenticate(Request $request, Operation $operation): Request
@@ -154,7 +134,8 @@ abstract class TestCasesPreparator
                 'scopes',
                 'includes',
                 $scopes
-            )->first();
+            )->first()
+            ;
 
             if (null !== $token) {
                 return $this->setAuthentication($request, $security, $token);
@@ -192,23 +173,6 @@ abstract class TestCasesPreparator
         return $request;
     }
 
-    protected function generateRandomBody(Operation $operation): ?string
-    {
-        $request = $operation->getRequest('application/json');
-
-        if (null === $request) {
-            return null;
-        }
-
-        return Json::encode(
-            (array) (new SchemaFaker(
-                $request->getBody(),
-                new Options(),
-                true
-            ))->generate()
-        );
-    }
-
     private function addApiKeyToRequest(Request $request, ApiKeySecurity $security, string $apiKey): Request
     {
         $newRequest = $request;
@@ -225,5 +189,22 @@ abstract class TestCasesPreparator
         }
 
         return $newRequest;
+    }
+
+    protected function generateRandomBody(Operation $operation): ?string
+    {
+        $request = $operation->getRequest('application/json');
+
+        if (null === $request) {
+            return null;
+        }
+
+        return Json::encode(
+            (array) (new SchemaFaker(
+                $request->getBody(),
+                new Options(),
+                true
+            ))->generate()
+        );
     }
 }
