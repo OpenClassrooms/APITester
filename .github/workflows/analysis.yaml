@@ -4,8 +4,7 @@ on:
     pull_request: ~
     push:
         branches:
-            - master
-            - lib
+            - main
 
 jobs:
     code-validation:
@@ -31,9 +30,12 @@ jobs:
                     php-version: 7.4
                     coverage: pcov
                     tools: composer:v2
+                env:
+                    COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: Install dependencies
-                run: composer install --prefer-dist --no-progress
+                uses: "ramsey/composer-install@v2"
+
 
             -   run: ${{ matrix.actions.run }}
 
