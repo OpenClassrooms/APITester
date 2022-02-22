@@ -118,11 +118,47 @@ final class Plan
     }
 
     /**
-     * @throws SuiteNotFoundException
+     * @throws ExpectationFailedException
      */
-    private function selectSuite(?string $suiteName, array $suites)
+    public function assert(): void
     {
-        if ($suiteName !== null) {
+        foreach ($this->getResults() as $suite) {
+            foreach ($suite as $result) {
+                Assert::true($result->hasSucceeded(), (string) $result);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array<string, Result>>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function addRequester(Requester $requester): self
+    {
+        $this->requesters[] = $requester;
+
+        return $this;
+    }
+
+    /**
+     * @param array<Config\Suite> $suites
+     *
+     * @throws SuiteNotFoundException
+     *
+     * @return iterable<Config\Suite>
+     */
+    private function selectSuite(?string $suiteName, array $suites): iterable
+    {
+        if (null !== $suiteName) {
             $indexSuites = collect($suites)
                 ->keyBy('name')
             ;
@@ -244,37 +280,5 @@ final class Plan
         }
 
         throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
-    }
-
-    /**
-     * @throws ExpectationFailedException
-     */
-    public function assert(): void
-    {
-        foreach ($this->getResults() as $suite) {
-            foreach ($suite as $result) {
-                Assert::true($result->hasSucceeded(), (string) $result);
-            }
-        }
-    }
-
-    /**
-     * @return array<string, array<string, Result>>
-     */
-    public function getResults(): array
-    {
-        return $this->results;
-    }
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    public function addRequester(Requester $requester): self
-    {
-        $this->requesters[] = $requester;
-
-        return $this;
     }
 }

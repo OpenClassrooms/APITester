@@ -24,12 +24,13 @@ use Symfony\Component\Serializer\Serializer as SfSerializer;
 final class Serializer
 {
     /**
-     * @template T of \object
+     * @template T of object
      *
      * @param mixed[]         $data
      * @param class-string<T> $type
      *
      * @throws ExceptionInterface
+     *
      * @return T
      */
     public static function denormalize(array $data, string $type)

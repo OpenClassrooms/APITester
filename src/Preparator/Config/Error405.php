@@ -6,5 +6,8 @@ namespace OpenAPITesting\Preparator\Config;
 
 final class Error405 extends PreparatorConfig
 {
+    /**
+     * @var string[]
+     */
     public array $methods = [];
 }

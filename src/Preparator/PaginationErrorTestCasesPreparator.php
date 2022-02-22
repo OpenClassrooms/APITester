@@ -14,7 +14,7 @@ use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 
 /**
- * @property \OpenAPITesting\Preparator\Config\PaginationError\\OpenAPITesting\Preparator\Config\PaginationError $config
+ * @property PaginationError $config
  */
 abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 {
@@ -34,6 +34,18 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     {
         return 'PaginationError';
     }
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getQueryValues(): array;
+
+    abstract protected function getErrorCode(): int;
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getHeaderValues(): array;
 
     /**
      * @throws PreparatorLoadingException
@@ -143,16 +155,4 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
         return $testCases;
     }
-
-    /**
-     * @return string[][]
-     */
-    abstract protected function getQueryValues(): array;
-
-    abstract protected function getErrorCode(): int;
-
-    /**
-     * @return string[][]
-     */
-    abstract protected function getHeaderValues(): array;
 }

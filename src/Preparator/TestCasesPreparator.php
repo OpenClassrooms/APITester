@@ -33,8 +33,7 @@ abstract class TestCasesPreparator
     public function __construct()
     {
         $this->tokens = new Tokens();
-        $class = static::getConfigFQCN();
-        $this->config = new $class();
+        $this->config = $this->newConfigInstance(static::getConfigFQCN());
     }
 
     public static function getName(): string
@@ -65,13 +64,8 @@ abstract class TestCasesPreparator
     }
 
     /**
-     * @throws PreparatorLoadingException
+     * @param array<mixed> $config
      *
-     * @return iterable<array-key, TestCase>
-     */
-    abstract protected function generateTestCases(Operations $operations): iterable;
-
-    /**
      * @throws InvalidPreparatorConfigException
      */
     public function configure(array $config): void
@@ -81,25 +75,6 @@ abstract class TestCasesPreparator
         } catch (ExceptionInterface $e) {
             throw new InvalidPreparatorConfigException(static::class, 0, $e);
         }
-    }
-
-    protected static function getConfigFQCN(): string
-    {
-        $configClass = __NAMESPACE__ . '\\Config\\' . static::getConfigClassName();
-        if (!class_exists($configClass)) {
-            $configClass = PreparatorConfig::class;
-        }
-
-        return $configClass;
-    }
-
-    protected static function getConfigClassName(): string
-    {
-        return str_replace(
-            'TestCasesPreparator',
-            '',
-            (new \ReflectionClass(static::class))->getShortName(),
-        );
     }
 
     public function setTokens(Tokens $tokens): self
@@ -120,6 +95,36 @@ abstract class TestCasesPreparator
     {
         return $this->config;
     }
+
+    /**
+     * @return class-string<PreparatorConfig>
+     */
+    protected static function getConfigFQCN(): string
+    {
+        $configClass = __NAMESPACE__ . '\\Config\\' . static::getConfigClassName();
+        if (!class_exists($configClass)) {
+            $configClass = PreparatorConfig::class;
+        }
+
+        /** @var class-string<PreparatorConfig> */
+        return $configClass;
+    }
+
+    protected static function getConfigClassName(): string
+    {
+        return str_replace(
+            'TestCasesPreparator',
+            '',
+            (new \ReflectionClass(static::class))->getShortName(),
+        );
+    }
+
+    /**
+     * @throws PreparatorLoadingException
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    abstract protected function generateTestCases(Operations $operations): iterable;
 
     protected function authenticate(Request $request, Operation $operation): Request
     {
@@ -173,6 +178,35 @@ abstract class TestCasesPreparator
         return $request;
     }
 
+    protected function generateRandomBody(Operation $operation): ?string
+    {
+        $request = $operation->getRequest('application/json');
+
+        if (null === $request) {
+            return null;
+        }
+
+        return Json::encode(
+            (array) (new SchemaFaker(
+                $request->getBody(),
+                new Options(),
+                true
+            ))->generate()
+        );
+    }
+
+    /**
+     * @template T of PreparatorConfig
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     */
+    private function newConfigInstance(string $class)
+    {
+        return new $class();
+    }
+
     private function addApiKeyToRequest(Request $request, ApiKeySecurity $security, string $apiKey): Request
     {
         $newRequest = $request;
@@ -189,22 +223,5 @@ abstract class TestCasesPreparator
         }
 
         return $newRequest;
-    }
-
-    protected function generateRandomBody(Operation $operation): ?string
-    {
-        $request = $operation->getRequest('application/json');
-
-        if (null === $request) {
-            return null;
-        }
-
-        return Json::encode(
-            (array) (new SchemaFaker(
-                $request->getBody(),
-                new Options(),
-                true
-            ))->generate()
-        );
     }
 }

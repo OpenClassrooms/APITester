@@ -29,9 +29,11 @@ final class Object_
     /**
      * @template T
      *
-     * @param class-string<T> $type
+     * @param array<string, mixed> $data
+     * @param class-string<T>      $type
      *
      * @throws ExceptionInterface
+     *
      * @return T
      */
     public static function fromArray(array $data, string $type)

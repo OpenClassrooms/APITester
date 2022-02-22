@@ -7,7 +7,6 @@ namespace OpenAPITesting\Preparator;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Preparator\Config\Error405;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
