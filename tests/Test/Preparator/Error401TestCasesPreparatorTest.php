@@ -9,6 +9,8 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
+use OpenAPITesting\Definition\Parameter;
+use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\Security\ApiKeySecurity;
 use OpenAPITesting\Definition\Security\HttpSecurity;
@@ -43,7 +45,10 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield [
             Api::create()
                 ->addOperation(
-                    Operation::create('test1', '/test/oauth2')
+                    Operation::create('test1', '/test/oauth2/{param}')
+                        ->addPathParameter(
+                            Parameter::create('param')->addExample(new ParameterExample('first', 'toto'))
+                        )
                         ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             OAuth2ImplicitSecurity::create(
@@ -110,7 +115,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     'test1_401_oauth2_implicit',
                     new Request(
                         'GET',
-                        '/test/oauth2',
+                        '/test/oauth2/toto',
                         [
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,

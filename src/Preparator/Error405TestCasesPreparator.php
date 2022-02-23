@@ -10,6 +10,9 @@ use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
+/**
+ * @property \OpenAPITesting\Preparator\Config\Error405 $config
+ */
 final class Error405TestCasesPreparator extends TestCasesPreparator
 {
     public const SUPPORTED_HTTP_METHODS = [
@@ -40,7 +43,7 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
             $testCases = $testCases->merge(
                 $pathOperations
                     ->select('method')
-                    ->compare(self::SUPPORTED_HTTP_METHODS)
+                    ->compare($this->config->methods ?: self::SUPPORTED_HTTP_METHODS)
                     ->map(fn ($method) => $this->prepareTestCase(
                         $path,
                         (string) $method
@@ -60,9 +63,9 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
                 $path
             ),
             new Response(
-                405,
+                $this->config->response->statusCode ?? 405,
                 [],
-                [] !== $this->responseBody ? Json::encode($this->responseBody) : null,
+                null !== $this->config->response ? Json::encode($this->config->response) : null,
             )
         );
     }

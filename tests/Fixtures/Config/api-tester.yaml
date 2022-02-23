@@ -1,48 +1,46 @@
 suites:
-    -   name: 'petstore'
-        definition:
-            path: 'tests/Fixtures/OpenAPI/petstore.yaml'
-            format: 'openapi'
-        requester: 'http-async'
-        filters:
-            exclude:
-                - {id: getPetById, preparator: error404}
-                - {id: getUserByName}
-                - {id: updatePet}
-                - {id: deleteOrder}
-                - {id: deleteUser}
-        #                - {preparator: error405}
-        auth:
-            -   name: 'user_1'
-                type: 'oauth2_implicit'
-                headers:
-                    Authorization: '%ENV(CLIENT_BASIC)%'
-
     -   name: 'oc'
         definition:
             path: 'tests/Fixtures/OpenAPI/openclassrooms-api.yml'
             format: 'openapi'
         requester: 'http-async'
         preparators:
-            error401:
+            -   name: error401
                 excludedFields:
                     - 'stream'
-            error403:
+            -   name: error403
                 excludedFields:
                     - 'stream'
-            error404:
+            -   name: error404
                 excludedFields:
                     - 'stream'
-            error405:
+            -   name: error405
+                response:
+                    statusCode: 404
+            -   name: error405
+                methods:
+                    - TRACE
+                    - CONNECT
+            -   name: error405
+                methods:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                    - HEAD
+                    - OPTIONS
+                response:
+                    statusCode: 404
                 excludedFields:
                     - 'stream'
-            error406: ~
-            error413:
+            -   name: error406
+            -   name: error413
                 range:
                     -   in: header
                         names: [ 'Range' ]
                         unit: items
-            error416:
+            -   name: error416
                 range:
                     -   in: header
                         names: [ 'Range' ]
@@ -51,12 +49,8 @@ suites:
                 fixturesPath: tests/Fixtures/Fixtures/oc
         filters:
             include:
-                #- 'oc_api_student_cirr_status_get'
-                #                - {"id": 'oc_api_learning_activity_learning_path_projects_with_user_information_get'}
-                - {responses.*.statusCode: 405, preparator: 'error405'}
-            exclude:
-        #                - {"preparator": 'error405'}
-        #                - {"preparator": '405', "id": '/.*_user_information_get/'}
+                - {id: oc_api_learning_activity_learning_path_projects_with_user_information_get}
+                - {tags.*.name: Invitation}
         auth:
             -   name: 'user_1'
                 type: 'oauth2_password'

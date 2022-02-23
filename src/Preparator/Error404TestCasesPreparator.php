@@ -8,12 +8,8 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
-use Vural\OpenAPIFaker\Options;
-use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Error404TestCasesPreparator extends TestCasesPreparator
 {
@@ -51,7 +47,7 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
                 )
             ),
             [],
-            $this->generateBody($operation),
+            $this->generateRandomBody($operation),
         );
 
         $request = $this->authenticate(
@@ -63,27 +59,10 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             $operation->getId() . '_404',
             $request,
             new Response(
-                404,
-                [],
-                $response->getDescription()
+                $this->config->response->statusCode ?? 404,
+                $this->config->response->headers ?? [],
+                $this->config->response->body ?? $response->getDescription()
             ),
-        );
-    }
-
-    private function generateBody(Operation $operation): ?string
-    {
-        $request = $operation->getRequest('application/json');
-
-        if (null === $request) {
-            return null;
-        }
-
-        return Json::encode(
-            (array) (new SchemaFaker(
-                $request->getBody(),
-                new Options(),
-                true
-            ))->generate()
         );
     }
 }

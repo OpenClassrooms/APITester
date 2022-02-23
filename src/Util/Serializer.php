@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -22,6 +23,23 @@ use Symfony\Component\Serializer\Serializer as SfSerializer;
 
 final class Serializer
 {
+    /**
+     * @template T of object
+     *
+     * @param mixed[]         $data
+     * @param class-string<T> $type
+     *
+     * @throws ExceptionInterface
+     *
+     * @return T
+     */
+    public static function denormalize(array $data, string $type)
+    {
+        return self::create()
+            ->denormalize($data, $type)
+        ;
+    }
+
     public static function create(): SfSerializer
     {
         $phpDocExtractor = new PhpDocExtractor();

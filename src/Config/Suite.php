@@ -8,7 +8,10 @@ use OpenAPITesting\Requester\HttpAsyncRequester;
 
 final class Suite
 {
-    private Definition $definition;
+    /**
+     * @var \Closure[]
+     */
+    private array $afterTestCaseCallbacks = [];
 
     /**
      * @var Auth[]
@@ -16,25 +19,22 @@ final class Suite
     private array $auth = [];
 
     /**
-     * @var array<string, array<string, mixed>>
+     * @var \Closure[]
      */
-    private array $preparators = [];
+    private array $beforeTestCaseCallbacks = [];
 
-    private string $requester;
+    private Definition $definition;
 
     private Filters $filters;
 
     private string $name;
 
     /**
-     * @var \Closure[]
+     * @var array<string, array<string, mixed>>
      */
-    private array $beforeTestCaseCallbacks = [];
+    private array $preparators = [];
 
-    /**
-     * @var \Closure[]
-     */
-    private array $afterTestCaseCallbacks = [];
+    private string $requester;
 
     public function __construct(string $name, Definition $definition)
     {
@@ -49,35 +49,14 @@ final class Suite
         return $this->name;
     }
 
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    public function getPreparators(): array
+    public function addAfterTestCaseCallback(\Closure $callback): void
     {
-        return $this->preparators;
+        $this->afterTestCaseCallbacks[] = $callback;
     }
 
-    /**
-     * @param array<string, array<string, mixed>> $preparators
-     */
-    public function setPreparators(array $preparators): void
+    public function addBeforeTestCaseCallback(\Closure $callback): void
     {
-        $this->preparators = $preparators;
-    }
-
-    public function getDefinition(): Definition
-    {
-        return $this->definition;
-    }
-
-    public function getFilters(): Filters
-    {
-        return $this->filters;
-    }
-
-    public function setFilters(Filters $filters): void
-    {
-        $this->filters = $filters;
+        $this->beforeTestCaseCallbacks[] = $callback;
     }
 
     /**
@@ -88,37 +67,6 @@ final class Suite
         $this->filters->addExclude($exclusions);
 
         return $this;
-    }
-
-    /**
-     * @param array<array<string, string>> $inclusions
-     */
-    public function include(array $inclusions): self
-    {
-        $this->filters->addInclude($inclusions);
-
-        return $this;
-    }
-
-    public function getRequester(): string
-    {
-        return $this->requester;
-    }
-
-    /**
-     * @return \Closure[]
-     */
-    public function getBeforeTestCaseCallbacks(): array
-    {
-        return $this->beforeTestCaseCallbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeTestCaseCallbacks(array $callbacks): void
-    {
-        $this->beforeTestCaseCallbacks = $callbacks;
     }
 
     /**
@@ -146,20 +94,80 @@ final class Suite
     }
 
     /**
+     * @return \Closure[]
+     */
+    public function getBeforeTestCaseCallbacks(): array
+    {
+        return $this->beforeTestCaseCallbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeTestCaseCallbacks(array $callbacks): void
+    {
+        $this->beforeTestCaseCallbacks = $callbacks;
+    }
+
+    public function getDefinition(): Definition
+    {
+        return $this->definition;
+    }
+
+    public function getFilters(): Filters
+    {
+        return $this->filters;
+    }
+
+    public function setFilters(Filters $filters): void
+    {
+        $this->filters = $filters;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function getPreparators(): array
+    {
+        return collect($this->preparators)
+            ->keyBy('name')
+            ->toArray()
+        ;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     */
+    public function setPreparators(array $preparators): void
+    {
+        $this->preparators = $preparators;
+    }
+
+    public function getRequester(): string
+    {
+        return $this->requester;
+    }
+
+    public function setRequester(string $requester): void
+    {
+        $this->requester = $requester;
+    }
+
+    /**
+     * @param array<array<string, string>> $inclusions
+     */
+    public function include(array $inclusions): self
+    {
+        $this->filters->addInclude($inclusions);
+
+        return $this;
+    }
+
+    /**
      * @param array<string, Auth> $auth
      */
     public function setAuth(array $auth): void
     {
         $this->auth = $auth;
-    }
-
-    public function addBeforeTestCaseCallback(\Closure $callback): void
-    {
-        $this->beforeTestCaseCallbacks[] = $callback;
-    }
-
-    public function addAfterTestCaseCallback(\Closure $callback): void
-    {
-        $this->afterTestCaseCallbacks[] = $callback;
     }
 }

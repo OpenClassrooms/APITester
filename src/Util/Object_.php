@@ -6,6 +6,7 @@ namespace OpenAPITesting\Util;
 
 use hanneskod\classtools\Iterator\ClassIterator;
 use PhpCsFixer\Finder;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 final class Object_
 {
@@ -28,6 +29,23 @@ final class Object_
     /**
      * @template T
      *
+     * @param array<string, mixed> $data
+     * @param class-string<T>      $type
+     *
+     * @throws ExceptionInterface
+     *
+     * @return T
+     */
+    public static function fromArray(array $data, string $type)
+    {
+        return Serializer::create()
+            ->denormalize($data, $type)
+        ;
+    }
+
+    /**
+     * @template T
+     *
      * @param class-string<T> $interface
      *
      * @return array<T>
@@ -35,7 +53,8 @@ final class Object_
     public static function getImplementations(string $interface): array
     {
         $objects = [];
-        $implementations = self::getSubTypesOf($interface)->where('isInstantiable');
+        $implementations = self::getSubTypesOf($interface)->where('isInstantiable')
+        ;
 
         /** @var \ReflectionClass<T> $class */
         foreach ($implementations as $class) {

@@ -26,7 +26,7 @@ final class Parameters extends Collection
     {
         $params = [];
         foreach ($this->getExamples() as $example) {
-            $params[$example->getName()] = $example->getValue();
+            $params[$example->getParent()->getName()] = $example->getValue();
         }
 
         return $params;

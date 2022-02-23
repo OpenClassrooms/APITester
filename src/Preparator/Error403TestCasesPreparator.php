@@ -18,6 +18,9 @@ final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
 
     protected function getTestTokens(Security $security): Tokens
     {
+        if (0 === $security->getScopes()->count()) {
+            return new Tokens();
+        }
         if ($security instanceof OAuth2Security) {
             return $this->tokens
                 ->filter(

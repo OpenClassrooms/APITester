@@ -11,22 +11,20 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
-use Symfony\Component\HttpClient\Exception\ClientException;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 final class SymfonyKernelRequester extends Requester
 {
+    private string $baseUri;
+
     private KernelInterface $kernel;
 
     /**
      * @var ResponseInterface[]
      */
     private array $responses = [];
-
-    private string $baseUri;
 
     public function __construct(KernelInterface $kernel, string $baseUri = '')
     {
@@ -39,13 +37,15 @@ final class SymfonyKernelRequester extends Requester
      */
     public function request(RequestInterface $request, string $id): void
     {
-        $request = $request->withUri(new Uri($this->baseUri . $request->getUri()));
+        if (!str_starts_with((string) $request->getUri(), 'http')) {
+            $request = $request->withUri(new Uri(trim($this->baseUri . '/' . $request->getUri())));
+        }
         try {
-            $this->responses[$id] = $this->symfonyToPsrResponse(
-                $this->kernel->handle($this->psrToSymfonyRequest($request))
-            );
+            $request = $this->psrToSymfonyRequest($request);
+            $response = $this->kernel->handle($request);
+            $this->responses[$id] = $this->symfonyToPsrResponse($response);
         } catch (\Exception $e) {
-            throw new ClientException(new MockResponse((string) $e));
+            throw new \RuntimeException('Error while executing kernel request', 0, $e);
         }
     }
 
@@ -64,14 +64,6 @@ final class SymfonyKernelRequester extends Requester
         $this->baseUri = $baseUri;
     }
 
-    private function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface
-    {
-        $psr17Factory = new Psr17Factory();
-        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
-
-        return $psrHttpFactory->createResponse($symfonyResponse);
-    }
-
     private function psrToSymfonyRequest(RequestInterface $request): Request
     {
         $serverRequest = new ServerRequest(
@@ -79,8 +71,20 @@ final class SymfonyKernelRequester extends Requester
             $request->getUri(),
             $request->getHeaders(),
             $request->getBody(),
+            '1.1',
+            [
+                'HTTPS' => 'on',
+            ]
         );
 
         return (new HttpFoundationFactory())->createRequest($serverRequest);
+    }
+
+    private function symfonyToPsrResponse(Response $symfonyResponse): ResponseInterface
+    {
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+
+        return $psrHttpFactory->createResponse($symfonyResponse);
     }
 }

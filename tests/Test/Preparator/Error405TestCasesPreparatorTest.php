@@ -6,7 +6,6 @@ namespace OpenAPITesting\Tests\Test\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
@@ -24,7 +23,6 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error405TestCasesPreparator();
-        $preparator->configure(new Config\Preparator());
 
         Assert::objectsEqual(
             $expected,

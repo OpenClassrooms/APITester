@@ -53,6 +53,8 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
                 new Request(
                     $operation->getMethod(),
                     $operation->getExamplePath(),
+                    [],
+                    $this->generateRandomBody($operation),
                 ),
                 $security,
                 $token,

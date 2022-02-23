@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Tests\Test;
 
 use OpenAPITesting\Config\Loader\PlanConfigLoader;
+use OpenAPITesting\Test\Exception\SuiteNotFoundException;
 use OpenAPITesting\Test\Plan;
 use OpenAPITesting\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ final class PlanTest extends TestCase
 
     public function testPetStore(): void
     {
+        $this->expectException(SuiteNotFoundException::class);
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
         $this->testPlan->execute($config, 'petstore');
         $this->testPlan->assert();
