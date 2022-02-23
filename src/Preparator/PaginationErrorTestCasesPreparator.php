@@ -6,16 +6,15 @@ namespace OpenAPITesting\Preparator;
 
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Preparator\Config\PaginationError;
-use OpenAPITesting\Preparator\Config\Range;
+use OpenAPITesting\Preparator\Config\PaginationError\Range;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Test\TestCase;
 
 /**
- * @property PaginationError&Preparator $config
+ * @property PaginationError $config
  */
 abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 {
@@ -80,7 +79,7 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
         if (null === $this->config) {
             throw new PreparatorLoadingException(self::getName());
         }
-        foreach ($this->config->getRange() as $configItem) {
+        foreach ($this->config->range as $configItem) {
             if ($configItem->inQuery()) {
                 $lower = $operation->getQueryParameters()
                     ->where('name', $configItem->getLower())
@@ -100,7 +99,8 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
             if ($configItem->inHeader()) {
                 $header = $operation->getHeaders()
-                    ->where('name', $configItem->getNames()[0])->first();
+                    ->where('name', $configItem->getNames()[0])->first()
+                ;
 
                 if (null === $header) {
                     continue;
@@ -116,7 +116,7 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     /**
      * @return TestCase[]
      */
-    private function prepareWithQueryParam(Operation $operation, Range $configItem): array
+    private function prepareWithQueryParam(Operation $operation, Config\PaginationError\Range $configItem): array
     {
         $testCases = [];
         foreach ($this->getQueryValues() as $values) {

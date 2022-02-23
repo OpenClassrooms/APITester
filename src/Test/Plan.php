@@ -19,6 +19,7 @@ use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\Requester;
+use OpenAPITesting\Test\Exception\SuiteNotFoundException;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Object_;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -88,13 +89,13 @@ final class Plan
      * @throws AuthenticatorNotFoundException
      * @throws AuthenticationLoadingException
      * @throws AuthenticationException
+     * @throws SuiteNotFoundException
      */
     public function execute(Config\Plan $testPlanConfig, ?string $suiteName = null): void
     {
-        foreach ($testPlanConfig->getSuites() as $suiteConfig) {
-            if (null !== $suiteName && $suiteConfig->getName() !== $suiteName) {
-                continue;
-            }
+        $suites = $testPlanConfig->getSuites();
+        $suites = $this->selectSuite($suiteName, $suites);
+        foreach ($suites as $suiteConfig) {
             $requester = $this->getRequester($suiteConfig->getRequester());
             $api = $this->getApi($suiteConfig, $requester);
             $tokens = $this->Authenticate($suiteConfig, $api, $requester);
@@ -146,6 +147,29 @@ final class Plan
         $this->requesters[] = $requester;
 
         return $this;
+    }
+
+    /**
+     * @param array<Config\Suite> $suites
+     *
+     * @throws SuiteNotFoundException
+     *
+     * @return iterable<Config\Suite>
+     */
+    private function selectSuite(?string $suiteName, array $suites): iterable
+    {
+        if (null !== $suiteName) {
+            $indexSuites = collect($suites)
+                ->keyBy('name')
+            ;
+            if ($indexSuites->has($suiteName)) {
+                $suites = $indexSuites->where('name', $suiteName);
+            } else {
+                throw new SuiteNotFoundException();
+            }
+        }
+
+        return $suites;
     }
 
     /**
@@ -212,10 +236,7 @@ final class Plan
         }
         $configuredPreparators = [];
         foreach ($this->preparators as $p) {
-            $config = $preparators[$p::getName()] ?? null;
-            if (null !== $config) {
-                $p->configure(new Config\Preparator($config));
-            }
+            $p->configure($preparators[$p::getName()] ?? []);
             $p->setTokens($tokens);
             if (\array_key_exists($p::getName(), $preparators)) {
                 $configuredPreparators[] = $p;

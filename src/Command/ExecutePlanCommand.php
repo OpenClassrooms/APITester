@@ -14,6 +14,7 @@ use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
 use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
 use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
+use OpenAPITesting\Test\Exception\SuiteNotFoundException;
 use OpenAPITesting\Test\Plan;
 use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Command\Command;
@@ -37,6 +38,7 @@ final class ExecutePlanCommand extends Command
      * @throws AuthenticationLoadingException
      * @throws ConfigurationException
      * @throws AuthenticationException
+     * @throws SuiteNotFoundException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
