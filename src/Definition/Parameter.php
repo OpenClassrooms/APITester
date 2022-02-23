@@ -25,6 +25,9 @@ final class Parameter
 
     private ?Schema $schema;
 
+    /**
+     * @var ParameterExamples
+     */
     private ParameterExamples $examples;
 
     public function __construct(string $name, bool $required = false, ?Schema $schema = null)

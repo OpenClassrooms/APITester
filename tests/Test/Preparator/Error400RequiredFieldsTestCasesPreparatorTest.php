@@ -195,7 +195,8 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ->addOperation(
                     Operation::create(
                         'test',
-                        '/test'
+                        '/test',
+                        'POST'
                     )
                         ->addRequest(
                             (new \OpenAPITesting\Definition\Request(
@@ -231,7 +232,8 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ->addOperation(
                     Operation::create(
                         'test',
-                        '/test'
+                        '/test',
+                        'POST'
                     )
                         ->addQueryParameter(
                             (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))

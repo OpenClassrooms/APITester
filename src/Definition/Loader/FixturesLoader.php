@@ -11,7 +11,7 @@ use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\Request;
 use OpenAPITesting\Definition\Response;
-use OpenAPITesting\Util\Serializer;
+use OpenAPITesting\Util\Object_;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
@@ -69,31 +69,25 @@ final class FixturesLoader
                     if (!isset($fixture[$type])) {
                         continue;
                     }
-                    $fixtureParameters[$type] = Serializer::create()
-                        ->denormalize(
-                            $fixture[$type],
-                            Parameters::class
-                        )
-                    ;
+                    $fixtureParameters[$type] = Object_::fromArray(
+                        $fixture[$type],
+                        Parameters::class
+                    );
                 }
 
                 if (isset($fixture['request'])) {
                     /** @var Request $fixtureRequest */
-                    $fixtureRequest = Serializer::create()
-                        ->denormalize(
-                            $fixture['request'],
-                            Request::class
-                        )
-                    ;
+                    $fixtureRequest = Object_::fromArray(
+                        $fixture['request'],
+                        Request::class
+                    );
                 }
 
                 /** @var Response $fixtureResponse */
-                $fixtureResponse = Serializer::create()
-                    ->denormalize(
-                        $fixture['response'],
-                        Response::class
-                    )
-                ;
+                $fixtureResponse = Object_::fromArray(
+                    $fixture['response'],
+                    Response::class
+                );
             } catch (ExceptionInterface $e) {
                 throw new InvalidExampleFixturesException(static::class, 0, $e);
             }
@@ -111,12 +105,21 @@ final class FixturesLoader
     public function append(Operations $operations): Operations
     {
         return $operations->map(
-            fn (Operation $o) => $o->addExamples(
-                $this->parameters[$o->getId()],
-                $this->requests[$o->getId()] ?? [],
-                $this->responses[$o->getId()]
-            )
+            fn (Operation $o) => $this->appendToOperation($o)
         );
+    }
+
+    private function appendToOperation(Operation $operation): Operation
+    {
+        $parameters = $this->parameters[$operation->getId()] ?? null;
+        $requests = $this->requests[$operation->getId()] ?? [];
+        $responses = $this->responses[$operation->getId()] ?? null;
+
+        if (null === $parameters || null === $responses) {
+            return $operation;
+        }
+
+        return $operation->addExamples($parameters, $requests, $responses);
     }
 
     /**
@@ -176,10 +179,12 @@ final class FixturesLoader
                 $result[$type]['items'][] = [
                     'name' => $parameter,
                     'examples' => [
-                        'items' => [[
-                            'name' => $name,
-                            'value' => $value,
-                        ]],
+                        'items' => [
+                            [
+                                'name' => $name,
+                                'value' => $value,
+                            ],
+                        ],
                     ],
                 ];
             }
@@ -212,10 +217,12 @@ final class FixturesLoader
                 $result['response']['headers']['items'][] = [
                     'name' => $parameter,
                     'examples' => [
-                        'items' => [[
-                            'name' => $name,
-                            'value' => $value,
-                        ]],
+                        'items' => [
+                            [
+                                'name' => $name,
+                                'value' => $value,
+                            ],
+                        ],
                     ],
                 ];
             }

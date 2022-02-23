@@ -56,7 +56,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
 
     private function getFixturesPath(): ?string
     {
-        return $this->config->getFixturesPath();
+        return $this->config->fixturesPath;
     }
 
     /**
