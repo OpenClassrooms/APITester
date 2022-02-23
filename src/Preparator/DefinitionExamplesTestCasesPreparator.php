@@ -10,7 +10,6 @@ use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\Exception\InvalidExampleFixturesException;
 use OpenAPITesting\Definition\Loader\FixturesLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
@@ -30,15 +29,12 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @throws InvalidExampleFixturesException
-     *
      * @return TestCase[]
      */
     protected function generateTestCases(Operations $operations): array
     {
         $operations = (new FixturesLoader())
-            ->load(Yaml::concatFromDirectory($this->getFixturesPath()))
-            ->append($operations)
+            ->load(Yaml::concatFromDirectory($this->getFixturesPath()), $operations)
         ;
 
         $testCases = [];

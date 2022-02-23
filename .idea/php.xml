@@ -190,7 +190,7 @@
   </component>
   <component name="PhpStan">
     <PhpStan_settings>
-      <PhpStanConfiguration tool_path="$PROJECT_DIR$/vendor/bin/phpstan" timeout="60000" />
+      <PhpStanConfiguration tool_path="$PROJECT_DIR$/bin/phpstan" timeout="60000" />
     </PhpStan_settings>
   </component>
   <component name="PhpUnit">

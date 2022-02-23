@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenAPITesting\Tests\Test\Definition\Loader;
 
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\Exception\InvalidExampleFixturesException;
 use OpenAPITesting\Definition\Loader\FixturesLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
@@ -15,26 +14,44 @@ use OpenAPITesting\Definition\ResponseExample;
 use OpenAPITesting\Util\Assert;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-type FixtureFormat array{
+ *      operationId: string,
+ *      request: array{
+ *          path?: array<string, string>,
+ *          query?: array<string, string>,
+ *          header?: array<string, string>,
+ *          body?: array{
+ *              mediaType: string,
+ *              content: array<array-key, mixed>
+ *          }
+ *      },
+ *      response: array{
+ *          statusCode: int,
+ *          header?: array<string, string>,
+ *          body?: array{
+ *              mediaType: string,
+ *              content: array<array-key, mixed>
+ *          }
+ *      }
+ * }
+ */
 final class FixturesLoaderTest extends TestCase
 {
     /**
      * @dataProvider getLoadAndAppendData
      *
-     * @param array<array-key, mixed> $data
-     *
-     * @throws InvalidExampleFixturesException
+     * @param array<string, FixtureFormat> $data
      */
     public function testLoadAndAppend(array $data, Operations $operations, Operations $expected): void
     {
-        $operations = (new FixturesLoader())->load($data)
-            ->append($operations)
-        ;
+        $operations = (new FixturesLoader())->load($data, $operations);
 
         Assert::objectsEqual($expected, $operations);
     }
 
     /**
-     * @return iterable<string, array{array<array-key, mixed>,ExampleFixtures}>
+     * @return iterable<string, array{array<string, FixtureFormat>, Operations, Operations}>
      */
     public function getLoadAndAppendData(): iterable
     {
@@ -65,7 +82,8 @@ final class FixturesLoaderTest extends TestCase
                         Parameter::create('type')
                             ->addExample(new ParameterExample('200', 'Dog'))
                     )
-                    ->addResponse(Response::create(200)),
+                    ->addResponse(Response::create(200))
+                    ->addResponse(Response::create(400)->setMediaType('application/json')),
             ]),
             new Operations([
                 Operation::create('listPets', '/pets')
@@ -78,9 +96,12 @@ final class FixturesLoaderTest extends TestCase
                     ->addResponse(Response::create(200))
                     ->addResponse(
                         Response::create(400)
-                            ->addExample(new ResponseExample('listPets400', [
-                                'message' => 'Bad request',
-                            ]))
+                            ->setMediaType('application/json')
+                            ->addExample(
+                                new ResponseExample('listPets400', [
+                                    'message' => 'Bad request',
+                                ])
+                            )
                     ),
             ]),
         ];

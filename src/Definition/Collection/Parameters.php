@@ -10,6 +10,7 @@ use OpenAPITesting\Definition\ParameterExample;
 
 /**
  * @method Parameter[] getIterator()
+ * @method Parameters  map(callable $c)
  * @extends Collection<array-key, Parameter>
  */
 final class Parameters extends Collection

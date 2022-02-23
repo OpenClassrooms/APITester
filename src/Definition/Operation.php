@@ -151,7 +151,7 @@ final class Operation
             }
         );
 
-        return $this->setParameters($parameters, $type);
+        return $this->setParametersByType($parameters, $type);
     }
 
     /**
@@ -172,7 +172,7 @@ final class Operation
         return $parameters;
     }
 
-    public function setParameters(Parameters $parameters, string $type): self
+    public function setParametersByType(Parameters $parameters, string $type): self
     {
         if (Parameter::TYPE_PATH === $type) {
             $this->pathParameters = $parameters;
@@ -180,6 +180,18 @@ final class Operation
             $this->queryParameters = $parameters;
         } elseif (Parameter::TYPE_HEADER === $type) {
             $this->headers = $parameters;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameters
+     */
+    public function setParameters(array $parameters): self
+    {
+        foreach (Parameter::TYPES as $type) {
+            $this->setParametersByType($parameters[$type], $type);
         }
 
         return $this;
@@ -255,46 +267,6 @@ final class Operation
         );
 
         return $this->setResponses($responses);
-    }
-
-    /**
-     * @param array<array-key, array<string, Parameters>> $parameters
-     * @param Request[]                                   $requests
-     * @param Response[]                                  $responses
-     */
-    public function addExamples(array $parameters, array $requests, array $responses): self
-    {
-        foreach ($parameters as $parametersSet) {
-            foreach ($parametersSet as $type => $parametersByType) {
-                foreach ($parametersByType as $parameter) {
-                    $this->addParameterExample(
-                        $parameter->getExamples()
-                            ->first(),
-                        $type,
-                        $parameter->getName()
-                    );
-                }
-            }
-        }
-
-        foreach ($requests as $request) {
-            $this->addRequestExample(
-                $request->getExamples()
-                    ->first(),
-                $request->getMediaType()
-            );
-        }
-
-        foreach ($responses as $response) {
-            $this->addResponseExample(
-                $response->getStatusCode(),
-                $response->getExamples()
-                    ->first(),
-                $response->getMediaType()
-            );
-        }
-
-        return $this;
     }
 
     public function getResponses(): Responses

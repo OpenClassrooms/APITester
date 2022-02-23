@@ -56,8 +56,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test',
-                    'GET'
+                    '/test'
                 )
                     ->addQueryParameter(
                         (new Parameter(
@@ -91,8 +90,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             Api::create()->addOperation(
                 Operation::create(
                     'test',
-                    '/test',
-                    'GET'
+                    '/test'
                 )
                     ->addQueryParameter(
                         (new Parameter(

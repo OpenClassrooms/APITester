@@ -20,9 +20,6 @@ final class Response
 
     private ?Schema $body = null;
 
-    /**
-     * @var ResponseExamples
-     */
     private ResponseExamples $examples;
 
     private string $description = '';
