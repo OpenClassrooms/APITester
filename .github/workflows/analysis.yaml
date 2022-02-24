@@ -49,7 +49,7 @@ jobs:
 
             -   name: Coverage update
                 uses: OpenClassrooms/coverage-checker@v1.7.0
-                if: ${{ hashFiles('build/coverage/coverage.xml') != '' && github.event_name == 'push' && (github.ref_name == 'lib' || github.ref_name == 'master') }}
+                if: ${{ hashFiles('build/coverage/coverage.xml') != '' && github.event_name == 'push' && github.ref_name == 'main' }}
                 with:
                     action: update
                     files: '[{"coverage": "build/coverage/coverage.xml", "summary": "coverage-summary.json", "label": "Coverage", "badge": "coverage.svg"}]'
