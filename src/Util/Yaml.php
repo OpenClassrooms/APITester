@@ -41,7 +41,7 @@ final class Yaml
             return [];
         }
 
-        $directory = __DIR__ . '/../../../' . $path;
+        $directory = __DIR__ . '/../../' . $path;
 
         $data = [];
         /** @var DirectoryIterator $fileInfo */

@@ -139,8 +139,7 @@ abstract class TestCasesPreparator
                 'scopes',
                 'includes',
                 $scopes
-            )->first()
-            ;
+            )->first();
 
             if (null !== $token) {
                 return $this->setAuthentication($request, $security, $token);

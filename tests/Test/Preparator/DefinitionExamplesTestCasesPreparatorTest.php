@@ -49,9 +49,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
     {
         $preparator = new DefinitionExamplesTestCasesPreparator();
 
-        $preparator->configure([
-            'fixturesPath' => null,
-        ]);
+        $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),
