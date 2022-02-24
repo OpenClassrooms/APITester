@@ -1,10 +1,11 @@
 listPets400:
     operationId: listPets
     request:
-        path:
-            id: 123
-        query:
-            id: 123
+        parameters:
+            path:
+                id: 123
+            query:
+                id: 123
         headers:
             id: 123
         body:

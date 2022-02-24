@@ -23,11 +23,11 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): iterable
     {
-        $testCases = $operations
+        /** @var TestCase[] */
+        return $operations
             ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
+            ->flatten()
         ;
-
-        return array_merge(...$testCases);
     }
 
     protected static function getConfigClassName(): string
@@ -99,8 +99,7 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
             if ($configItem->inHeader()) {
                 $header = $operation->getHeaders()
-                    ->where('name', $configItem->getNames()[0])->first()
-                ;
+                    ->where('name', $configItem->getNames()[0])->first();
 
                 if (null === $header) {
                     continue;

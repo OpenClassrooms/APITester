@@ -45,8 +45,8 @@ suites:
                     -   in: header
                         names: [ 'Range' ]
                         unit: items
-            definitionExamples:
-                fixturesPath: tests/Fixtures/Fixtures/oc
+            -   name: definitionExamples
+                additionalExamplesPath: tests/Fixtures/Fixtures/oc
         filters:
             include:
                 - {id: oc_api_learning_activity_learning_path_projects_with_user_information_get}

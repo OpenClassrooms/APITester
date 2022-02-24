@@ -157,7 +157,7 @@ final class Operation
     /**
      * @return array<string, Parameters>
      */
-    public function getParameters(bool $required = true): array
+    public function getParameters(bool $onlyRequired = true): array
     {
         $parameters = [
             Parameter::TYPE_PATH => $this->getPathParameters(),
@@ -165,7 +165,7 @@ final class Operation
             Parameter::TYPE_HEADER => $this->getHeaders(),
         ];
 
-        if ($required) {
+        if ($onlyRequired) {
             $parameters = array_map(static fn (Parameters $p) => $p->where('required', true), $parameters);
         }
 

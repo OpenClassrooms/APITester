@@ -17,6 +17,7 @@ use OpenAPITesting\Definition\Request as DefinitionRequest;
 use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Definition\ResponseExample;
+use OpenAPITesting\Preparator\Config\DefinitionExamples;
 use OpenAPITesting\Preparator\DefinitionExamplesTestCasesPreparator;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Assert;
@@ -28,6 +29,17 @@ use OpenAPITesting\Util\Json;
  */
 final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
+    public function testConfigureConfig(): void
+    {
+        $preparator = new DefinitionExamplesTestCasesPreparator();
+        $preparator->configure([
+            'additionalExamplesPath' => '/foo/bar/',
+        ]);
+        /** @var DefinitionExamples $config */
+        $config = $preparator->getConfig();
+        static::assertSame('/foo/bar/', $config->additionalExamplesPath);
+    }
+
     /**
      * @dataProvider getExpectedTestSuites
      *

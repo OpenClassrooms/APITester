@@ -8,7 +8,6 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Config\Preparator;
 use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Loader\FixturesLoader;
 use OpenAPITesting\Definition\Operation;
@@ -19,7 +18,7 @@ use OpenAPITesting\Util\Json;
 use OpenAPITesting\Util\Yaml;
 
 /**
- * @property DefinitionExamples&Preparator $config
+ * @property DefinitionExamples $config
  */
 final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
 {
@@ -34,7 +33,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     protected function generateTestCases(Operations $operations): array
     {
         $operations = (new FixturesLoader())
-            ->load(Yaml::concatFromDirectory($this->getFixturesPath()), $operations)
+            ->load(Yaml::concatFromDirectory($this->getAdditionalExamplesPath()), $operations)
         ;
 
         $testCases = [];
@@ -50,9 +49,9 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
         return array_filter(array_merge(...$testCases));
     }
 
-    private function getFixturesPath(): ?string
+    private function getAdditionalExamplesPath(): ?string
     {
-        return $this->config->fixturesPath;
+        return $this->config->additionalExamplesPath;
     }
 
     /**

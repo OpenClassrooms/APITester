@@ -16,54 +16,94 @@ use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Definition\Response;
 use OpenAPITesting\Definition\ResponseExample;
 
-/**
- * @phpstan-type FixtureFormat array{
- *      operationId: string,
- *      request: array{
- *          path?: array<string, string>,
- *          query?: array<string, string>,
- *          header?: array<string, string>,
- *          body?: array{
- *              mediaType: string,
- *              content: array<array-key, mixed>
- *          }
- *      },
- *      response: array{
- *          statusCode: int,
- *          header?: array<string, string>,
- *          body?: array{
- *              mediaType: string,
- *              content: array<array-key, mixed>
- *          }
- *      }
- * }
- */
 final class FixturesLoader
 {
     /**
-     * @param array<string, FixtureFormat> $fixtures
+     * @param array<array-key, mixed> $fixtures
      */
     public function load(array $fixtures, Operations $operations): Operations
     {
         return $operations->map(
-            fn (Operation $o) => $this->appendFixtureExamples(
-                $o,
-                array_filter($fixtures, static fn ($f) => $f['operationId'] === $o->getId())
+            fn (Operation $operation) => $this->appendFixtureExamples(
+                $operation,
+                $this->getMatchingFixtures($operation, $fixtures)
             )
         );
     }
 
     /**
+     * @param array<array-key, mixed> $fixtures
+     *
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    private function getMatchingFixtures(Operation $operation, array $fixtures): array
+    {
+        return array_filter($fixtures, fn ($f) => \is_array($f) && $this->fixtureMatchesOperation($operation, $f));
+    }
+
+    /**
+     * @param mixed $fixture
+     */
+    private function fixtureMatchesOperation(Operation $operation, $fixture): bool
+    {
+        if (!\is_array($fixture) || !isset($fixture['operationId'])) {
+            return false;
+        }
+
+        return $fixture['operationId'] === $operation->getId();
+    }
+
+    /**
+     * @param array<string, array<array-key, mixed>> $fixtures
+     */
+    private function appendFixtureExamples(Operation $operation, array $fixtures): Operation
+    {
+        $parameters = $operation->getParameters(false);
+        $requests = $operation->getRequests();
+        $responses = $operation->getResponses();
+
+        foreach ($fixtures as $fixtureName => $fixture) {
+            if (!isset($fixture['request'], $fixture['response'])
+                || !\is_array($fixture['request'])
+                || !\is_array($fixture['response'])
+            ) {
+                continue;
+            }
+            $parameters = $this->appendParameterExamples($parameters, $fixtureName, $fixture);
+            $requests = $this->appendRequestExamples(
+                $requests,
+                $fixtureName,
+                $fixture['request']['body'] ?? null
+            );
+            $responses = $this->appendResponseExamples($responses, $fixtureName, $fixture['response']);
+        }
+
+        return $operation
+            ->setParameters($parameters)
+            ->setRequests($requests)
+            ->setResponses($responses)
+        ;
+    }
+
+    /**
      * @param array<string, Parameters> $parameters
-     * @param FixtureFormat             $fixture
+     * @param array<array-key, mixed>   $fixture
      *
      * @return array<string, Parameters>
      */
     private function appendParameterExamples(array $parameters, string $fixtureName, array $fixture): array
     {
+        if (!isset($fixture['request']) || !\is_array($fixture['request'])) {
+            return $parameters;
+        }
+
         foreach (Parameter::TYPES as $type) {
             $parameters[$type] = $parameters[$type]->map(
-                fn (Parameter $p) => $this->appendParameterExample($p, $fixtureName, $fixture['request'][$type] ?? null)
+                fn (Parameter $p) => $this->appendParameterExample(
+                    $p,
+                    $fixtureName,
+                    $fixture['request'][$type] ?? $fixture['request']['parameters'][$type] ?? null
+                )
             );
         }
 
@@ -108,56 +148,36 @@ final class FixturesLoader
     }
 
     /**
-     * @param array{statusCode: int, header?: array<string, string>,body?: array{mediaType: string,content: array<array-key, mixed>}} $response
+     * @param array<array-key, mixed> $response
      */
     private function appendResponseExamples(Responses $responses, string $fixtureName, array $response): Responses
     {
-        return $responses->map(function (Response $r) use ($fixtureName, $response) {
-            if (isset($response['body'])
-                && $r->getMediaType() === $response['body']['mediaType']
-                && $r->getStatusCode() === $response['statusCode']
-            ) {
-                $r->addExample(
-                    new ResponseExample($fixtureName, $response['body']['content'])
-                );
-            }
-
-            if (isset($response['header'])) {
-                $r->setHeaders(
-                    $r->getHeaders()
-                        ->map(
-                            fn (Parameter $h) => $this->appendParameterExample($h, $fixtureName, $response['header'])
-                        )
-                );
-            }
-
-            return $r;
-        });
+        return $responses->map(fn (Response $r) => $this->appendResponseExample($r, $fixtureName, $response));
     }
 
     /**
-     * @param array<string, FixtureFormat> $fixtures
+     * @param array<array-key, mixed> $fixtureResponse
      */
-    private function appendFixtureExamples(Operation $operation, array $fixtures): Operation
+    private function appendResponseExample(Response $response, string $fixtureName, array $fixtureResponse): Response
     {
-        $parameters = $operation->getParameters(false);
-        $requests = $operation->getRequests();
-        $responses = $operation->getResponses();
-
-        foreach ($fixtures as $fixtureName => $fixture) {
-            $parameters = $this->appendParameterExamples($parameters, $fixtureName, $fixture);
-            $requests = $this->appendRequestExamples(
-                $requests,
-                $fixtureName,
-                $fixture['request']['body'] ?? null
+        if (\is_array($fixtureResponse['body'])
+            && $response->getMediaType() === $fixtureResponse['body']['mediaType']
+            && $response->getStatusCode() === $fixtureResponse['statusCode']
+        ) {
+            $response->addExample(
+                new ResponseExample($fixtureName, $fixtureResponse['body']['content'])
             );
-            $responses = $this->appendResponseExamples($responses, $fixtureName, $fixture['response']);
         }
 
-        return $operation
-            ->setParameters($parameters)
-            ->setRequests($requests)
-            ->setResponses($responses)
-        ;
+        if (isset($fixtureResponse['header']) && \is_array($fixtureResponse['header'])) {
+            $response->setHeaders(
+                $response->getHeaders()
+                    ->map(
+                        fn (Parameter $h) => $this->appendParameterExample($h, $fixtureName, $fixtureResponse['header'])
+                    )
+            );
+        }
+
+        return $response;
     }
 }

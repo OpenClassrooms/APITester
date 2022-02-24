@@ -60,8 +60,10 @@ final class FixturesLoaderTest extends TestCase
                 'listPets400' => [
                     'operationId' => 'listPets',
                     'request' => [
-                        'query' => [
-                            'type' => 'Horse',
+                        'parameters' => [
+                            'query' => [
+                                'type' => 'Horse',
+                            ],
                         ],
                     ],
                     'response' => [
