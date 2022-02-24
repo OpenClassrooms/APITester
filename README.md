@@ -75,15 +75,15 @@ type: string
 
 ```yaml
 required: true
-type: [ 'openapi' ] # for now we support only the openapi format
+type: [ openapi ] # for now we support only the openapi format
 ```
 
 ### requester
 
 ```yaml
 required: false
-default: 'http-async'
-type: [ 'symfony-kernel', 'http-async' ]
+default: http-async
+type: [ symfony-kernel, http-async ]
 ```
 
 #### symfony-kernel
@@ -109,19 +109,149 @@ Following the list of supported preparators.
 
 #### error400
 
+```yaml
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 400
+        description: the exact statusCode to be checked
+```
+
 #### error401
+
+```yaml
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 401
+        description: the exact statusCode to be checked
+```
 
 #### error403
 
+```yaml
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 403
+        description: the exact statusCode to be checked
+```
+
 #### error404
+
+```yaml
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 404
+        description: the exact statusCode to be checked
+```
 
 #### error405
 
+```yaml
+methods:
+    type: [ GET, POST, PATCH, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT ]
+    default: all
+    description: methods to validate against
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 400
+        description: the exact statusCode to be checked
+```
+
 #### error406
+
+```yaml
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 400
+        description: the exact statusCode to be checked
+```
 
 #### error413
 
+```yaml
+range:
+    type: array<object>
+    description: describes how pagination is handled by the api
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 400
+        description: the exact statusCode to be checked
+```
+
 #### error416
+
+```yaml
+range:
+    type: array<object>
+    description: describes how pagination is handled by the api
+excludedFields:
+    type: array
+    description: list of response fields to be excluded when checking
+response:
+    body:
+        type: string
+        default: null
+        description: the exact body to be checked
+    statusCode:
+        type: int
+        default: 400
+        description: the exact statusCode to be checked
+```
 
 ### filters
 
@@ -167,7 +297,7 @@ type: string
 
 ```yaml
 required: yes
-type: [ 'oauth2_password', 'oauth2_implicit' ] #other auth methods still need support
+type: [ oauth2_password, oauth2_implicit ] #other auth methods still need support
 ```
 
 ### Full example
@@ -195,7 +325,7 @@ suites:
                 - {tags.*.name: Support}
                 - {tags.*.name: Project}
                 - {tags.*.name: Course}
-            exclude: 
+            exclude:
                 # we exclude an operation with it's id for the error404 preparator
                 - {id: oc_api_learning_activity_course_chapter_complete_post, preparator: error404}
                 - {id: oc_api_invitation_invitations_get, preparator: error401}
