@@ -352,5 +352,3 @@ suites:
                     Content-Type: 'application/json'
 
 ```
-
-## Contribution
