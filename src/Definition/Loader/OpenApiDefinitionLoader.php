@@ -258,8 +258,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $headers = $response->headers;
 
             if (0 === \count($response->content)) {
-                $defResponse = Response::create()
-                    ->setStatusCode((int) $status)
+                $defResponse = Response::create((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setDescription((string) $response->description)
                 ;
@@ -274,9 +273,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             foreach ($response->content as $type => $mediaType) {
                 /** @var Schema|null $schema */
                 $schema = $mediaType->schema;
-                $defResponse = Response::create()
+                $defResponse = Response::create((int) $status)
                     ->setMediaType($type)
-                    ->setStatusCode((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setBody($schema)
                     ->setDescription((string) $response->description)
@@ -287,15 +285,17 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                  * @var Example $example
                  */
                 foreach ($mediaType->examples ?? [] as $name => $example) {
-                    $defResponse->addExample(new ResponseExample($name, $example->value));
+                    $defResponse->addExample(new ResponseExample($name, (array) $example->value));
                 }
-                if (null !== $mediaType->example) {
-                    $defResponse->addExample(new ResponseExample('default', $mediaType->example));
+                /** @var Example|null $example */
+                $example = $mediaType->example;
+                if (null !== $example) {
+                    $defResponse->addExample(new ResponseExample('default', (array) $example->value));
                 }
                 if ($mediaType->schema instanceof Schema
                     && null !== $mediaType->schema->example
                 ) {
-                    $defResponse->addExample(new ResponseExample('default', $mediaType->schema->example));
+                    $defResponse->addExample(new ResponseExample('default', (array) $mediaType->schema->example));
                 }
                 $collection->add($defResponse);
             }

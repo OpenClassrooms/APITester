@@ -9,8 +9,13 @@ use OpenAPITesting\Definition\Request;
 
 /**
  * @method Request[] getIterator()
+ * @method Requests  map(callable $c)
  * @extends Collection<array-key, Request>
  */
 final class Requests extends Collection
 {
+    /**
+     * @var Request[]
+     */
+    protected $items;
 }

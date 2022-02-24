@@ -13,4 +13,8 @@ use OpenAPITesting\Definition\ParameterExample;
  */
 final class ParameterExamples extends Collection
 {
+    /**
+     * @var ParameterExample[]
+     */
+    protected $items;
 }

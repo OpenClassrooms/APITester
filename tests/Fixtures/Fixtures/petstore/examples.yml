@@ -1,0 +1,38 @@
+listPets400: # Name of the example
+    operationId: listPets # ID of the OpenAPI that we want to match
+    request: # Describe the request. Fields 'parameters', 'headers' and 'body' can be omitted if not needed.
+        parameters:
+            path: # List path parameters
+                id: 123
+            query: # List query parameters
+                id: 123
+        headers: # List headers
+            id: 123
+        body: # Describe the request body and its media type
+            mediaType: application/json
+            content:
+                id: 123
+    response: # Describe the expected response. Fields 'headers' and 'body' can be omitted if not needed.
+        statusCode: 400
+        headers: # List expected headers
+            id: 123
+        body: # Describe the expected response body and its media type
+            mediaType: application/json
+            content:
+                message: Bad request
+
+# Example using references
+examples:
+    -   &notFoundRequest parameters: {path: {id: abcde}}}
+    - &notFoundError {statusCode: 404, body: {mediaType: application/json, content: {message: 'Resource not found'}}}
+
+showPet404:
+    operationId: showPet
+    request: *notFoundRequest
+    response: *notFoundError
+
+showUser404:
+    operationId: showUser
+    request: *notFoundRequest
+    response: *notFoundError
+

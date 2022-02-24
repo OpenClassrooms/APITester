@@ -26,8 +26,10 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             ->values()
         ;
 
+        /** @var TestCase[] */
         return $responses
             ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+            ->flatten()
         ;
     }
 

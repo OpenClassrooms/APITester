@@ -44,10 +44,9 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             Api::create()->addOperation(
                 Operation::create('getTest', '/test/{id}')
                     ->addPathParameter(Parameter::create('id'))
-                    ->addResponse(DefinitionResponse::create())
+                    ->addResponse(DefinitionResponse::create(200))
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(404)
+                        DefinitionResponse::create(404)
                             ->setDescription('description test')
                     )
             ),
@@ -62,7 +61,7 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         yield [
             Api::create()->addOperation(
-                Operation::create('postTest', '/test')
+                Operation::create('postTest', '/test', 'POST')
                     ->addRequest(
                         DefinitionRequest::create(
                             'application/json',
@@ -77,10 +76,9 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                             ])
                         )
                     )
-                    ->addResponse(DefinitionResponse::create())
+                    ->addResponse(DefinitionResponse::create(200))
                     ->addResponse(
-                        DefinitionResponse::create()
-                            ->setStatusCode(404)
+                        DefinitionResponse::create(404)
                             ->setDescription('description test')
                     )
             ),

@@ -49,7 +49,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         ->addPathParameter(
                             Parameter::create('param')->addExample(new ParameterExample('first', 'toto'))
                         )
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             OAuth2ImplicitSecurity::create(
                                 'oauth2_test',
@@ -59,7 +59,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                 ->addOperation(
                     Operation::create('test2', '/test/api/key/header')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             ApiKeySecurity::create(
                                 'api_key_header',
@@ -70,7 +70,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                 ->addOperation(
                     Operation::create('test3', '/test/api/key/cookie')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             ApiKeySecurity::create(
                                 'api_key_cookie',
@@ -81,7 +81,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                 ->addOperation(
                     Operation::create('test4', '/test/api/key/query')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             ApiKeySecurity::create(
                                 'api_key_query',
@@ -92,7 +92,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                 ->addOperation(
                     Operation::create('test5', '/test/basic')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             HttpSecurity::create(
                                 'basic_test',
@@ -102,7 +102,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                 ->addOperation(
                     Operation::create('test6', '/test/bearer')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(401))
+                        ->addResponse(DefinitionResponse::create(401))
                         ->addSecurity(
                             HttpSecurity::create(
                                 'bearer_test',

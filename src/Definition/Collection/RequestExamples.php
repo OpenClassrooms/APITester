@@ -13,4 +13,8 @@ use OpenAPITesting\Definition\RequestExample;
  */
 final class RequestExamples extends Collection
 {
+    /**
+     * @var RequestExample[]
+     */
+    protected $items;
 }

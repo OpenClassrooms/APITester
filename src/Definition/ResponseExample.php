@@ -11,14 +11,14 @@ final class ResponseExample
     private string $name;
 
     /**
-     * @var mixed
+     * @var array<array-key, mixed>|null
      */
-    private $value;
+    private ?array $value;
 
     /**
-     * @param mixed $value
+     * @param array<array-key, mixed>|null $value
      */
-    public function __construct(string $name, $value)
+    public function __construct(string $name, ?array $value = null)
     {
         $this->name = $name;
         $this->value = $value;
@@ -30,9 +30,9 @@ final class ResponseExample
     }
 
     /**
-     * @return mixed
+     * @return array<array-key, mixed>|null
      */
-    public function getValue()
+    public function getValue(): ?array
     {
         return $this->value;
     }

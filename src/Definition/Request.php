@@ -53,14 +53,6 @@ final class Request
         return $this->mediaType;
     }
 
-    public function addExample(RequestExample $example): self
-    {
-        $example->setParent($this);
-        $this->examples->add($example);
-
-        return $this;
-    }
-
     public function getParent(): Operation
     {
         return $this->parent;
@@ -99,5 +91,23 @@ final class Request
     public function getExamples(): RequestExamples
     {
         return $this->examples;
+    }
+
+    public function setExamples(RequestExamples $examples): self
+    {
+        foreach ($examples as $example) {
+            $example->setParent($this);
+        }
+        $this->examples = $examples;
+
+        return $this;
+    }
+
+    public function addExample(RequestExample $example): self
+    {
+        $example->setParent($this);
+        $this->examples->add($example);
+
+        return $this;
     }
 }

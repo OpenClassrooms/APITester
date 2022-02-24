@@ -72,7 +72,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             Api::create()
                 ->addOperation(
                     Operation::create('test1', '/test/oauth2')
-                        ->addResponse(DefinitionResponse::create()->setStatusCode(403))
+                        ->addResponse(DefinitionResponse::create(403))
                         ->addSecurity(
                             OAuth2ImplicitSecurity::create(
                                 'oauth2_test',

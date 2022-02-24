@@ -120,7 +120,7 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): array
     {
-        $requiredParams = $operation->getRequiredParameters();
+        $requiredParams = $operation->getParameters();
 
         return array_merge(
             $this->prepareForParameters($requiredParams, $operation),

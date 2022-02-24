@@ -15,6 +15,8 @@ final class Parameter
 
     public const TYPE_HEADER = 'header';
 
+    public const TYPES = [self::TYPE_QUERY, self::TYPE_PATH, self::TYPE_HEADER];
+
     private Operation $parent;
 
     private string $name;
@@ -46,6 +48,16 @@ final class Parameter
     public function getExamples(): ParameterExamples
     {
         return $this->examples;
+    }
+
+    public function setExamples(ParameterExamples $examples): self
+    {
+        foreach ($examples as $example) {
+            $example->setParent($this);
+        }
+        $this->examples = $examples;
+
+        return $this;
     }
 
     public function addExample(ParameterExample $example): self

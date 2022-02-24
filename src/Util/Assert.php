@@ -37,7 +37,7 @@ final class Assert
         $serializer = self::getJsonSerializer();
 
         $context = [
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (array $it): string => Json::encode($it),
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn ($it): string => Json::encode($it),
             AbstractNormalizer::IGNORED_ATTRIBUTES => $exclude,
         ];
 

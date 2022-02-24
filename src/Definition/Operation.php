@@ -18,7 +18,7 @@ final class Operation
 
     private string $path;
 
-    private ?string $method = null;
+    private string $method;
 
     private Parameters $pathParameters;
 
@@ -42,10 +42,12 @@ final class Operation
 
     public function __construct(
         string $id,
-        string $path
+        string $path,
+        string $method
     ) {
         $this->id = $id;
         $this->path = $path;
+        $this->method = $method;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
         $this->headers = new Parameters();
@@ -55,9 +57,9 @@ final class Operation
         $this->securities = new Securities();
     }
 
-    public static function create(string $id, string $path): self
+    public static function create(string $id, string $path, string $method = 'GET'): self
     {
-        return new static($id, $path);
+        return new static($id, $path, $method);
     }
 
     public function getId(): string
@@ -116,7 +118,7 @@ final class Operation
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
      */
-    public function getPath(array $params = [], array $query = []): string
+    public function getPath(array $params = [], array $query = [], string $providedPath = null): string
     {
         $params = $this->substituteParams($params, 'path');
         $query = $this->substituteParams($query, 'query');
@@ -126,22 +128,105 @@ final class Operation
                 array_keys($params),
             ),
             array_values($params),
-            $this->path
+            $providedPath ?? $this->path
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
     }
 
-    public function getMethod(): string
+    public function addParameterExample(?ParameterExample $example, string $type, string $name): self
     {
-        return mb_strtoupper($this->method ?? 'GET');
+        if (null === $example) {
+            return $this;
+        }
+
+        $parameters = $this->getParameters(false)[$type];
+        $parameters->map(
+            function (Parameter $p) use ($example, $name) {
+                if ($name === $p->getName()) {
+                    $p->addExample($example);
+                }
+
+                return $p;
+            }
+        );
+
+        return $this->setParametersByType($parameters, $type);
     }
 
-    public function setMethod(string $method): self
+    /**
+     * @return array<string, Parameters>
+     */
+    public function getParameters(bool $onlyRequired = true): array
     {
-        $this->method = $method;
+        $parameters = [
+            Parameter::TYPE_PATH => $this->getPathParameters(),
+            Parameter::TYPE_QUERY => $this->getQueryParameters(),
+            Parameter::TYPE_HEADER => $this->getHeaders(),
+        ];
+
+        if ($onlyRequired) {
+            $parameters = array_map(static fn (Parameters $p) => $p->where('required', true), $parameters);
+        }
+
+        return $parameters;
+    }
+
+    public function setParametersByType(Parameters $parameters, string $type): self
+    {
+        if (Parameter::TYPE_PATH === $type) {
+            $this->pathParameters = $parameters;
+        } elseif (Parameter::TYPE_QUERY === $type) {
+            $this->queryParameters = $parameters;
+        } elseif (Parameter::TYPE_HEADER === $type) {
+            $this->headers = $parameters;
+        }
 
         return $this;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameters
+     */
+    public function setParameters(array $parameters): self
+    {
+        foreach (Parameter::TYPES as $type) {
+            $this->setParametersByType($parameters[$type], $type);
+        }
+
+        return $this;
+    }
+
+    public function getHeaders(): Parameters
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(Parameters $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function addRequestExample(?RequestExample $example, string $mediaType): self
+    {
+        if (null === $example) {
+            return $this;
+        }
+
+        $requests = $this->getRequests();
+        $requests->map(
+            function (Request $r) use ($example, $mediaType) {
+                if ($mediaType === $r->getMediaType()) {
+                    $r->addExample($example);
+                }
+
+                return $r;
+            }
+        );
+
+        return $this->setRequests($requests);
     }
 
     public function getRequests(): Requests
@@ -159,11 +244,60 @@ final class Operation
         return $this;
     }
 
+    public function addResponseExample(int $statusCode, ?ResponseExample $example, ?string $mediaType): self
+    {
+        if (null === $example) {
+            return $this;
+        }
+
+        $responses = $this->getResponses();
+
+        if (0 === $responses->where('statusCode', $statusCode)->count()) {
+            return $this->addResponse(Response::create($statusCode)->addExample($example));
+        }
+
+        $responses->map(
+            function (Response $r) use ($example, $mediaType) {
+                if ($mediaType === $r->getMediaType()) {
+                    $r->addExample($example);
+                }
+
+                return $r;
+            }
+        );
+
+        return $this->setResponses($responses);
+    }
+
+    public function getResponses(): Responses
+    {
+        return $this->responses;
+    }
+
+    public function setResponses(Responses $responses): self
+    {
+        foreach ($responses as $response) {
+            $response->setParent($this);
+        }
+        $this->responses = $responses;
+
+        return $this;
+    }
+
+    public function getMethod(): string
+    {
+        return mb_strtoupper($this->method ?? 'GET');
+    }
+
+    public function setMethod(string $method): self
+    {
+        $this->method = $method;
+
+        return $this;
+    }
+
     public function addRequest(Request $request): self
     {
-        if (null === $this->method) {
-            $this->setMethod('POST');
-        }
         $request->setParent($this);
         $this->requests->add($request);
 
@@ -196,21 +330,6 @@ final class Operation
     {
         $header->setParent($this);
         $this->headers->add($header);
-
-        return $this;
-    }
-
-    public function getResponses(): Responses
-    {
-        return $this->responses;
-    }
-
-    public function setResponses(Responses $responses): self
-    {
-        foreach ($responses as $response) {
-            $response->setParent($this);
-        }
-        $this->responses = $responses;
 
         return $this;
     }
@@ -297,30 +416,6 @@ final class Operation
     public function setParent(Api $parent): void
     {
         $this->parent = $parent;
-    }
-
-    /**
-     * @return array<string, Parameters>
-     */
-    public function getRequiredParameters(): array
-    {
-        return [
-            Parameter::TYPE_PATH => $this->getPathParameters()->where('required', true),
-            Parameter::TYPE_QUERY => $this->getQueryParameters()->where('required', true),
-            Parameter::TYPE_HEADER => $this->getHeaders()->where('required', true),
-        ];
-    }
-
-    public function getHeaders(): Parameters
-    {
-        return $this->headers;
-    }
-
-    public function setHeaders(Parameters $headers): self
-    {
-        $this->headers = $headers;
-
-        return $this;
     }
 
     public function getPreparator(): string

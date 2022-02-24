@@ -40,6 +40,7 @@
     "ext-json": "*",
     "ext-mbstring": "*",
     "canvural/php-openapi-faker": "^1.0",
+    "ext-yaml": "*",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^5.3.0",
