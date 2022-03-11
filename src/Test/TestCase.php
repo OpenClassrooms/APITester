@@ -159,9 +159,13 @@ final class TestCase implements Test
             ($callback)();
         }
         $this->startedAt = Carbon::now();
+        $body = $this->request->getBody();
+        if (null !== $body) {
+            $body = ", Body: $body";
+        }
         $this->logger->log(
             LogLevel::DEBUG,
-            'sent request, URI:' . $this->request->getUri() . ', Body: ' . $this->request->getBody()
+            "sent request, URI: {$this->request->getUri()} $body"
         );
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
