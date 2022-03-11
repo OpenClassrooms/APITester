@@ -34,7 +34,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     protected function generateTestCases(Operations $operations): array
     {
         $operations = (new FixturesLoader())
-            ->load(Yaml::concatFromDirectory($this->getAdditionalExamplesPath()), $operations)
+            ->load(Yaml::concatFromDirectory($this->config->additionalExamplesPath), $operations)
         ;
 
         $testCases = [];
@@ -49,11 +49,6 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
         }
 
         return array_filter(array_merge(...$testCases));
-    }
-
-    private function getAdditionalExamplesPath(): ?string
-    {
-        return $this->config->additionalExamplesPath;
     }
 
     /**

@@ -12,33 +12,33 @@ use OpenAPITesting\Definition\Collection\Tags;
 
 final class Operation
 {
-    private Api $parent;
+    private string $description = '';
+
+    private Parameters $headers;
 
     private string $id;
 
-    private string $path;
-
     private string $method;
+
+    private Api $parent;
+
+    private string $path;
 
     private Parameters $pathParameters;
 
-    private Parameters $queryParameters;
+    private string $preparator;
 
-    private Parameters $headers;
+    private Parameters $queryParameters;
 
     private Requests $requests;
 
     private Responses $responses;
 
-    private string $summary = '';
-
-    private string $description = '';
-
-    private Tags $tags;
-
     private Securities $securities;
 
-    private string $preparator;
+    private string $summary = '';
+
+    private Tags $tags;
 
     public function __construct(
         string $id,
@@ -57,81 +57,17 @@ final class Operation
         $this->securities = new Securities();
     }
 
-    public static function create(string $id, string $path, string $method = 'GET'): self
+    public function addHeader(Parameter $header): self
     {
-        return new static($id, $path, $method);
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function getExamplePath(
-        Parameters $pathParameters = null,
-        Parameters $queryParameters = null
-    ): string {
-        if (null === $pathParameters) {
-            $pathParameters = $this->getPathParameters();
-        }
-        if (null === $queryParameters) {
-            $queryParameters = $this->getQueryParameters();
-        }
-
-        return $this->getPath(
-            $pathParameters->toExampleArray(),
-            $queryParameters->toExampleArray()
-        );
-    }
-
-    public function getPathParameters(bool $onlyRequired = false): Parameters
-    {
-        return $this->pathParameters;
-    }
-
-    public function setPathParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->pathParameters = $parameters;
+        $header->setParent($this);
+        $this->headers->add($header);
 
         return $this;
     }
 
-    public function getQueryParameters(): Parameters
+    public function setParent(Api $parent): void
     {
-        return $this->queryParameters;
-    }
-
-    public function setQueryParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->queryParameters = $parameters;
-
-        return $this;
-    }
-
-    /**
-     * @param array<string|int, string|int> $params
-     * @param array<string|int, string|int> $query
-     */
-    public function getPath(array $params = [], array $query = [], string $providedPath = null): string
-    {
-        $params = $this->substituteParams($params, 'path');
-        $query = $this->substituteParams($query, 'query');
-        $path = str_replace(
-            array_map(
-                static fn (string $name) => "{{$name}}",
-                array_keys($params),
-            ),
-            array_values($params),
-            $providedPath ?? $this->path
-        );
-
-        return rtrim($path . '?' . http_build_query($query), '?');
+        $this->parent = $parent;
     }
 
     public function addParameterExample(?ParameterExample $example, string $type, string $name): self
@@ -172,6 +108,21 @@ final class Operation
         return $parameters;
     }
 
+    public function getPathParameters(bool $onlyRequired = false): Parameters
+    {
+        return $this->pathParameters;
+    }
+
+    public function getQueryParameters(): Parameters
+    {
+        return $this->queryParameters;
+    }
+
+    public function getHeaders(): Parameters
+    {
+        return $this->headers;
+    }
+
     public function setParametersByType(Parameters $parameters, string $type): self
     {
         if (Parameter::TYPE_PATH === $type) {
@@ -185,26 +136,33 @@ final class Operation
         return $this;
     }
 
-    /**
-     * @param array<string, Parameters> $parameters
-     */
-    public function setParameters(array $parameters): self
+    public function addPathParameter(Parameter $parameter): self
     {
-        foreach (Parameter::TYPES as $type) {
-            $this->setParametersByType($parameters[$type], $type);
-        }
+        $parameter->setParent($this);
+        $this->pathParameters->add($parameter);
 
         return $this;
     }
 
-    public function getHeaders(): Parameters
+    public function addQueryParameter(Parameter $parameter): self
     {
-        return $this->headers;
+        $parameter->setParent($this);
+        $this->queryParameters->add($parameter);
+
+        return $this;
     }
 
-    public function setHeaders(Parameters $headers): self
+    public function addQueryParameters(Parameter $parameter): self
     {
-        $this->headers = $headers;
+        $this->queryParameters->add($parameter);
+
+        return $this;
+    }
+
+    public function addRequest(Request $request): self
+    {
+        $request->setParent($this);
+        $this->requests->add($request);
 
         return $this;
     }
@@ -274,66 +232,6 @@ final class Operation
         return $this->responses;
     }
 
-    public function setResponses(Responses $responses): self
-    {
-        foreach ($responses as $response) {
-            $response->setParent($this);
-        }
-        $this->responses = $responses;
-
-        return $this;
-    }
-
-    public function getMethod(): string
-    {
-        return mb_strtoupper($this->method ?? 'GET');
-    }
-
-    public function setMethod(string $method): self
-    {
-        $this->method = $method;
-
-        return $this;
-    }
-
-    public function addRequest(Request $request): self
-    {
-        $request->setParent($this);
-        $this->requests->add($request);
-
-        return $this;
-    }
-
-    public function getRequest(string $mediaType): ?Request
-    {
-        /** @var Request|null */
-        return $this->requests->firstWhere('mediaType', $mediaType);
-    }
-
-    public function addPathParameter(Parameter $parameter): self
-    {
-        $parameter->setParent($this);
-        $this->pathParameters->add($parameter);
-
-        return $this;
-    }
-
-    public function addQueryParameter(Parameter $parameter): self
-    {
-        $parameter->setParent($this);
-        $this->queryParameters->add($parameter);
-
-        return $this;
-    }
-
-    public function addHeader(Parameter $header): self
-    {
-        $header->setParent($this);
-        $this->headers->add($header);
-
-        return $this;
-    }
-
     public function addResponse(Response $response): self
     {
         $response->setParent($this);
@@ -342,60 +240,17 @@ final class Operation
         return $this;
     }
 
-    public function getTags(): Tags
+    public static function create(string $id, string $path, string $method = 'GET'): self
     {
-        return $this->tags;
+        return new static($id, $path, $method);
     }
 
-    public function setTags(Tags $tags): self
+    public function setResponses(Responses $responses): self
     {
-        $this->tags = $tags;
-
-        return $this;
-    }
-
-    public function getSummary(): string
-    {
-        return $this->summary;
-    }
-
-    public function setSummary(string $summary): self
-    {
-        $this->summary = $summary;
-
-        return $this;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(string $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function addQueryParameters(Parameter $parameter): self
-    {
-        $this->queryParameters->add($parameter);
-
-        return $this;
-    }
-
-    public function getSecurities(): Securities
-    {
-        return $this->securities;
-    }
-
-    public function setSecurities(Securities $securities): self
-    {
-        foreach ($securities as $security) {
-            $security->setParent($this);
+        foreach ($responses as $response) {
+            $response->setParent($this);
         }
-        $this->securities = $securities;
+        $this->responses = $responses;
 
         return $this;
     }
@@ -408,14 +263,61 @@ final class Operation
         return $this;
     }
 
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getExamplePath(
+        Parameters $pathParameters = null,
+        Parameters $queryParameters = null
+    ): string {
+        if (null === $pathParameters) {
+            $pathParameters = $this->getPathParameters();
+        }
+        if (null === $queryParameters) {
+            $queryParameters = $this->getQueryParameters();
+        }
+
+        return $this->getPath(
+            $pathParameters->toExampleArray(),
+            $queryParameters->toExampleArray()
+        );
+    }
+
+    /**
+     * @param array<string|int, string|int> $params
+     * @param array<string|int, string|int> $query
+     */
+    public function getPath(array $params = [], array $query = [], string $providedPath = null): string
+    {
+        $params = $this->substituteParams($params, 'path');
+        $query = $this->substituteParams($query, 'query');
+        $path = str_replace(
+            array_map(
+                static fn (string $name) => "{{$name}}",
+                array_keys($params),
+            ),
+            array_values($params),
+            $providedPath ?? $this->path
+        );
+
+        return rtrim($path . '?' . http_build_query($query), '?');
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function getMethod(): string
+    {
+        return mb_strtoupper($this->method ?? 'GET');
+    }
+
     public function getParent(): Api
     {
         return $this->parent;
-    }
-
-    public function setParent(Api $parent): void
-    {
-        $this->parent = $parent;
     }
 
     public function getPreparator(): string
@@ -423,11 +325,25 @@ final class Operation
         return $this->preparator;
     }
 
-    public function setPreparator(string $string): self
+    public function getRequest(string $mediaType): ?Request
     {
-        $this->preparator = $string;
+        /** @var Request|null */
+        return $this->requests->firstWhere('mediaType', $mediaType);
+    }
 
-        return $this;
+    public function getSecurities(): Securities
+    {
+        return $this->securities;
+    }
+
+    public function getSummary(): string
+    {
+        return $this->summary;
+    }
+
+    public function getTags(): Tags
+    {
+        return $this->tags;
     }
 
     /**
@@ -444,6 +360,90 @@ final class Operation
         return null !== $operation->where($prop, $operator, $value)
             ->first()
         ;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function setHeaders(Parameters $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function setMethod(string $method): self
+    {
+        $this->method = $method;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameters
+     */
+    public function setParameters(array $parameters): self
+    {
+        foreach (Parameter::TYPES as $type) {
+            $this->setParametersByType($parameters[$type], $type);
+        }
+
+        return $this;
+    }
+
+    public function setPathParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->pathParameters = $parameters;
+
+        return $this;
+    }
+
+    public function setPreparator(string $string): self
+    {
+        $this->preparator = $string;
+
+        return $this;
+    }
+
+    public function setQueryParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->queryParameters = $parameters;
+
+        return $this;
+    }
+
+    public function setSecurities(Securities $securities): self
+    {
+        foreach ($securities as $security) {
+            $security->setParent($this);
+        }
+        $this->securities = $securities;
+
+        return $this;
+    }
+
+    public function setSummary(string $summary): self
+    {
+        $this->summary = $summary;
+
+        return $this;
+    }
+
+    public function setTags(Tags $tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
     }
 
     /**

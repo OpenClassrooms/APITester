@@ -159,6 +159,10 @@ final class TestCase implements Test
             ($callback)();
         }
         $this->startedAt = Carbon::now();
+        $this->logger->log(
+            LogLevel::DEBUG,
+            'sent request, URI:' . $this->request->getUri() . ', Body: ' . $this->request->getBody()
+        );
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
         foreach ($this->afterCallbacks as $callback) {
@@ -218,9 +222,11 @@ final class TestCase implements Test
         /** @var Requester $requester */
         $requester = $this->requester;
         try {
+            $response = $requester->getResponse($this->id);
+            $this->logger->log(LogLevel::DEBUG, 'received response: ' . $response->getBody());
             Assert::response(
                 $this->expectedResponse,
-                $requester->getResponse($this->id),
+                $response,
                 $this->excludedFields
             );
         } catch (ExpectationFailedException $exception) {

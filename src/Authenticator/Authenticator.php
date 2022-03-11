@@ -41,23 +41,12 @@ final class Authenticator
         $body = Json::decode((string) $response->getBody());
 
         return new Token(
-            self::getName(),
+            $security->getType(),
             $body['access_token'],
             explode(' ', $config->getBody()['scope'] ?? ''),
             $body['refresh_token'] ?? null,
             $body['token_type'] ?? null,
             $body['expires_in'] ?? null,
-        );
-    }
-
-    public static function getName(): string
-    {
-        return mb_strtolower(
-            str_replace(
-                (new \ReflectionClass(self::class))->getShortName(),
-                '',
-                (new \ReflectionClass(static::class))->getShortName()
-            )
         );
     }
 

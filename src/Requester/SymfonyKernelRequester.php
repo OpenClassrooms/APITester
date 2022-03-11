@@ -38,7 +38,7 @@ final class SymfonyKernelRequester extends Requester
     public function request(RequestInterface $request, string $id): void
     {
         if (!str_starts_with((string) $request->getUri(), 'http')) {
-            $request = $request->withUri(new Uri(trim($this->baseUri . '/' . $request->getUri())));
+            $request = $request->withUri(new Uri(trim($this->baseUri . $request->getUri())));
         }
         try {
             $request = $this->psrToSymfonyRequest($request);

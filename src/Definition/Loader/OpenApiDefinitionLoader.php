@@ -197,10 +197,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             if (null !== $parameter->example) {
                 $defParam->addExample(new ParameterExample('default', (string) $parameter->example));
             }
-            if ($parameter->schema instanceof Schema
-                && null !== $parameter->schema->example
-            ) {
-                $defParam->addExample(new ParameterExample('default', (string) $parameter->schema->example));
+            if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
+                $defParam->addExample(new ParameterExample('properties', (string) $parameter->schema->example));
             }
             $collection->add($defParam);
         }
@@ -396,7 +394,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
      *
      * @return array<mixed>
      */
-    private function extractDeepExamples(Schema $schema): array
+    private function extractDeepExamples(Schema $schema, bool $optional = false): array
     {
         $parent = [];
         if ('object' === $schema->type) {
@@ -405,19 +403,30 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     continue;
                 }
                 if (isset($property->type) && 'object' === $property->type && !isset($property->example)) {
-                    $parent[$name] = $this->extractDeepExamples($property);
+                    $isRequired = \in_array($name, $property->required ?? [], true);
+                    $return = $this->extractDeepExamples(
+                        $property,
+                        !$isRequired
+                    );
+                    if ([] !== $return || $isRequired) {
+                        $parent[$name] = $return;
+                    }
                 } else {
-                    if (!$property->nullable
+                    if (
+                        !$optional
+                        && !isset($property->default)
+                        && !$property->nullable
                         && !isset($property->example)
-                        && isset($schema->required)
-                        && \in_array(
-                            $name,
-                            $schema->required,
-                            true
-                        )) {
+                        && \in_array($name, $schema->required ?? [], true)) {
                         throw new ExampleNotExtractableException();
                     }
-                    $parent[$name] = $property->example;
+                    if (isset($property->example)) {
+                        $parent[$name] = $property->example;
+                    } elseif (isset($property->default)) {
+                        $parent[$name] = $property->default;
+                    } elseif ($property->nullable) {
+                        $parent[$name] = null;
+                    }
                 }
             }
         }
