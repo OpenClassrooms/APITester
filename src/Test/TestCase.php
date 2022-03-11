@@ -161,11 +161,11 @@ final class TestCase implements Test
         $this->startedAt = Carbon::now();
         $body = $this->request->getBody();
         if ('' !== (string) $body) {
-            $body = "Body: $body";
+            $body = "Body: {$body}";
         }
         $this->logger->log(
             LogLevel::DEBUG,
-            "sent request, URI: {$this->request->getUri()}, $body"
+            "sent request, URI: {$this->request->getUri()}, {$body}"
         );
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
