@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
+use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
@@ -36,7 +37,7 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
             ->where('responses.*.statusCode', 'contains', 405)
             ->groupBy('path', true)
         ;
-
+        /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();
         /** @var Operations $pathOperations */
         foreach ($grouped as $path => $pathOperations) {

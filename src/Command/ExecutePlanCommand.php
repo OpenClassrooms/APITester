@@ -6,7 +6,6 @@ namespace OpenAPITesting\Command;
 
 use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Config;
 use OpenAPITesting\Config\Exception\ConfigurationException;
 use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
@@ -28,7 +27,6 @@ final class ExecutePlanCommand extends Command
     protected static $defaultName = 'launch';
 
     /**
-     * @throws AuthenticatorNotFoundException
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
      * @throws InvalidPreparatorConfigException

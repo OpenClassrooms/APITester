@@ -12,6 +12,7 @@ use OpenAPITesting\Definition\Collection\Operations;
 use OpenAPITesting\Definition\Loader\FixturesLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
+use OpenAPITesting\Definition\Response as DefinitionResponse;
 use OpenAPITesting\Preparator\Config\DefinitionExamples;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
@@ -41,6 +42,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
             $requests = $this->buildRequests($operation);
             $responses = $this->buildResponses($operation);
             $testCases[] = $this->buildTestCases(
+                $operation,
                 $requests,
                 $responses,
             );
@@ -125,7 +127,12 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
             }
         }
 
-        return $requests;
+        $authenticatedRequests = [];
+        foreach ($requests as $name => $request) {
+            $authenticatedRequests[$name] = $this->authenticate($request, $operation);
+        }
+
+        return $authenticatedRequests;
     }
 
     /**
@@ -135,6 +142,34 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     {
         $responses = [];
         foreach ($operation->getResponses() as $response) {
+            if (!isset($responses['default'])) {
+                $body = $response->getExamples()[$response->getStatusCode() . '_properties'] ?? null;
+                if (null !== $body) {
+                    $body = Json::encode($body);
+                } else {
+                    $body = '#.*#';
+                }
+                $responses['default'] = new Response(
+                    $response->getStatusCode(),
+                    [],
+                    $body
+                );
+                foreach ($response->getHeaders() as $header) {
+                    /** @var ParameterExample|null $example */
+                    $example = $header->getExamples()
+                        ->where('name', 'default')
+                        ->first()
+                    ;
+                    if (null === $example) {
+                        continue;
+                    }
+                    $responses['default'] = $this->addHeaders(
+                        $response,
+                        $responses['default'],
+                        'default'
+                    );
+                }
+            }
             foreach ($response->getExamples() as $example) {
                 $name = $example->getName();
                 $responses[$name] = new Response(
@@ -143,20 +178,11 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
                 if (null !== $example->getValue()) {
                     $responses[$name] = $responses[$name]->withBody(Stream::create(Json::encode($example->getValue())));
                 }
-                foreach ($response->getHeaders() as $header) {
-                    /** @var ParameterExample|null $example */
-                    $example = $header->getExamples()
-                        ->where('name', $name)
-                        ->first()
-                    ;
-                    if (null === $example) {
-                        continue;
-                    }
-                    $responses[$name] = $responses[$name]->withAddedHeader(
-                        $header->getName(),
-                        $example->getValue()
-                    );
-                }
+                $responses[$name] = $this->addHeaders(
+                    $response,
+                    $responses[$name],
+                    $name
+                );
             }
         }
 
@@ -169,23 +195,55 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
      *
      * @return TestCase[]
      */
-    private function buildTestCases(array $requests, array $responses): array
+    private function buildTestCases(Operation $operation, array $requests, array $responses): array
     {
         $testCases = [];
         foreach ($requests as $key => $request) {
             if ('default' === $key) {
-                $key = (string) array_key_first($responses);
+                $key = \array_key_exists('default', $responses) ? 'default' : array_key_first($responses);
+            } elseif ('properties' === $key) {
+                if (\array_key_exists('properties_200', $responses)) {
+                    $key = 'properties_200';
+                } elseif (\array_key_exists('properties_201', $responses)) {
+                    $key = 'properties_201';
+                } else {
+                    $key = array_key_first($responses);
+                }
             } else {
                 $key = str_replace('expects ', '', $key);
             }
             $fixture = new TestCase(
-                $key,
+                "operation: {$operation->getId()} example: {$key}",
                 $request,
-                $responses[$key] ?? new Response(),
+                $responses[$key],
             );
             $testCases[] = $fixture;
         }
 
         return $testCases;
+    }
+
+    private function addHeaders(
+        DefinitionResponse $definitionResponse,
+        Response $response,
+        string $exampleName
+    ): Response {
+        foreach ($definitionResponse->getHeaders() as $header) {
+            /** @var ParameterExample|null $example */
+            $example = $header->getExamples()
+                ->where('name', $exampleName)
+                ->first()
+            ;
+            if (null === $example) {
+                continue;
+            }
+
+            $response = $response->withAddedHeader(
+                $header->getName(),
+                $example->getValue()
+            );
+        }
+
+        return $response;
     }
 }

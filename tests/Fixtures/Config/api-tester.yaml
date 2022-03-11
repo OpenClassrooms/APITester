@@ -53,10 +53,19 @@ suites:
                 - {tags.*.name: Invitation}
         auth:
             -   name: 'user_1'
-                type: 'oauth2_password'
-                username: '%env(USER1_USERNAME)%'
-                password: '%env(USER1_PASSWORD)%'
-                scopes: [ 'openclassrooms_client', 'learning_content', 'user_learning_activity' ]
+                body:
+                    grant_type: 'password'
+                    scope: 'openclassrooms_client learning_content user_learning_activity'
+                    username: '%env(USER1_USERNAME)%'
+                    password: '%env(USER1_PASSWORD)%'
+                headers:
+                    Authorization: 'Basic %env(CLIENT_BASIC)%'
+                    Accept: 'application/json'
+                    Content-Type: 'application/json'
+            -   name: 'user_2'
+                body:
+                    grant_type: 'client_credentials'
+                    scope: 'admin_student'
                 headers:
                     Authorization: 'Basic %env(CLIENT_BASIC)%'
                     Accept: 'application/json'

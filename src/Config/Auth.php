@@ -8,67 +8,19 @@ final class Auth
 {
     private string $name;
 
-    private ?string $username = null;
-
-    private ?string $password = null;
-
-    private string $type;
-
-    /**
-     * @var string[]
-     */
-    private array $scopes = [];
-
     /**
      * @var string[]
      */
     private array $headers = [];
 
-    public function __construct(string $name, string $type)
+    /**
+     * @var array<string, string>
+     */
+    private array $body = [];
+
+    public function __construct(string $name)
     {
-        $this->type = $type;
         $this->name = $name;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(?string $username): void
-    {
-        $this->username = $username;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(?string $password): void
-    {
-        $this->password = $password;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getScopes(): array
-    {
-        return $this->scopes;
-    }
-
-    /**
-     * @param string[] $scopes
-     */
-    public function setScopes(array $scopes): void
-    {
-        $this->scopes = $scopes;
     }
 
     public function getName(): string
@@ -90,5 +42,21 @@ final class Auth
     public function setHeaders(array $headers): void
     {
         $this->headers = $headers;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getBody(): array
+    {
+        return $this->body;
+    }
+
+    /**
+     * @param array<string, string> $body
+     */
+    public function setBody(array $body): void
+    {
+        $this->body = $body;
     }
 }

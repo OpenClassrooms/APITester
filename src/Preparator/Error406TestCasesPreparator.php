@@ -23,6 +23,7 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
     protected function generateTestCases(Operations $operations): iterable
     {
         $operations = $operations->where('responses.*.statusCode', 'contains', 406);
+        /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();
         foreach ($operations as $operation) {
             /** @var Responses $responses */

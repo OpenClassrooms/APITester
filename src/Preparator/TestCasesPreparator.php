@@ -40,7 +40,7 @@ abstract class TestCasesPreparator
     {
         return mb_strtolower(
             str_replace(
-                'TestCasesPreparator',
+                (new \ReflectionClass(self::class))->getShortName(),
                 '',
                 (new \ReflectionClass(static::class))->getShortName()
             )
@@ -139,7 +139,8 @@ abstract class TestCasesPreparator
                 'scopes',
                 'includes',
                 $scopes
-            )->first();
+            )->first()
+            ;
 
             if (null !== $token) {
                 return $this->setAuthentication($request, $security, $token);

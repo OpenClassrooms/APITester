@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Test;
 
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use OpenAPITesting\Config\Filters;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Collection\Operations;
@@ -156,10 +157,12 @@ final class Suite implements Test
     }
 
     /**
-     * @return TestCase[]
+     * @return Collection<array-key, TestCase>
+     * @noinspection PhpRedundantVariableDocTypeInspection
      */
     private function prepareTestCases(): iterable
     {
+        /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();
         foreach ($this->preparators as $preparator) {
             /** @var Operations $operations */

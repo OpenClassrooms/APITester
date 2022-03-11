@@ -7,7 +7,10 @@ namespace OpenAPITesting\Util;
 use OpenAPITesting\Util\Normalizer\StreamNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
 use PHPUnit\Framework\ExpectationFailedException;
+use Psr\Http\Message\ResponseInterface;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
+use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
@@ -20,6 +23,8 @@ use Symfony\Component\Serializer\Serializer;
 
 final class Assert
 {
+    private static PropertyAccessorInterface $accessor;
+
     /**
      * @param iterable<mixed>|object $expected
      * @param iterable<mixed>|object $actual
@@ -75,6 +80,37 @@ final class Assert
         BaseAssert::assertTrue($actual, $message);
     }
 
+    /**
+     * @param array<string> $excludedFields
+     */
+    public static function response(
+        ResponseInterface $expected,
+        ResponseInterface $actual,
+        array $excludedFields = []
+    ): void {
+        self::initAccessor();
+        $paths = self::getPaths($expected);
+        $paths = array_diff($paths, $excludedFields);
+        foreach ($paths as $path) {
+            $expectedValue = self::$accessor->getValue($expected, $path);
+            $actualValue = self::$accessor->getValue($actual, $path);
+            $message = "Checking {$path}";
+            if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
+                BaseAssert::assertMatchesRegularExpression(
+                    (string) $expectedValue,
+                    (string) $actualValue,
+                    $message,
+                );
+            } else {
+                BaseAssert::assertSame(
+                    $expectedValue,
+                    $actualValue,
+                    $message,
+                );
+            }
+        }
+    }
+
     private static function getJsonSerializer(): Serializer
     {
         return new Serializer(
@@ -89,5 +125,32 @@ final class Assert
             ],
             [new JsonEncoder()]
         );
+    }
+
+    private static function initAccessor(): void
+    {
+        self::$accessor = (new PropertyAccessorBuilder())->getPropertyAccessor();
+    }
+
+    /**
+     * @return array<string>
+     */
+    private static function getPaths(object $object, string $prefix = null): array
+    {
+        self::initAccessor();
+        $ref = new \ReflectionClass($object);
+        $paths = [];
+        foreach ($ref->getProperties() as $property) {
+            if (self::$accessor->isReadable($object, $property->getName())) {
+                $path = null === $prefix ? $property->getName() : $prefix . '.' . $property->getName();
+                if (\is_object(self::$accessor->getValue($object, $property->getName()))) {
+                    $paths = array_merge($paths, self::getPaths($property, $path));
+                } else {
+                    $paths[] = $path;
+                }
+            }
+        }
+
+        return $paths;
     }
 }

@@ -218,7 +218,7 @@ final class TestCase implements Test
         /** @var Requester $requester */
         $requester = $this->requester;
         try {
-            Assert::objectsEqual(
+            Assert::response(
                 $this->expectedResponse,
                 $requester->getResponse($this->id),
                 $this->excludedFields

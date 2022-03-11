@@ -7,7 +7,6 @@ namespace OpenAPITesting\Test;
 use OpenAPITesting\Authenticator\Authenticator;
 use OpenAPITesting\Authenticator\Exception\AuthenticationException;
 use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Authenticator\Exception\AuthenticatorNotFoundException;
 use OpenAPITesting\Config;
 use OpenAPITesting\Definition\Api;
 use OpenAPITesting\Definition\Collection\Tokens;
@@ -51,22 +50,18 @@ final class Plan
 
     private LoggerInterface $logger;
 
-    /**
-     * @var Authenticator[]
-     */
-    private array $authenticators;
+    private Authenticator $authenticator;
 
     /**
      * @param TestCasesPreparator[] $preparators
      * @param Requester[]           $requesters
      * @param DefinitionLoader[]    $definitionLoaders
-     * @param Authenticator[]       $authenticators
      */
     public function __construct(
         ?array $preparators = null,
         ?array $requesters = null,
         ?array $definitionLoaders = null,
-        ?array $authenticators = null,
+        Authenticator $authenticator = null,
         ?LoggerInterface $logger = null
     ) {
         if (!\defined('PROJECT_DIR')) {
@@ -75,7 +70,7 @@ final class Plan
         $this->preparators = $preparators ?? Object_::getImplementations(TestCasesPreparator::class);
         $this->requesters = $requesters ?? Object_::getImplementations(Requester::class);
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
-        $this->authenticators = $authenticators ?? Object_::getImplementations(Authenticator::class);
+        $this->authenticator = $authenticator ?? new Authenticator();
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -86,7 +81,6 @@ final class Plan
      * @throws RequesterNotFoundException
      * @throws InvalidPreparatorConfigException
      * @throws PreparatorLoadingException
-     * @throws AuthenticatorNotFoundException
      * @throws AuthenticationLoadingException
      * @throws AuthenticationException
      * @throws SuiteNotFoundException
@@ -208,15 +202,13 @@ final class Plan
 
     /**
      * @throws AuthenticationLoadingException
-     * @throws AuthenticatorNotFoundException
      * @throws AuthenticationException
      */
     private function Authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
     {
         $tokens = new Tokens();
         foreach ($config->getAuthentifications() as $authConf) {
-            $authenticator = $this->getConfiguredAuthenticator($authConf);
-            $tokens->add($authenticator->authenticate($authConf, $api, $requester));
+            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
         }
 
         return $tokens;
@@ -266,19 +258,5 @@ final class Plan
             ->getUrl()
         ;
         $requester->setBaseUri($baseUri);
-    }
-
-    /**
-     * @throws AuthenticatorNotFoundException
-     */
-    private function getConfiguredAuthenticator(Config\Auth $config): Authenticator
-    {
-        foreach ($this->authenticators as $authenticator) {
-            if ($authenticator::getName() === $config->getType()) {
-                return $authenticator;
-            }
-        }
-
-        throw new AuthenticatorNotFoundException("Authenticator {$config->getType()} not found");
     }
 }

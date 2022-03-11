@@ -216,10 +216,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         foreach ($requestBody->content as $type => $mediaType) {
-            if (null === $mediaType->schema) {
+            if (!$mediaType->schema instanceof Schema) {
                 continue;
             }
-            /** @var Schema $schema */
             $schema = $mediaType->schema;
             $request = Request::create(
                 $type,
@@ -232,10 +231,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             if (null !== $mediaType->example) {
                 $request->addExample(new RequestExample('default', $mediaType->example));
             }
-            if ($mediaType->schema instanceof Schema
-                && null !== $mediaType->schema->example
-            ) {
-                $request->addExample(new RequestExample('default', $mediaType->schema->example));
+            if (null !== $schema->example) {
+                $request->addExample(new RequestExample('default', $schema->example));
+            }
+            try {
+                $example = $this->extractDeepExamples($schema);
+                $request->addExample(new RequestExample('properties', $example));
+            } catch (ExampleNotExtractableException $e) {
+                // @ignoreException
             }
             $collection->add($request);
         }
@@ -292,10 +295,18 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 if (null !== $example) {
                     $defResponse->addExample(new ResponseExample('default', (array) $example->value));
                 }
-                if ($mediaType->schema instanceof Schema
-                    && null !== $mediaType->schema->example
-                ) {
-                    $defResponse->addExample(new ResponseExample('default', (array) $mediaType->schema->example));
+                if ($schema instanceof Schema) {
+                    if (null !== $schema->example) {
+                        $defResponse->addExample(new ResponseExample('default', (array) $schema->example));
+                    }
+                    try {
+                        $example = $this->extractDeepExamples($schema);
+                        $defResponse->addExample(
+                            new ResponseExample($defResponse->getStatusCode() . '_properties', $example)
+                        );
+                    } catch (ExampleNotExtractableException $e) {
+                        // @ignoreException
+                    }
                 }
                 $collection->add($defResponse);
             }
@@ -378,6 +389,40 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         return new Securities($collection);
+    }
+
+    /**
+     * @throws ExampleNotExtractableException
+     *
+     * @return array<mixed>
+     */
+    private function extractDeepExamples(Schema $schema): array
+    {
+        $parent = [];
+        if ('object' === $schema->type) {
+            foreach ($schema->properties as $name => $property) {
+                if (!$property instanceof Schema) {
+                    continue;
+                }
+                if (isset($property->type) && 'object' === $property->type && !isset($property->example)) {
+                    $parent[$name] = $this->extractDeepExamples($property);
+                } else {
+                    if (!$property->nullable
+                        && !isset($property->example)
+                        && isset($schema->required)
+                        && \in_array(
+                            $name,
+                            $schema->required,
+                            true
+                        )) {
+                        throw new ExampleNotExtractableException();
+                    }
+                    $parent[$name] = $property->example;
+                }
+            }
+        }
+
+        return $parent;
     }
 
     /**

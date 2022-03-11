@@ -22,8 +22,8 @@ or require globally
 
 An example of an integration with symfony kernel and phpunit
 
-```php
-    public function test(): void
+```php    
+public function test(): void
     {
         //need to create a plan
         $testPlan = new Plan();

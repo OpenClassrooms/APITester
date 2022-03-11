@@ -4610,11 +4610,27 @@ paths:
                     required: true
                     schema:
                         type: integer
+                        example: 47
             requestBody:
                 content:
                     application/json:
                         schema:
                             $ref: "#/components/schemas/Student.LearningPath.CreateTrainingPeriodRequest"
+                        example:
+                            learningPathId: 104
+                            status: activated
+                            startedAt: '2022-01-01T00:00:00Z'
+                            endedAt: '2024-01-01T00:00:00Z'
+                            metadata:
+                                financialAid:
+                                    amount: 2000
+                                    signedDate: '2022-01-01T00:00:00Z'
+                                    customPathDuration: 200
+                                    expectedPathCompletion: 100
+                                    fileNumber: 19ENA04005061
+                                    invoiceNumber: 28 66 18 18 037
+                                    submissionDate: '2022-01-01T00:00:00Z'
+                                    backers: [ test ]
                 description: Training period data
                 required: true
             responses:
@@ -9617,7 +9633,7 @@ components:
             type: object
             additionalProperties: false
             properties:
-                learning_path_id:
+                learningPathId:
                     type: integer
                     description: 'platformId from the related object Openclassrooms Path'
                     minimum: 1
@@ -9626,11 +9642,11 @@ components:
                     type: string
                     default: 'activated'
                     enum: [ 'abandoned', 'activated' ]
-                started_at:
+                startedAt:
                     type: string
                     description: 'Traning information Start Date'
                     format: date-time
-                ended_at:
+                endedAt:
                     type: string
                     description: 'Traning information End Date'
                     format: date-time
@@ -9638,14 +9654,14 @@ components:
                     type: object
                     additionalProperties: false
                     properties:
-                        source_id:
+                        sourceId:
                             type: string
                             description: 'Unique identifier allowing to identify a finaid'
                             example: 'FA-0000000027'
                         source:
                             type: string
                             description: 'from source name, in this case should always be: salesforce'
-                        financial_aid:
+                        financialAid:
                             type: object
                             additionalProperties: false
                             properties:
@@ -9655,39 +9671,37 @@ components:
                                     minimum: 0
                                     maximum: 100000000
                                     exclusiveMaximum: true
-                                signed_date:
+                                signedDate:
                                     type: string
                                     nullable: true
-                                    default: null
                                     format: date-time
                                     description: 'Contract signing date (to be found on salesforce)'
-                                custom_path_duration:
+                                customPathDuration:
                                     type: integer
                                     nullable: true
                                     default: null
                                     minimum: 0
                                     maximum: 2147483647
                                     description: 'Custom path duration in hours (to be created on salesforce)'
-                                expected_path_completion:
+                                expectedPathCompletion:
                                     type: integer
                                     nullable: true
                                     default: 100
                                     description: 'number from 1 to 100 (to be created on salesforce)'
-                                file_number:
+                                fileNumber:
                                     type: string
                                     nullable: true
                                     default: null
                                     description: 'an optionnal field not always filled, example from plateform: 19ENA04005061'
-                                invoice_number:
+                                invoiceNumber:
                                     type: string
                                     nullable: true
                                     default: null
                                     description: 'an optionnal field rarely filled, example from plateform: 28 66 18 18 037'
-                                submission_date:
+                                submissionDate:
                                     type: string
                                     nullable: true
                                     format: date-time
-                                    default: null
                                     description: 'the submission date of the finaid (to be found on salesforce)'
                                 backers:
                                     type: array
@@ -9705,23 +9719,23 @@ components:
                                         type:
                                             type: string
                                             enum: [ 'APPRENTICESHIP', 'EMPLOYER', 'OPENCLASSROOMS', 'SOCIAL', 'INDIVIDUAL' ]
-                                        started_at:
+                                        startedAt:
                                             type: string
                                             format: date-time
                                     required:
                                         - name
                                         - type
-                                        - started_at
+                                        - startedAt
                             required:
                                 - amount
                                 - backers
                     required:
-                        - financial_aid
+                        - financialAid
             required:
                 - metadata
-                - learning_path_id
-                - started_at
-                - ended_at
+                - learningPathId
+                - startedAt
+                - endedAt
         ApiError:
             type: object
             properties:
@@ -9918,7 +9932,7 @@ components:
             type: oauth2
             flows:
                 authorizationCode:
-                    authorizationUrl: 'https://stage.openclassrooms.lan/oauth2/authorize'
+                    authorizationUrl: 'https://openclassrooms.lan/oauth2/authorize'
                     tokenUrl: 'https://api.openclassrooms.lan/oauth2/token'
                     scopes:
                         user_public_profile: 'Access to public profile'
@@ -9926,7 +9940,7 @@ components:
                         user_learning_activity: 'Access to user learning activity'
                         analytics: 'Access to analytics'
                 clientCredentials:
-                    tokenUrl: 'https://api.openclassrooms.lan/oauth/token'
+                    tokenUrl: 'https://api.openclassrooms.lan/oauth2/token'
                     scopes:
                         learning_content: 'Only this one in this flow'
                         admin_student: 'This scope is mainly used by salesforce'

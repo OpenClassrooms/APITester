@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenAPITesting\Preparator;
 
+use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
@@ -38,12 +39,13 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
     abstract protected function getTestTokens(Security $security): Tokens;
 
     /**
-     * @return TestCase[]
+     * @return Collection<array-key, TestCase>
      */
     private function prepareTestCases(Security $security): iterable
     {
         $operation = $security->getParent();
         $tokens = $this->getTestTokens($security);
+        /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();
         foreach ($tokens as $token) {
             if ($token->getAuthType() !== $security->getType()) {
