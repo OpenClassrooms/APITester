@@ -103,7 +103,7 @@ final class Error400RequiredFieldsTestCasesPreparator extends FieldLevelTestCase
         return $this->createTestCase(
             "required_body_missing_{$operation->getId()}",
             $operation,
-            $operation->getParameters()
+            $operation->getParameters(true)
         );
     }
 

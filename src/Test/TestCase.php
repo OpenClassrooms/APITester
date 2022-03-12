@@ -165,7 +165,7 @@ final class TestCase implements Test
         }
         $this->logger->log(
             LogLevel::DEBUG,
-            "sent request, URI: {$this->request->getUri()}{$body}"
+            "sent request, URI: {$this->request->getUri()}{$body}, Expected status code: {$this->expectedResponse->getStatusCode()}"
         );
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();

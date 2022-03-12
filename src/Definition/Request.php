@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Definition;
 
 use cebe\openapi\spec\Schema;
+use OpenAPITesting\Definition\Collection\Parameters;
 use OpenAPITesting\Definition\Collection\RequestExamples;
 
 final class Request
@@ -18,6 +19,9 @@ final class Request
     private bool $required = true;
 
     private RequestExamples $examples;
+
+    private Parameters $headers;
+
 
     public function __construct(string $mediaType, Schema $body)
     {

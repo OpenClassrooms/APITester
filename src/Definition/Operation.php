@@ -76,7 +76,7 @@ final class Operation
             return $this;
         }
 
-        $parameters = $this->getParameters(false)[$type];
+        $parameters = $this->getParameters()[$type];
         $parameters->map(
             function (Parameter $p) use ($example, $name) {
                 if ($name === $p->getName()) {
@@ -93,7 +93,7 @@ final class Operation
     /**
      * @return array<string, Parameters>
      */
-    public function getParameters(bool $onlyRequired = true): array
+    public function getParameters(bool $onlyRequired = false): array
     {
         $parameters = [
             Parameter::TYPE_PATH => $this->getPathParameters(),
@@ -358,7 +358,7 @@ final class Operation
         }
 
         return null !== $operation->where($prop, $operator, $value)
-            ->first()
+                ->first()
         ;
     }
 

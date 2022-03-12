@@ -58,7 +58,7 @@ final class FixturesLoader
      */
     private function appendFixtureExamples(Operation $operation, array $fixtures): Operation
     {
-        $parameters = $operation->getParameters(false);
+        $parameters = $operation->getParameters();
         $requests = $operation->getRequests();
         $responses = $operation->getResponses();
 
