@@ -92,7 +92,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         foreach ($paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
-                $parameters = $operation->parameters;
+                $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
                 /** @var \cebe\openapi\spec\Response[]|null $responses */
@@ -198,7 +198,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $defParam->addExample(new ParameterExample('default', (string) $parameter->example));
             }
             if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
-                $defParam->addExample(new ParameterExample('properties', (string) $parameter->schema->example));
+                $example = $parameter->schema->example;
+                if (is_array($parameter->schema->example)) {
+                    $example = implode(',', $example);
+                }
+                $defParam->addExample(new ParameterExample('properties', (string) $example));
             }
             $collection->add($defParam);
         }
