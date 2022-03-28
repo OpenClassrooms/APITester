@@ -36,18 +36,6 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return string[][]
-     */
-    abstract protected function getQueryValues(): array;
-
-    abstract protected function getErrorCode(): int;
-
-    /**
-     * @return string[][]
-     */
-    abstract protected function getHeaderValues(): array;
-
-    /**
      * @throws PreparatorLoadingException
      *
      * @return TestCase[]
@@ -99,7 +87,8 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
             if ($configItem->inHeader()) {
                 $header = $operation->getHeaders()
-                    ->where('name', $configItem->getNames()[0])->first();
+                    ->where('name', $configItem->getNames()[0])->first()
+                ;
 
                 if (null === $header) {
                     continue;
@@ -119,12 +108,14 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     {
         $testCases = [];
         foreach ($this->getQueryValues() as $values) {
+            $request = new Request(
+                $operation->getMethod(),
+                "{$operation->getPath()}?{$configItem->getLower()}={$values['lower']}&{$configItem->getUpper()}={$values['upper']}"
+            );
+            $request = $this->authenticate($request, $operation);
             $testCases[] = new TestCase(
                 $values['name'] . '_query_range_' . $operation->getId(),
-                new Request(
-                    $operation->getMethod(),
-                    "{$operation->getPath()}?{$configItem->getLower()}={$values['lower']}&{$configItem->getUpper()}={$values['upper']}"
-                ),
+                $request,
                 new Response($this->getErrorCode())
             );
         }
@@ -139,19 +130,33 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     {
         $testCases = [];
         foreach ($this->getHeaderValues() as $values) {
+            $request = new Request(
+                $operation->getMethod(),
+                $operation->getPath(),
+                [
+                    $configItem->getNames()[0] => "{$configItem->getUnit()}={$values['lower']}-{$values['upper']}",
+                ]
+            );
+            $request = $this->authenticate($request, $operation);
             $testCases[] = new TestCase(
                 $values['name'] . '_header_range_' . $operation->getId(),
-                new Request(
-                    $operation->getMethod(),
-                    $operation->getPath(),
-                    [
-                        $configItem->getNames()[0] => "{$configItem->getUnit()}={$values['lower']}-{$values['upper']}",
-                    ]
-                ),
+                $request,
                 new Response($this->getErrorCode())
             );
         }
 
         return $testCases;
     }
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getQueryValues(): array;
+
+    abstract protected function getErrorCode(): int;
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getHeaderValues(): array;
 }

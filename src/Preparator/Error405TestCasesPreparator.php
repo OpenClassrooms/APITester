@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use OpenAPITesting\Definition\Collection\Operations;
+use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Test\TestCase;
 use OpenAPITesting\Util\Json;
 
@@ -34,7 +35,12 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
     protected function generateTestCases(Operations $operations): iterable
     {
         $grouped = $operations
-            ->where('responses.*.statusCode', 'contains', 405)
+            ->map(
+                fn (Operation $operation) => [
+                    'path' => $operation->getExamplePath(),
+                    'method' => $operation->getMethod(),
+                ]
+            )
             ->groupBy('path', true)
         ;
         /** @var Collection<array-key, TestCase> $testCases */
@@ -44,7 +50,8 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
             $testCases = $testCases->merge(
                 $pathOperations
                     ->select('method')
-                    ->compare($this->config->methods ?: self::SUPPORTED_HTTP_METHODS)
+                    ->compare(self::SUPPORTED_HTTP_METHODS)
+                    ->intersect($this->config->methods ?: self::SUPPORTED_HTTP_METHODS)
                     ->map(fn ($method) => $this->prepareTestCase(
                         $path,
                         (string) $method

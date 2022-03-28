@@ -9,7 +9,7 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\FixturesLoader;
+use OpenAPITesting\Definition\Loader\ExamplesExtensionLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\ParameterExample;
 use OpenAPITesting\Definition\Response as DefinitionResponse;
@@ -33,9 +33,10 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): array
     {
-        $operations = (new FixturesLoader())
-            ->load(Yaml::concatFromDirectory($this->config->additionalExamplesPath), $operations)
-        ;
+        $operations = ExamplesExtensionLoader::load(
+            Yaml::concatFromDirectory($this->config->extensionPath),
+            $operations
+        );
 
         $testCases = [];
         foreach ($operations->where('responses.*', '!==', null) as $operation) {
@@ -185,7 +186,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request>  $requests
+     * @param array<string, Request> $requests
      * @param array<string, Response> $responses
      *
      * @return TestCase[]

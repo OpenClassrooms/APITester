@@ -16,47 +16,25 @@ use OpenAPITesting\Definition\RequestExample;
 use OpenAPITesting\Definition\Response;
 use OpenAPITesting\Definition\ResponseExample;
 
-final class FixturesLoader
+final class ExamplesExtensionLoader
 {
     /**
      * @param array<array-key, mixed> $fixtures
      */
-    public function load(array $fixtures, Operations $operations): Operations
+    public static function load(array $fixtures, Operations $operations): Operations
     {
         return $operations->map(
-            fn (Operation $operation) => $this->appendFixtureExamples(
+            fn (Operation $operation) => static::appendFixtureExamples(
                 $operation,
-                $this->getMatchingFixtures($operation, $fixtures)
+                static::getMatchingFixtures($operation, $fixtures)
             )
         );
     }
 
     /**
-     * @param array<array-key, mixed> $fixtures
-     *
-     * @return array<array-key, array<array-key, mixed>>
-     */
-    private function getMatchingFixtures(Operation $operation, array $fixtures): array
-    {
-        return array_filter($fixtures, fn ($f) => \is_array($f) && $this->fixtureMatchesOperation($operation, $f));
-    }
-
-    /**
-     * @param mixed $fixture
-     */
-    private function fixtureMatchesOperation(Operation $operation, $fixture): bool
-    {
-        if (!\is_array($fixture) || !isset($fixture['operationId'])) {
-            return false;
-        }
-
-        return $fixture['operationId'] === $operation->getId();
-    }
-
-    /**
      * @param array<string, array<array-key, mixed>> $fixtures
      */
-    private function appendFixtureExamples(Operation $operation, array $fixtures): Operation
+    private static function appendFixtureExamples(Operation $operation, array $fixtures): Operation
     {
         $parameters = $operation->getParameters();
         $requests = $operation->getRequests();
@@ -69,13 +47,13 @@ final class FixturesLoader
             ) {
                 continue;
             }
-            $parameters = $this->appendParameterExamples($parameters, $fixtureName, $fixture);
-            $requests = $this->appendRequestExamples(
+            $parameters = static::appendParameterExamples($parameters, $fixtureName, $fixture);
+            $requests = self::appendRequestExamples(
                 $requests,
                 $fixtureName,
                 $fixture['request']['body'] ?? null
             );
-            $responses = $this->appendResponseExamples($responses, $fixtureName, $fixture['response']);
+            $responses = self::appendResponseExamples($responses, $fixtureName, $fixture['response']);
         }
 
         return $operation
@@ -86,12 +64,26 @@ final class FixturesLoader
     }
 
     /**
+     * @param array<array-key, mixed> $fixtures
+     *
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    private static function getMatchingFixtures(Operation $operation, array $fixtures): array
+    {
+        return array_filter(
+            $fixtures,
+            static fn ($f) => \is_array($f)
+                && static::fixtureMatchesOperation($operation, $f)
+        );
+    }
+
+    /**
      * @param array<string, Parameters> $parameters
      * @param array<array-key, mixed>   $fixture
      *
      * @return array<string, Parameters>
      */
-    private function appendParameterExamples(array $parameters, string $fixtureName, array $fixture): array
+    private static function appendParameterExamples(array $parameters, string $fixtureName, array $fixture): array
     {
         if (!isset($fixture['request']) || !\is_array($fixture['request'])) {
             return $parameters;
@@ -99,7 +91,7 @@ final class FixturesLoader
 
         foreach (Parameter::TYPES as $type) {
             $parameters[$type] = $parameters[$type]->map(
-                fn (Parameter $p) => $this->appendParameterExample(
+                fn (Parameter $p) => static::appendParameterExample(
                     $p,
                     $fixtureName,
                     $fixture['request'][$type] ?? $fixture['request']['parameters'][$type] ?? null
@@ -111,27 +103,13 @@ final class FixturesLoader
     }
 
     /**
-     * @param array<string, string> $fixture
-     */
-    private function appendParameterExample(Parameter $p, string $fixtureName, ?array $fixture): Parameter
-    {
-        if (null === $fixture) {
-            return $p;
-        }
-
-        $value = $fixture[$p->getName()] ?? null;
-        if (isset($value)) {
-            $p->addExample(new ParameterExample($fixtureName, $value));
-        }
-
-        return $p;
-    }
-
-    /**
      * @param array{mediaType: string, content: array<array-key, mixed>}|null $requestBody
      */
-    private function appendRequestExamples(Requests $requests, string $fixtureName, ?array $requestBody): Requests
-    {
+    private static function appendRequestExamples(
+        Requests $requests,
+        string $fixtureName,
+        ?array $requestBody
+    ): Requests {
         if (!isset($requestBody)) {
             return $requests;
         }
@@ -150,16 +128,51 @@ final class FixturesLoader
     /**
      * @param array<array-key, mixed> $response
      */
-    private function appendResponseExamples(Responses $responses, string $fixtureName, array $response): Responses
+    private static function appendResponseExamples(
+        Responses $responses,
+        string $fixtureName,
+        array $response
+    ): Responses {
+        return $responses->map(fn (Response $r) => static::appendResponseExample($r, $fixtureName, $response));
+    }
+
+    /**
+     * @param mixed $fixture
+     */
+    private static function fixtureMatchesOperation(Operation $operation, $fixture): bool
     {
-        return $responses->map(fn (Response $r) => $this->appendResponseExample($r, $fixtureName, $response));
+        if (!\is_array($fixture) || !isset($fixture['operationId'])) {
+            return false;
+        }
+
+        return $fixture['operationId'] === $operation->getId();
+    }
+
+    /**
+     * @param array<string, string> $fixture
+     */
+    private static function appendParameterExample(Parameter $p, string $fixtureName, ?array $fixture): Parameter
+    {
+        if (null === $fixture) {
+            return $p;
+        }
+
+        $value = $fixture[$p->getName()] ?? null;
+        if (isset($value)) {
+            $p->addExample(new ParameterExample($fixtureName, $value));
+        }
+
+        return $p;
     }
 
     /**
      * @param array<array-key, mixed> $fixtureResponse
      */
-    private function appendResponseExample(Response $response, string $fixtureName, array $fixtureResponse): Response
-    {
+    private static function appendResponseExample(
+        Response $response,
+        string $fixtureName,
+        array $fixtureResponse
+    ): Response {
         if (\is_array($fixtureResponse['body'])
             && $response->getMediaType() === $fixtureResponse['body']['mediaType']
             && $response->getStatusCode() === $fixtureResponse['statusCode']
@@ -173,7 +186,11 @@ final class FixturesLoader
             $response->setHeaders(
                 $response->getHeaders()
                     ->map(
-                        fn (Parameter $h) => $this->appendParameterExample($h, $fixtureName, $fixtureResponse['header'])
+                        fn (Parameter $h) => static::appendParameterExample(
+                            $h,
+                            $fixtureName,
+                            $fixtureResponse['header']
+                        )
                     )
             );
         }

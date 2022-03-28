@@ -109,6 +109,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setDescription($operation->description ?? '')
                         ->setPathParameters($this->getParameters($parameters, 'path'))
                         ->setQueryParameters($this->getParameters($parameters, 'query'))
+                        ->setHeaders($this->getParameters($parameters, 'header'))
                         ->setRequests($this->getRequests($requestBody))
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))

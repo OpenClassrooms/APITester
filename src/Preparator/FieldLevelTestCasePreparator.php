@@ -28,6 +28,19 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
     }
 
     /**
+     * @return TestCase[]
+     */
+    private function prepareTestCases(Operation $operation): array
+    {
+        $requiredParams = $operation->getParameters(true);
+
+        return array_merge(
+            $this->prepareForParameters($requiredParams, $operation),
+            $this->prepareForBodies($requiredParams, $operation)
+        );
+    }
+
+    /**
      * @param array<string, Parameters> $definitionParams
      *
      * @return TestCase[]
@@ -98,33 +111,23 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
         array $parameters,
         array $body = null
     ): TestCase {
+        $request = new Request(
+            $operation->getMethod(),
+            $operation->getExamplePath(
+                null,
+                $parameters[Parameter::TYPE_QUERY]
+            ),
+            $parameters[Parameter::TYPE_HEADER]->where('required', true)->toExampleArray(),
+            null === $body ? null : Json::encode($body)
+        );
+        $request = $this->authenticate($request, $operation);
+
         return new TestCase(
             $name,
-            new Request(
-                $operation->getMethod(),
-                $operation->getExamplePath(
-                    $parameters[Parameter::TYPE_PATH],
-                    $parameters[Parameter::TYPE_QUERY]
-                ),
-                $parameters[Parameter::TYPE_HEADER]->where('required', true)->toExampleArray(),
-                null === $body ? null : Json::encode($body)
-            ),
+            $request,
             new Response($this->getStatusCode())
         );
     }
 
     abstract protected function getStatusCode(): int;
-
-    /**
-     * @return TestCase[]
-     */
-    private function prepareTestCases(Operation $operation): array
-    {
-        $requiredParams = $operation->getParameters(true);
-
-        return array_merge(
-            $this->prepareForParameters($requiredParams, $operation),
-            $this->prepareForBodies($requiredParams, $operation)
-        );
-    }
 }

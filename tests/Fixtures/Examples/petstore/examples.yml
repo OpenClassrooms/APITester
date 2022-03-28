@@ -35,4 +35,3 @@ showUser404:
     operationId: showUser
     request: *notFoundRequest
     response: *notFoundError
-

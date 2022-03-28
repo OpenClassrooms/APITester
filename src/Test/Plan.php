@@ -18,16 +18,28 @@ use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
 use OpenAPITesting\Preparator\TestCasesPreparator;
 use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
 use OpenAPITesting\Requester\Requester;
+use OpenAPITesting\Requester\SymfonyKernelRequester;
 use OpenAPITesting\Test\Exception\SuiteNotFoundException;
-use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Object_;
-use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\TestResult;
+use PHPUnit\TextUI\CliArguments\Builder;
+use PHPUnit\TextUI\CliArguments\Mapper;
+use PHPUnit\TextUI\TestRunner;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 final class Plan
 {
+    private Authenticator $authenticator;
+
+    /**
+     * @var DefinitionLoader[]
+     */
+    private array $definitionLoaders;
+
+    private LoggerInterface $logger;
+
     /**
      * @var TestCasesPreparator[]
      */
@@ -39,18 +51,11 @@ final class Plan
     private array $requesters;
 
     /**
-     * @var DefinitionLoader[]
-     */
-    private array $definitionLoaders;
-
-    /**
-     * @var array<string, array<string, Result>>
+     * @var array<string, TestResult>
      */
     private array $results = [];
 
-    private LoggerInterface $logger;
-
-    private Authenticator $authenticator;
+    private TestRunner $runner;
 
     /**
      * @param TestCasesPreparator[] $preparators
@@ -72,6 +77,7 @@ final class Plan
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
         $this->authenticator = $authenticator ?? new Authenticator();
         $this->logger = $logger ?? new NullLogger();
+        $this->runner = new TestRunner();
     }
 
     /**
@@ -85,11 +91,15 @@ final class Plan
      * @throws AuthenticationException
      * @throws SuiteNotFoundException
      */
-    public function execute(Config\Plan $testPlanConfig, ?string $suiteName = null): void
-    {
+    public function execute(
+        Config\Plan $testPlanConfig,
+        ?string $suiteName = null,
+        array $options = []
+    ): void {
         $suites = $testPlanConfig->getSuites();
         $suites = $this->selectSuite($suiteName, $suites);
         foreach ($suites as $suiteConfig) {
+            $this->handleSymfonyKernel($suiteConfig);
             $requester = $this->getRequester($suiteConfig->getRequester());
             $api = $this->getApi($suiteConfig, $requester);
             $tokens = $this->Authenticate($suiteConfig, $api, $requester);
@@ -104,58 +114,32 @@ final class Plan
             );
             $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
             $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
-            $testSuite->launch();
-            if (\count($testSuite->getResult()) > 0) {
-                $this->results[$suiteConfig->getName()] = $testSuite->getResult();
-            }
+            $this->results[$suiteConfig->getName()] = $this->runner->run(
+                $testSuite,
+                (new Mapper())->mapToLegacyArray(
+                    (new Builder())->fromParameters(
+                        $this->getPhpUnitOptions($options),
+                        []
+                    )
+                ),
+                [],
+                true
+            );
         }
-    }
-
-    /**
-     * @throws ExpectationFailedException
-     */
-    public function assert(): void
-    {
-        foreach ($this->getResults() as $suite) {
-            foreach ($suite as $result) {
-                Assert::true($result->hasSucceeded(), (string) $result);
-            }
-        }
-    }
-
-    /**
-     * @return array<string, array<string, Result>>
-     */
-    public function getResults(): array
-    {
-        return $this->results;
-    }
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    public function addRequester(Requester $requester): self
-    {
-        $this->requesters[] = $requester;
-
-        return $this;
     }
 
     /**
      * @param array<Config\Suite> $suites
      *
+     * @return iterable<Config\Suite>
      * @throws SuiteNotFoundException
      *
-     * @return iterable<Config\Suite>
      */
     private function selectSuite(?string $suiteName, array $suites): iterable
     {
         if (null !== $suiteName) {
             $indexSuites = collect($suites)
-                ->keyBy('name')
-            ;
+                ->keyBy('name');
             if ($indexSuites->has($suiteName)) {
                 $suites = $indexSuites->where('name', $suiteName);
             } else {
@@ -164,6 +148,23 @@ final class Plan
         }
 
         return $suites;
+    }
+
+    private function handleSymfonyKernel($suiteConfig): void
+    {
+        $symfonyKernelClass = $suiteConfig->getSymfonyKernelClass();
+        if (null !== $symfonyKernelClass) {
+            $kernel = new $symfonyKernelClass('test', true);
+            $kernel->boot();
+            $this->addRequester(new SymfonyKernelRequester($kernel));
+        }
+    }
+
+    public function addRequester(Requester $requester): self
+    {
+        $this->requesters[] = $requester;
+
+        return $this;
     }
 
     /**
@@ -188,54 +189,16 @@ final class Plan
     {
         $definitionLoader = $this->getConfiguredLoader(
             $config->getDefinition()
-                ->getFormat()
+                   ->getFormat()
         );
         $api = $definitionLoader->load(
             $config->getDefinition()
-                ->getPath()
+                   ->getPath()
         );
 
         $this->setBaseUri($api, $requester);
 
         return $api;
-    }
-
-    /**
-     * @throws AuthenticationLoadingException
-     * @throws AuthenticationException
-     */
-    private function Authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
-    {
-        $tokens = new Tokens();
-        foreach ($config->getAuthentifications() as $authConf) {
-            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $preparators
-     *
-     * @throws InvalidPreparatorConfigException
-     *
-     * @return TestCasesPreparator[]
-     */
-    private function getConfiguredPreparators(array $preparators, Tokens $tokens): array
-    {
-        if (0 === \count($preparators)) {
-            return $this->preparators;
-        }
-        $configuredPreparators = [];
-        foreach ($this->preparators as $p) {
-            $p->configure($preparators[$p::getName()] ?? []);
-            $p->setTokens($tokens);
-            if (\array_key_exists($p::getName(), $preparators)) {
-                $configuredPreparators[] = $p;
-            }
-        }
-
-        return $configuredPreparators;
     }
 
     /**
@@ -255,8 +218,97 @@ final class Plan
     private function setBaseUri(Api $schema, Requester $requester): void
     {
         $baseUri = $schema->getServers()[0]
-            ->getUrl()
-        ;
+            ->getUrl();
         $requester->setBaseUri($baseUri);
+    }
+
+    /**
+     * @throws AuthenticationLoadingException
+     * @throws AuthenticationException
+     */
+    private function Authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
+    {
+        $tokens = new Tokens();
+        foreach ($config->getAuthentifications() as $authConf) {
+            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     *
+     * @return TestCasesPreparator[]
+     * @throws InvalidPreparatorConfigException
+     *
+     */
+    private function getConfiguredPreparators(array $preparators, Tokens $tokens): array
+    {
+        if (0 === \count($preparators)) {
+            return $this->preparators;
+        }
+        $configuredPreparators = [];
+        foreach ($preparators as $name => $preparatorConfig) {
+            $preparator = collect($this->preparators)
+                ->where('name', $name)
+                ->first();
+            if (null === $preparator) {
+                throw new InvalidPreparatorConfigException("Preparator $name not found.");
+            }
+            $preparator->configure($preparatorConfig);
+            $preparator->setTokens($tokens);
+            $configuredPreparators[] = $preparator;
+        }
+
+        return $configuredPreparators;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array
+     */
+    private function getPhpUnitOptions(array $options): array
+    {
+        $options['colors'] = 'always';
+        $options = array_filter(
+            $options,
+            static fn ($key) => !in_array($key, [
+                'config',
+                'quiet',
+                'ansi',
+                'no-ansi',
+                'no-interaction',
+                'suite',
+            ], true),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return array_filter(
+            array_map(static function (string $key, $value) {
+                if (true === $value) {
+                    return "--$key";
+                }
+
+                return $value !== false ? "--$key=$value" : null;
+            },
+                array_keys($options),
+                array_values($options),
+            )
+        );
+    }
+
+    /**
+     * @return array<string, TestResult>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 }

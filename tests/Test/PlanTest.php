@@ -35,13 +35,11 @@ final class PlanTest extends TestCase
         $this->expectException(SuiteNotFoundException::class);
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
         $this->testPlan->execute($config, 'petstore');
-        $this->testPlan->assert();
     }
 
     public function testOC(): void
     {
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
         $this->testPlan->execute($config, 'oc');
-        $this->testPlan->assert();
     }
 }

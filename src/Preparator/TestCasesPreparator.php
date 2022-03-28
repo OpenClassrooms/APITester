@@ -187,7 +187,7 @@ abstract class TestCasesPreparator
         }
 
         return Json::encode(
-            (array) (new SchemaFaker(
+            $request->getBodyFromExamples() ?: (array) (new SchemaFaker(
                 $request->getBody(),
                 new Options(),
                 true

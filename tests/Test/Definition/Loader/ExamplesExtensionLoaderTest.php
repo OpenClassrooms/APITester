@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OpenAPITesting\Tests\Test\Definition\Loader;
 
 use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\FixturesLoader;
+use OpenAPITesting\Definition\Loader\ExamplesExtensionLoader;
 use OpenAPITesting\Definition\Operation;
 use OpenAPITesting\Definition\Parameter;
 use OpenAPITesting\Definition\ParameterExample;
@@ -36,7 +36,7 @@ use PHPUnit\Framework\TestCase;
  *      }
  * }
  */
-final class FixturesLoaderTest extends TestCase
+final class ExamplesExtensionLoaderTest extends TestCase
 {
     /**
      * @dataProvider getLoadAndAppendData
@@ -45,7 +45,7 @@ final class FixturesLoaderTest extends TestCase
      */
     public function testLoadAndAppend(array $data, Operations $operations, Operations $expected): void
     {
-        $operations = (new FixturesLoader())->load($data, $operations);
+        $operations = ExamplesExtensionLoader::load($data, $operations);
 
         Assert::objectsEqual($expected, $operations);
     }

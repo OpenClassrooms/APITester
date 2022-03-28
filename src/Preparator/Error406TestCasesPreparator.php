@@ -22,41 +22,44 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): iterable
     {
-        $operations = $operations->where('responses.*.statusCode', 'contains', 406);
         /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();
         foreach ($operations as $operation) {
+            $responses = $operation->getResponses()
+                ->where('statusCode', 'in', [200, 201])
+            ;
             /** @var Responses $responses */
-            foreach ($operation->getResponses()->groupBy('statusCode') as $statusCode => $responses) {
-                /** @var Collection<int, string> $mediaTypes */
-                $mediaTypes = $responses->select('mediaType');
-                $testCases = $testCases->merge(
-                    $mediaTypes
-                        ->compare(Mime::TYPES)
-                        ->random(self::INVALID_TEST_CASES_NUMBER)
-                        ->map(fn (string $type) => $this->prepareTestCase(
-                            $operation,
-                            $statusCode,
-                            $type
-                        ))
-                );
-            }
+            /** @var Collection<int, string> $mediaTypes */
+            $mediaTypes = $responses->select('mediaType');
+            $testCases = $testCases->merge(
+                $mediaTypes
+                    ->compare(Mime::TYPES)
+                    ->random(self::INVALID_TEST_CASES_NUMBER)
+                    ->map(fn (string $type) => $this->prepareTestCase(
+                        $operation,
+                        $type
+                    ))
+            );
         }
 
         return $testCases;
     }
 
-    private function prepareTestCase(Operation $operation, int $statusCode, string $type): TestCase
+    private function prepareTestCase(Operation $operation, string $type): TestCase
     {
+        $request = new Request(
+            $operation->getMethod(),
+            $operation->getExamplePath(),
+            [
+                'Accept' => $type,
+            ]
+        );
+
+        $request = $this->authenticate($request, $operation);
+
         return new TestCase(
-            "{$type}_{$statusCode}_{$operation->getId()}",
-            new Request(
-                $operation->getMethod(),
-                $operation->getPath(),
-                [
-                    'Accept' => $type,
-                ]
-            ),
+            "{$type}_{$operation->getId()}",
+            $request,
             new Response(406)
         );
     }

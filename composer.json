@@ -4,6 +4,9 @@
   "license": "proprietary",
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "bin": [
+    "bin/api-tester"
+  ],
   "config": {
     "bin-dir": "bin",
     "optimize-autoloader": true,

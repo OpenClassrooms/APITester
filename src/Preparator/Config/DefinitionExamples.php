@@ -6,5 +6,5 @@ namespace OpenAPITesting\Preparator\Config;
 
 final class DefinitionExamples extends PreparatorConfig
 {
-    public ?string $additionalExamplesPath = null;
+    public ?string $extensionPath = null;
 }

@@ -11,7 +11,7 @@ use OpenAPITesting\Requester\Requester;
 use OpenAPITesting\Util\Assert;
 use OpenAPITesting\Util\Json;
 use OpenAPITesting\Util\Traits\TimeBoundTrait;
-use PHPUnit\Framework\ExpectationFailedException;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -22,23 +22,19 @@ use Psr\Log\NullLogger;
  * @internal
  * @coversNothing
  */
-final class TestCase implements Test
+final class TestCase extends \PHPUnit\Framework\TestCase
 {
     use TimeBoundTrait;
 
-    private RequestInterface $request;
+    /**
+     * @var \Closure[]
+     */
+    private array $afterCallbacks = [];
 
-    private ResponseInterface $expectedResponse;
-
-    private string $name;
-
-    private ?Result $result = null;
-
-    private ?Requester $requester = null;
-
-    private LoggerInterface $logger;
-
-    private string $id;
+    /**
+     * @var \Closure[]
+     */
+    private array $beforeCallbacks = [];
 
     /**
      * @var string[]
@@ -50,15 +46,17 @@ final class TestCase implements Test
         'protocol',
     ];
 
-    /**
-     * @var \Closure[]
-     */
-    private array $beforeCallbacks = [];
+    private ResponseInterface $expectedResponse;
 
-    /**
-     * @var \Closure[]
-     */
-    private array $afterCallbacks = [];
+    private string $id;
+
+    private LoggerInterface $logger;
+
+    private string $name;
+
+    private RequestInterface $request;
+
+    private ?Requester $requester = null;
 
     /**
      * @param string[] $excludedFields
@@ -69,28 +67,13 @@ final class TestCase implements Test
         ResponseInterface $expectedResponse,
         array $excludedFields = []
     ) {
+        parent::__construct($name);
         $this->request = $request;
         $this->expectedResponse = $expectedResponse;
         $this->name = $name;
         $this->logger = new NullLogger();
         $this->id = uniqid('testcase_', false);
         $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeCallbacks(array $callbacks): void
-    {
-        $this->beforeCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterCallbacks(array $callbacks): void
-    {
-        $this->afterCallbacks = $callbacks;
     }
 
     /**
@@ -102,12 +85,20 @@ final class TestCase implements Test
         $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
     }
 
-    public function withRequest(RequestInterface $request): self
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
     {
-        $self = clone $this;
-        $self->request = $request;
+        $this->afterCallbacks = $callbacks;
+    }
 
-        return $self;
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
+    {
+        $this->beforeCallbacks = $callbacks;
     }
 
     public function withAddedRequestBody(Request $request): self
@@ -120,68 +111,12 @@ final class TestCase implements Test
         );
     }
 
-    public function getName(): string
+    public function getName(bool $withDataSet = false): string
     {
-        return $this->name;
-    }
-
-    /**
-     * @return array<string, Result>
-     */
-    public function getResult(): array
-    {
-        /** @var \DateTimeInterface $startedAt */
-        $startedAt = $this->startedAt;
-
-        if (null === $this->result) {
-            $this->assert();
-            $startedAt = $startedAt->format('Y-m-d H:i:s');
-            $this->log("[{$startedAt}] {$this->result}");
-        }
-
-        /** @var Result $result */
-        $result = $this->result;
-
-        return [
-            $this->getName() => $result,
-        ];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function launch(): void
-    {
-        if (null === $this->requester) {
-            throw new \RuntimeException("No requester configured for test '{$this->name}'.");
-        }
-        foreach ($this->beforeCallbacks as $callback) {
-            ($callback)();
-        }
-        $this->startedAt = Carbon::now();
-        $body = $this->request->getBody();
-        if ('' !== (string) $body) {
-            $body = ", Body: {$body}";
-        }
-        $this->logger->log(
-            LogLevel::DEBUG,
-            "sent request, URI: {$this->request->getUri()}{$body}, Expected status code: {$this->expectedResponse->getStatusCode()}"
-        );
-        $this->requester->request($this->request, $this->id);
-        $this->finishedAt = Carbon::now();
-        foreach ($this->afterCallbacks as $callback) {
-            ($callback)();
-        }
-    }
-
-    public function setRequester(?Requester $requester): void
-    {
-        $this->requester = $requester;
-    }
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
+        return $this->request->getMethod()
+            . '_'
+            . $this->request->getUri()
+            . ' -> ' . $this->expectedResponse->getStatusCode();
     }
 
     public function getRequest(): RequestInterface
@@ -201,56 +136,61 @@ final class TestCase implements Test
         return $this->expectedResponse;
     }
 
-    public function getStatus(): string
+    public function assert(): void
     {
-        $status = self::STATUS_NOT_LAUNCHED;
-
-        if (null !== $this->startedAt) {
-            $status = self::STATUS_LAUNCHED;
-        }
-        if (null === $this->result) {
-            return $status;
-        }
-        if (self::STATUS_LAUNCHED === $status && $this->result->hasSucceeded()) {
-            return self::STATUS_SUCCESS;
-        }
-
-        return self::STATUS_FAILED;
-    }
-
-    private function assert(): void
-    {
-        if (self::STATUS_NOT_LAUNCHED === $this->getStatus()) {
-            throw new \RuntimeException("Test {$this->getName()} was not launched.");
-        }
-        /** @var Requester $requester */
-        $requester = $this->requester;
-        try {
-            $response = $requester->getResponse($this->id);
-            $this->logger->log(LogLevel::DEBUG, 'received response: ' . $response->getBody());
-            Assert::response(
-                $this->expectedResponse,
-                $response,
-                $this->excludedFields
-            );
-        } catch (ExpectationFailedException $exception) {
-            $diff = $exception->getComparisonFailure();
-            $message = null !== $diff ? 'Assertion field: ' . $diff->getDiff() : $exception->getMessage();
-            $this->result = Result::failed(
-                $this->name . ' => ' . $message
-            );
-
-            return;
-        }
-
-        $this->result = Result::success("{$this->name} => Succeeded.");
-    }
-
-    private function log(string $msg): void
-    {
-        $this->logger->log(
-            null !== $this->result && $this->result->hasSucceeded() ? LogLevel::INFO : LogLevel::ERROR,
-            $msg
+        $response = $this->requester->getResponse($this->id);
+        $this->logger->log(LogLevel::DEBUG, 'received response: ' . $response->getBody());
+        Assert::response(
+            $this->expectedResponse,
+            $response,
+            $this->excludedFields
         );
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     */
+    public function prepare(): void
+    {
+        if (null === $this->requester) {
+            throw new \RuntimeException("No requester configured for test '{$this->name}'.");
+        }
+        foreach ($this->beforeCallbacks as $callback) {
+            ($callback)();
+        }
+        $this->startedAt = Carbon::now();
+        $this->logger->log(
+            LogLevel::DEBUG,
+            Json::encode([
+                'method' => $this->request->getMethod(),
+                'url' => $this->request->getUri(),
+                'body' => (string) $this->request->getBody(),
+                'headers' => $this->request->getHeaders(),
+                'expected_status' => $this->expectedResponse->getStatusCode(),
+            ], JSON_PRETTY_PRINT)
+        );
+        $this->requester->request($this->request, $this->id);
+        $this->finishedAt = Carbon::now();
+        foreach ($this->afterCallbacks as $callback) {
+            ($callback)();
+        }
+    }
+
+    public function setRequester(?Requester $requester): void
+    {
+        $this->requester = $requester;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function withRequest(RequestInterface $request): self
+    {
+        $self = clone $this;
+        $self->request = $request;
+
+        return $self;
     }
 }

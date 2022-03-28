@@ -36,6 +36,8 @@ final class Suite
 
     private string $requester;
 
+    private ?string $symfonyKernelClass = null;
+
     public function __construct(string $name, Definition $definition)
     {
         $this->name = $name;
@@ -169,5 +171,15 @@ final class Suite
     public function setAuth(array $auth): void
     {
         $this->auth = $auth;
+    }
+
+    public function getSymfonyKernelClass(): ?string
+    {
+        return $this->symfonyKernelClass;
+    }
+
+    public function setSymfonyKernelClass(?string $symfonyKernelClass): void
+    {
+        $this->symfonyKernelClass = $symfonyKernelClass;
     }
 }

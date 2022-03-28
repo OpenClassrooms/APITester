@@ -44,8 +44,9 @@ final class SymfonyKernelRequester extends Requester
             $request = $this->psrToSymfonyRequest($request);
             $response = $this->kernel->handle($request);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Error while executing kernel request', 0, $e);
+        } catch (\Throwable $e) {
+            $response = new Response((string) $e, 500);
+            $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }
     }
 

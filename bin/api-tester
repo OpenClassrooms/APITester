@@ -3,9 +3,13 @@
 
 declare(strict_types=1);
 
+require __DIR__ . '/../vendor/autoload.php';
+
 use OpenAPITesting\Command\ExecutePlanCommand;
+use PHPUnit\Util\TestDox\CliTestDoxPrinter;
 use Symfony\Component\Console\Application;
 
+new CliTestDoxPrinter(); //hack should find a solution to autoload
 $application = new Application();
 $application->add(new ExecutePlanCommand());
 $application->run();

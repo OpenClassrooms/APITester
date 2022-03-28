@@ -6,7 +6,6 @@ namespace OpenAPITesting\Preparator;
 
 final class Error416TestCasesPreparator extends PaginationErrorTestCasesPreparator
 {
-    public const ERROR_CODE = 416;
     public const NEGATIVE_VALUES = [
         'name' => 'negative',
         'lower' => '-5',

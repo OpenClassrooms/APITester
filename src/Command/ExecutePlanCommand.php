@@ -44,11 +44,7 @@ final class ExecutePlanCommand extends Command
         $testPlan = new Plan();
         $testPlan->setLogger(new ConsoleLogger($output));
         $config = Config\Loader\PlanConfigLoader::load((string) $configFilePath);
-        $testPlan->execute($config);
-
-//        $suite = new TestSuite();
-//        $suite->addTestSuite('Test');
-//        TestRunner::run($suite);
+        $testPlan->execute($config, $input->getOption('suite'), $input->getOptions());
 
         return 1;
     }
@@ -62,6 +58,25 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'config file',
                 'api-tester.yaml'
+            )
+            ->addOption(
+                'suite',
+                's',
+                InputOption::VALUE_OPTIONAL,
+                'suite name to run',
+            )
+            ->addOption(
+                'log-junit',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'report file to create',
+                false
+            )
+            ->addOption(
+                'testdox',
+                null,
+                InputOption::VALUE_NONE,
+                'testdox print format'
             )
         ;
     }

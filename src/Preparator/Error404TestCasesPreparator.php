@@ -37,7 +37,7 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         $params = array_fill(
             0,
             $response->getParent()->getPathParameters()->count(),
-            -9999
+            9999
         );
         $request = new Request(
             $operation->getMethod(),

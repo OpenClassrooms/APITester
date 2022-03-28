@@ -6,7 +6,7 @@ namespace OpenAPITesting\Tests\Fixtures;
 
 final class FixturesLocation
 {
-    public const FIXTURE_OPERATION_TEST_SUITE_1 = __DIR__ . '/Fixtures/operation-test-suite-1.yml';
+    public const FIXTURE_OPERATION_TEST_SUITE_1 = __DIR__ . '/Examples/operation-test-suite-1.yml';
 
     public const OPEN_API_INVALID_FORMAT_FILE = __DIR__ . '/OpenAPI/InvalidFormat.json';
 

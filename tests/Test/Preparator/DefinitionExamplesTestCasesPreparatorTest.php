@@ -31,11 +31,11 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
     {
         $preparator = new DefinitionExamplesTestCasesPreparator();
         $preparator->configure([
-            'additionalExamplesPath' => '/foo/bar/',
+            'extensionPath' => '/foo/bar/',
         ]);
         /** @var DefinitionExamples $config */
         $config = $preparator->getConfig();
-        static::assertSame('/foo/bar/', $config->additionalExamplesPath);
+        static::assertSame('/foo/bar/', $config->extensionPath);
     }
 
     /**

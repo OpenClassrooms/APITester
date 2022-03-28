@@ -12,6 +12,7 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -70,47 +71,6 @@ final class Assert
         );
     }
 
-    /**
-     * @param mixed $actual
-     *
-     * @throws ExpectationFailedException
-     */
-    public static function true($actual, string $message = ''): void
-    {
-        BaseAssert::assertTrue($actual, $message);
-    }
-
-    /**
-     * @param array<string> $excludedFields
-     */
-    public static function response(
-        ResponseInterface $expected,
-        ResponseInterface $actual,
-        array $excludedFields = []
-    ): void {
-        self::initAccessor();
-        $paths = self::getPaths($expected);
-        $paths = array_diff($paths, $excludedFields);
-        foreach ($paths as $path) {
-            $expectedValue = self::$accessor->getValue($expected, $path);
-            $actualValue = self::$accessor->getValue($actual, $path);
-            $message = "Checking {$path}";
-            if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
-                BaseAssert::assertMatchesRegularExpression(
-                    (string) $expectedValue,
-                    (string) $actualValue,
-                    $message,
-                );
-            } else {
-                BaseAssert::assertSame(
-                    $expectedValue,
-                    $actualValue,
-                    $message,
-                );
-            }
-        }
-    }
-
     private static function getJsonSerializer(): Serializer
     {
         return new Serializer(
@@ -127,27 +87,77 @@ final class Assert
         );
     }
 
+    /**
+     * @param mixed $actual
+     *
+     * @throws ExpectationFailedException
+     */
+    public static function true($actual, string $message = ''): void
+    {
+        BaseAssert::assertTrue($actual, $message);
+    }
+
+    /**
+     * @param array<string> $excludedFields
+     *
+     * @throws ExceptionInterface
+     */
+    public static function response(
+        ResponseInterface $expected,
+        ResponseInterface $actual,
+        array $excludedFields = []
+    ): void {
+        $serialize = self::getJsonSerializer();
+        $expected = $serialize->normalize($expected);
+        $actual = $serialize->normalize($actual);
+        $excludedFields = array_map(
+            static fn ($v) => $v === 'body' ? 'stream' : $v,
+            $excludedFields
+        );
+        self::initAccessor();
+        $paths = self::getPaths($expected);
+        $paths = array_diff($paths, $excludedFields);
+        foreach ($paths as $path) {
+            $expectedValue = self::$accessor->getValue((object) $expected, $path);
+            $actualValue = self::$accessor->getValue((object) $actual, $path);
+            $label = str_replace('stream', 'body', $path);
+            $message = "Checking {$label}";
+            if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
+                BaseAssert::assertMatchesRegularExpression(
+                    (string) $expectedValue,
+                    (string) $actualValue,
+                    $message,
+                );
+            } else {
+                BaseAssert::assertEquals(
+                    $expectedValue,
+                    $actualValue,
+                    $message,
+                );
+            }
+        }
+    }
+
     private static function initAccessor(): void
     {
         self::$accessor = (new PropertyAccessorBuilder())->getPropertyAccessor();
     }
 
     /**
+     * @param array<string> $array
+     *
      * @return array<string>
      */
-    private static function getPaths(object $object, string $prefix = null): array
+    private static function getPaths(array $array, string $prefix = null): array
     {
         self::initAccessor();
-        $ref = new \ReflectionClass($object);
         $paths = [];
-        foreach ($ref->getProperties() as $property) {
-            if (self::$accessor->isReadable($object, $property->getName())) {
-                $path = null === $prefix ? $property->getName() : $prefix . '.' . $property->getName();
-                if (\is_object(self::$accessor->getValue($object, $property->getName()))) {
-                    $paths = array_merge($paths, self::getPaths($property, $path));
-                } else {
-                    $paths[] = $path;
-                }
+        foreach ($array as $key => $value) {
+            $path = null === $prefix ? $key : $prefix . '.' . $key;
+            if (is_array($value)) {
+                $paths = array_merge($paths, self::getPaths($value, $path));
+            } else {
+                $paths[] = $path;
             }
         }
 
