@@ -28,13 +28,17 @@ parameters:
         - '/Method .+ is not final, but since the containing class is abstract, it should be./'
         - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @var for variable .+ is not subtype of template type T of object of class ReflectionClass./'
         - '/Type mixed in generic type ReflectionClass<mixed> in PHPDoc tag @return is not subtype of template type T of object of class ReflectionClass/'
-        - '/Method OpenAPITesting\\Util\\Object_::getSubTypesOf\(\) should return .+ but returns .+/'
+        - '/Method APITester\\Util\\Object_::getSubTypesOf\(\) should return .+ but returns .+/'
         - '/Unable to resolve the template type TKey in call to function collect/'
         - '/Unable to resolve the template type TValue in call to function collect/'
         - '/Casting to string something that.s already string./'
-        - '/Class OpenAPITesting\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
+        - '/Class APITester\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
         - '/Short ternary operator is not allowed.*/'
+        - '/Instantiated class \\ApiTestCase not found.*/'
+        - '/Method APITester\\Test\\TestCase::toPhpUnitTestCase\(\) should return T of PHPUnit\\Framework\\TestCase but returns .+/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
+        - {path: ../src/Test/TestCase.php, message: '/Calling eval\(\) is forbidden, eval is evil, please write more code and do not use eval\(\)/'}
+        - {path: ../src/Test/TestCase.php, message: '/Language construct eval\(\) should not be used./'}
     exceptions:
         check:
             missingCheckedExceptionInThrows: true

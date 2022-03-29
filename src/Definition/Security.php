@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition;
+namespace APITester\Definition;
 
-use OpenAPITesting\Definition\Collection\Scopes;
+use APITester\Definition\Collection\Scopes;
 
 abstract class Security
 {

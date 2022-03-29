@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util\Traits;
+namespace APITester\Util\Traits;
 
 use DateTimeInterface;
 

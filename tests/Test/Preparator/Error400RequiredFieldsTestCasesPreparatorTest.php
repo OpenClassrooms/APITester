@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\RequestExample;
+use APITester\Preparator\Error400RequiredFieldsTestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
+use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Preparator\Error400RequiredFieldsTestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
-use OpenAPITesting\Util\Json;
 
 final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -53,7 +53,6 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request('GET', '/test'),
                     new Response(400)
                 ),
@@ -77,12 +76,10 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request('GET', '/test?bar_query=bar1'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_bar_query_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -106,7 +103,6 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request('GET', '/test/1234'),
                     new Response(400)
                 ),
@@ -130,14 +126,12 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_bar_header_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -171,19 +165,16 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_bar_header_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_foo_query2_param_missing_test2',
                     new Request('GET', '/test2'),
                     new Response(400)
                 ),
@@ -199,7 +190,7 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                         'POST'
                     )
                         ->addRequest(
-                            (new \OpenAPITesting\Definition\Request(
+                            (new \APITester\Definition\Request(
                                 'application/json',
                                 new Schema([
                                     'type' => 'object',
@@ -215,12 +206,10 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_body_field_missing',
                     new Request('POST', '/test', [], Json::encode([])),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_body_missing_test',
                     new Request('POST', '/test'),
                     new Response(400)
                 ),
@@ -239,7 +228,7 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                             (new Parameter('foo_query', true))->addExample(new ParameterExample('foo_query', 'foo1'))
                         )
                         ->addRequest(
-                            (new \OpenAPITesting\Definition\Request(
+                            (new \APITester\Definition\Request(
                                 'application/json',
                                 new Schema([
                                     'type' => 'object',
@@ -255,7 +244,6 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
-                    'required_foo_query_param_missing_test',
                     new Request(
                         'POST',
                         '/test',
@@ -267,12 +255,10 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_foo_body_field_missing',
                     new Request('POST', '/test?foo_query=foo1', [], Json::encode([])),
                     new Response(400)
                 ),
                 new TestCase(
-                    'required_body_missing_test',
                     new Request('POST', '/test?foo_query=foo1'),
                     new Response(400)
                 ),

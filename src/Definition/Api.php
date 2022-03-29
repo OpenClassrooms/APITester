@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition;
+namespace APITester\Definition;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Servers;
+use APITester\Definition\Collection\Tags;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Servers;
-use OpenAPITesting\Definition\Collection\Tags;
 
 final class Api
 {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test;
+namespace APITester\Test;
 
+use APITester\Definition\Request;
+use APITester\Requester\Requester;
+use APITester\Util\Assert;
+use APITester\Util\Json;
+use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
 use Nyholm\Psr7\Stream;
-use OpenAPITesting\Definition\Request;
-use OpenAPITesting\Requester\Requester;
-use OpenAPITesting\Util\Assert;
-use OpenAPITesting\Util\Json;
-use OpenAPITesting\Util\Traits\TimeBoundTrait;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -22,7 +22,7 @@ use Psr\Log\NullLogger;
  * @internal
  * @coversNothing
  */
-final class TestCase extends \PHPUnit\Framework\TestCase
+final class TestCase
 {
     use TimeBoundTrait;
 
@@ -37,7 +37,7 @@ final class TestCase extends \PHPUnit\Framework\TestCase
     private array $beforeCallbacks = [];
 
     /**
-     * @var string[]
+     * @var array<int, string>
      */
     private array $excludedFields = [
         'headers',
@@ -52,25 +52,20 @@ final class TestCase extends \PHPUnit\Framework\TestCase
 
     private LoggerInterface $logger;
 
-    private string $name;
-
     private RequestInterface $request;
 
-    private ?Requester $requester = null;
+    private Requester $requester;
 
     /**
-     * @param string[] $excludedFields
+     * @param array<int, string> $excludedFields
      */
     public function __construct(
-        string $name,
         RequestInterface $request,
         ResponseInterface $expectedResponse,
         array $excludedFields = []
     ) {
-        parent::__construct($name);
         $this->request = $request;
         $this->expectedResponse = $expectedResponse;
-        $this->name = $name;
         $this->logger = new NullLogger();
         $this->id = uniqid('testcase_', false);
         $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
@@ -83,57 +78,6 @@ final class TestCase extends \PHPUnit\Framework\TestCase
     {
         /** @var string[] excludedFields */
         $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setAfterCallbacks(array $callbacks): void
-    {
-        $this->afterCallbacks = $callbacks;
-    }
-
-    /**
-     * @param \Closure[] $callbacks
-     */
-    public function setBeforeCallbacks(array $callbacks): void
-    {
-        $this->beforeCallbacks = $callbacks;
-    }
-
-    public function withAddedRequestBody(Request $request): self
-    {
-        return new self(
-            $this->getName(),
-            $this->getRequest()
-                ->withBody(Stream::create(Json::encode($request->getBodyFromExamples()))),
-            $this->getExpectedResponse()
-        );
-    }
-
-    public function getName(bool $withDataSet = false): string
-    {
-        return $this->request->getMethod()
-            . '_'
-            . $this->request->getUri()
-            . ' -> ' . $this->expectedResponse->getStatusCode();
-    }
-
-    public function getRequest(): RequestInterface
-    {
-        return $this->request;
-    }
-
-    public function setRequest(RequestInterface $request): self
-    {
-        $this->request = $request;
-
-        return $this;
-    }
-
-    public function getExpectedResponse(): ResponseInterface
-    {
-        return $this->expectedResponse;
     }
 
     public function assert(): void
@@ -152,9 +96,6 @@ final class TestCase extends \PHPUnit\Framework\TestCase
      */
     public function prepare(): void
     {
-        if (null === $this->requester) {
-            throw new \RuntimeException("No requester configured for test '{$this->name}'.");
-        }
         foreach ($this->beforeCallbacks as $callback) {
             ($callback)();
         }
@@ -176,14 +117,81 @@ final class TestCase extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function setRequester(?Requester $requester): void
+    public function getName(): string
     {
-        $this->requester = $requester;
+        return $this->request->getMethod()
+            . '_'
+            . $this->request->getUri()
+            . ' -> ' . $this->expectedResponse->getStatusCode();
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setAfterCallbacks(array $callbacks): void
+    {
+        $this->afterCallbacks = $callbacks;
+    }
+
+    /**
+     * @param \Closure[] $callbacks
+     */
+    public function setBeforeCallbacks(array $callbacks): void
+    {
+        $this->beforeCallbacks = $callbacks;
     }
 
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
+    }
+
+    public function setRequester(Requester $requester): void
+    {
+        $this->requester = $requester;
+    }
+
+    /**
+     * @template T of \PHPUnit\Framework\TestCase
+     *
+     * @param class-string<T>   $testCaseClass
+     * @param class-string|null $kernelClass
+     *
+     * @return T
+     */
+    public function toPhpUnitTestCase(string $testCaseClass, ?string $kernelClass = null): \PHPUnit\Framework\TestCase
+    {
+        $className = '\ApiTestCase';
+        $testCaseName = $this->getName();
+        $this->declareClass($className, $testCaseClass);
+
+        return new $className($this, $testCaseName, $kernelClass);
+    }
+
+    public function withAddedRequestBody(Request $request): self
+    {
+        return new self(
+            $this->getRequest()
+                ->withBody(Stream::create(Json::encode($request->getBodyFromExamples()))),
+            $this->getExpectedResponse()
+        );
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    public function setRequest(RequestInterface $request): self
+    {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    public function getExpectedResponse(): ResponseInterface
+    {
+        return $this->expectedResponse;
     }
 
     public function withRequest(RequestInterface $request): self
@@ -192,5 +200,38 @@ final class TestCase extends \PHPUnit\Framework\TestCase
         $self->request = $request;
 
         return $self;
+    }
+
+    private function declareClass(string $name, string $parent): void
+    {
+        if (!class_exists($name)) {
+            eval(
+            <<<CODE_SAMPLE
+            class {$name} extends {$parent} {
+                private \\APITester\\Test\\TestCase \$testCase;
+                private string \$name;
+    
+                public function __construct(\$testCase, \$name, \$kernelClass) {
+                    parent::__construct('test');
+                    \$this->name = \$name;
+                    \$this->testCase = \$testCase;
+                    if (property_exists(static::class, 'kernelClass')) {
+                        self::\$kernelClass = \$kernelClass;
+                    }
+                }
+    
+                public function getName(bool \$withDataSet = true): string
+                {
+                    return \$this->name;
+                }
+    
+                public function test(): void
+                {
+                    \$this->testCase->assert();
+                }
+            }
+CODE_SAMPLE
+            );
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util;
+namespace APITester\Util;
 
 use DirectoryIterator;
 
@@ -41,7 +41,7 @@ final class Yaml
             return [];
         }
 
-        $directory = dirname(__DIR__, 2) . '/' . trim($path, '/');
+        $directory = \dirname(__DIR__, 2) . '/' . trim($path, '/');
 
         $data = [];
         /** @var DirectoryIterator $fileInfo */

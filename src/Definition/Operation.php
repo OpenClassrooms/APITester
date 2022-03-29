@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition;
+namespace APITester\Definition;
 
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Collection\Requests;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Collection\Securities;
-use OpenAPITesting\Definition\Collection\Tags;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Collection\Requests;
+use APITester\Definition\Collection\Responses;
+use APITester\Definition\Collection\Securities;
+use APITester\Definition\Collection\Tags;
 
 final class Operation
 {
@@ -358,7 +358,7 @@ final class Operation
         }
 
         return null !== $operation->where($prop, $operator, $value)
-                ->first()
+            ->first()
         ;
     }
 

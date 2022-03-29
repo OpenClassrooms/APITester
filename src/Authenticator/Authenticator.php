@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Authenticator;
+namespace APITester\Authenticator;
 
+use APITester\Authenticator\Exception\AuthenticationException;
+use APITester\Authenticator\Exception\AuthenticationLoadingException;
+use APITester\Config\Auth;
+use APITester\Definition\Api;
+use APITester\Definition\Security;
+use APITester\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2ClientCredentialsSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2PasswordSecurity;
+use APITester\Definition\Token;
+use APITester\Requester\Requester;
+use APITester\Util\Json;
 use Nyholm\Psr7\Request;
-use OpenAPITesting\Authenticator\Exception\AuthenticationException;
-use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Config\Auth;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Security;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ClientCredentialsSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
-use OpenAPITesting\Definition\Token;
-use OpenAPITesting\Requester\Requester;
-use OpenAPITesting\Util\Json;
 use Psr\Http\Message\ResponseInterface;
 
 final class Authenticator

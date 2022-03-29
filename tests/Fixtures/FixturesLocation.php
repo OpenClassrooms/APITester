@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Fixtures;
+namespace APITester\Tests\Fixtures;
 
 final class FixturesLocation
 {

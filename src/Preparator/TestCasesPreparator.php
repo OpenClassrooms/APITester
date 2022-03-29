@@ -2,24 +2,25 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
-use Nyholm\Psr7\Request;
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Operation;
+use APITester\Definition\Security;
+use APITester\Definition\Security\ApiKeySecurity;
+use APITester\Definition\Security\HttpSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2Security;
+use APITester\Definition\Token;
+use APITester\Preparator\Config\PreparatorConfig;
+use APITester\Preparator\Exception\InvalidPreparatorConfigException;
+use APITester\Preparator\Exception\PreparatorLoadingException;
+use APITester\Test\TestCase;
+use APITester\Util\Json;
+use APITester\Util\Object_;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Tokens;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Security;
-use OpenAPITesting\Definition\Security\ApiKeySecurity;
-use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
-use OpenAPITesting\Definition\Token;
-use OpenAPITesting\Preparator\Config\PreparatorConfig;
-use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
-use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
-use OpenAPITesting\Util\Object_;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
@@ -48,6 +49,23 @@ abstract class TestCasesPreparator
     }
 
     /**
+     * @param string[] $excludedFields
+     */
+    public function buildTestCase(
+        Operation $operation,
+        RequestInterface $request,
+        ResponseInterface $response,
+        bool $auth = true,
+        array $excludedFields = []
+    ): TestCase {
+        if ($auth) {
+            $request = $this->authenticate($request, $operation);
+        }
+
+        return new TestCase($request, $response, $excludedFields);
+    }
+
+    /**
      * @throws PreparatorLoadingException
      *
      * @return iterable<array-key, TestCase>
@@ -55,7 +73,6 @@ abstract class TestCasesPreparator
     public function prepare(Operations $operations): iterable
     {
         $testCases = $this->generateTestCases($operations);
-
         foreach ($testCases as $testCase) {
             $testCase->addExcludedFields($this->config->excludedFields);
         }
@@ -119,14 +136,7 @@ abstract class TestCasesPreparator
         );
     }
 
-    /**
-     * @throws PreparatorLoadingException
-     *
-     * @return iterable<array-key, TestCase>
-     */
-    abstract protected function generateTestCases(Operations $operations): iterable;
-
-    protected function authenticate(Request $request, Operation $operation): Request
+    protected function authenticate(RequestInterface $request, Operation $operation): RequestInterface
     {
         foreach ($operation->getSecurities() as $security) {
             $scopes = $security->getScopes()
@@ -150,7 +160,7 @@ abstract class TestCasesPreparator
         return $request;
     }
 
-    protected function setAuthentication(Request $request, Security $security, Token $token): Request
+    protected function setAuthentication(RequestInterface $request, Security $security, Token $token): RequestInterface
     {
         if ($security instanceof HttpSecurity && $security->isBasic()) {
             $request = $request->withHeader(
@@ -177,6 +187,13 @@ abstract class TestCasesPreparator
 
         return $request;
     }
+
+    /**
+     * @throws PreparatorLoadingException
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    abstract protected function generateTestCases(Operations $operations): iterable;
 
     protected function generateRandomBody(Operation $operation): ?string
     {
@@ -207,8 +224,11 @@ abstract class TestCasesPreparator
         return new $class();
     }
 
-    private function addApiKeyToRequest(Request $request, ApiKeySecurity $security, string $apiKey): Request
-    {
+    private function addApiKeyToRequest(
+        RequestInterface $request,
+        ApiKeySecurity $security,
+        string $apiKey
+    ): RequestInterface {
         $newRequest = $request;
         if ('header' === $security->getIn()) {
             $newRequest = $request->withHeader($security->getKeyName(), $apiKey);

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Collection;
+namespace APITester\Definition\Collection;
 
+use APITester\Definition\ParameterExample;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\ParameterExample;
 
 /**
  * @method ParameterExample[] getIterator()

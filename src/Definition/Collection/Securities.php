@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Collection;
+namespace APITester\Definition\Collection;
 
+use APITester\Definition\Security;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\Security;
 
 /**
  * @method Security[] getIterator()

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace OpenAPITesting\Symfony\Component\PropertyInfo\PhpStan;
+namespace APITester\Symfony\Component\PropertyInfo\PhpStan;
 
 /**
  * NameScope class adapted from PHPStan code.

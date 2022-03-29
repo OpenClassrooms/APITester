@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Security;
+use APITester\Definition\Security\ApiKeySecurity;
+use APITester\Definition\Security\HttpSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2Security;
+use APITester\Definition\Token;
 use Firebase\JWT\JWT;
-use OpenAPITesting\Definition\Collection\Tokens;
-use OpenAPITesting\Definition\Security;
-use OpenAPITesting\Definition\Security\ApiKeySecurity;
-use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
-use OpenAPITesting\Definition\Token;
 
 final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPreparator
 {

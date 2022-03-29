@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Securities;
+use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Security;
+use APITester\Test\TestCase;
 use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Securities;
-use OpenAPITesting\Definition\Collection\Tokens;
-use OpenAPITesting\Definition\Security;
-use OpenAPITesting\Test\TestCase;
 
 abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
 {
@@ -62,10 +62,11 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
                 $token,
             );
             $testCases->add(
-                new TestCase(
-                    $operation->getId() . '_' . $this->getStatusCode() . '_' . $token->getAuthType(),
+                $this->buildTestCase(
+                    $operation,
                     $request,
                     new Response($this->getStatusCode()),
+                    false,
                 ),
             );
         }

@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test;
+namespace APITester\Test;
 
-use OpenAPITesting\Authenticator\Authenticator;
-use OpenAPITesting\Authenticator\Exception\AuthenticationException;
-use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Config;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Collection\Tokens;
-use OpenAPITesting\Definition\Loader\DefinitionLoader;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
-use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
-use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
-use OpenAPITesting\Preparator\TestCasesPreparator;
-use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
-use OpenAPITesting\Requester\Requester;
-use OpenAPITesting\Requester\SymfonyKernelRequester;
-use OpenAPITesting\Test\Exception\SuiteNotFoundException;
-use OpenAPITesting\Util\Object_;
+use APITester\Authenticator\Authenticator;
+use APITester\Authenticator\Exception\AuthenticationException;
+use APITester\Authenticator\Exception\AuthenticationLoadingException;
+use APITester\Config;
+use APITester\Definition\Api;
+use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Loader\DefinitionLoader;
+use APITester\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
+use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Preparator\Exception\InvalidPreparatorConfigException;
+use APITester\Preparator\TestCasesPreparator;
+use APITester\Requester\Exception\RequesterNotFoundException;
+use APITester\Requester\Requester;
+use APITester\Requester\SymfonyKernelRequester;
+use APITester\Test\Exception\SuiteNotFoundException;
+use APITester\Util\Object_;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\TextUI\CliArguments\Builder;
 use PHPUnit\TextUI\CliArguments\Mapper;
 use PHPUnit\TextUI\TestRunner;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 final class Plan
 {
@@ -81,12 +81,12 @@ final class Plan
     }
 
     /**
+     * @param array<string, mixed> $options
+     *
      * @throws DefinitionLoaderNotFoundException
-     * @throws ClientExceptionInterface
      * @throws DefinitionLoadingException
      * @throws RequesterNotFoundException
      * @throws InvalidPreparatorConfigException
-     * @throws PreparatorLoadingException
      * @throws AuthenticationLoadingException
      * @throws AuthenticationException
      * @throws SuiteNotFoundException
@@ -111,6 +111,11 @@ final class Plan
                 $requester,
                 $suiteConfig->getFilters(),
                 $this->logger,
+                Object_::validateClass($suiteConfig->getTestCaseClass(), \PHPUnit\Framework\TestCase::class),
+                null !== $suiteConfig->getSymfonyKernelClass() ? Object_::validateClass(
+                    $suiteConfig->getSymfonyKernelClass(),
+                    KernelInterface::class
+                ) : null,
             );
             $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
             $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
@@ -123,23 +128,44 @@ final class Plan
                     )
                 ),
                 [],
-                true
+                false
             );
         }
+    }
+
+    public function addRequester(Requester $requester): self
+    {
+        $this->requesters[] = $requester;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, TestResult>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
      * @param array<Config\Suite> $suites
      *
-     * @return iterable<Config\Suite>
      * @throws SuiteNotFoundException
      *
+     * @return iterable<Config\Suite>
      */
     private function selectSuite(?string $suiteName, array $suites): iterable
     {
         if (null !== $suiteName) {
             $indexSuites = collect($suites)
-                ->keyBy('name');
+                ->keyBy('name')
+            ;
             if ($indexSuites->has($suiteName)) {
                 $suites = $indexSuites->where('name', $suiteName);
             } else {
@@ -150,21 +176,15 @@ final class Plan
         return $suites;
     }
 
-    private function handleSymfonyKernel($suiteConfig): void
+    private function handleSymfonyKernel(Config\Suite $suiteConfig): void
     {
         $symfonyKernelClass = $suiteConfig->getSymfonyKernelClass();
         if (null !== $symfonyKernelClass) {
+            /** @var Kernel $kernel */
             $kernel = new $symfonyKernelClass('test', true);
             $kernel->boot();
             $this->addRequester(new SymfonyKernelRequester($kernel));
         }
-    }
-
-    public function addRequester(Requester $requester): self
-    {
-        $this->requesters[] = $requester;
-
-        return $this;
     }
 
     /**
@@ -189,37 +209,16 @@ final class Plan
     {
         $definitionLoader = $this->getConfiguredLoader(
             $config->getDefinition()
-                   ->getFormat()
+                ->getFormat()
         );
         $api = $definitionLoader->load(
             $config->getDefinition()
-                   ->getPath()
+                ->getPath()
         );
 
         $this->setBaseUri($api, $requester);
 
         return $api;
-    }
-
-    /**
-     * @throws DefinitionLoaderNotFoundException
-     */
-    private function getConfiguredLoader(string $format): DefinitionLoader
-    {
-        foreach ($this->definitionLoaders as $loader) {
-            if ($loader::getFormat() === $format) {
-                return $loader;
-            }
-        }
-
-        throw new DefinitionLoaderNotFoundException($format);
-    }
-
-    private function setBaseUri(Api $schema, Requester $requester): void
-    {
-        $baseUri = $schema->getServers()[0]
-            ->getUrl();
-        $requester->setBaseUri($baseUri);
     }
 
     /**
@@ -239,9 +238,9 @@ final class Plan
     /**
      * @param array<string, array<string, mixed>> $preparators
      *
-     * @return TestCasesPreparator[]
      * @throws InvalidPreparatorConfigException
      *
+     * @return TestCasesPreparator[]
      */
     private function getConfiguredPreparators(array $preparators, Tokens $tokens): array
     {
@@ -252,9 +251,10 @@ final class Plan
         foreach ($preparators as $name => $preparatorConfig) {
             $preparator = collect($this->preparators)
                 ->where('name', $name)
-                ->first();
+                ->first()
+            ;
             if (null === $preparator) {
-                throw new InvalidPreparatorConfigException("Preparator $name not found.");
+                throw new InvalidPreparatorConfigException("Preparator {$name} not found.");
             }
             $preparator->configure($preparatorConfig);
             $preparator->setTokens($tokens);
@@ -267,14 +267,14 @@ final class Plan
     /**
      * @param array<string, mixed> $options
      *
-     * @return array
+     * @return array<array-key, string>
      */
     private function getPhpUnitOptions(array $options): array
     {
         $options['colors'] = 'always';
         $options = array_filter(
             $options,
-            static fn ($key) => !in_array($key, [
+            static fn ($key) => !\in_array($key, [
                 'config',
                 'quiet',
                 'ansi',
@@ -286,13 +286,15 @@ final class Plan
         );
 
         return array_filter(
-            array_map(static function (string $key, $value) {
-                if (true === $value) {
-                    return "--$key";
-                }
+            array_map(
+                static function (string $key, $value) {
+                    if (true === $value) {
+                        return "--{$key}";
+                    }
 
-                return $value !== false ? "--$key=$value" : null;
-            },
+                    /** @var string|bool|int $value */
+                    return false !== $value ? "--{$key}={$value}" : null;
+                },
                 array_keys($options),
                 array_values($options),
             )
@@ -300,15 +302,24 @@ final class Plan
     }
 
     /**
-     * @return array<string, TestResult>
+     * @throws DefinitionLoaderNotFoundException
      */
-    public function getResults(): array
+    private function getConfiguredLoader(string $format): DefinitionLoader
     {
-        return $this->results;
+        foreach ($this->definitionLoaders as $loader) {
+            if ($loader::getFormat() === $format) {
+                return $loader;
+            }
+        }
+
+        throw new DefinitionLoaderNotFoundException($format);
     }
 
-    public function setLogger(LoggerInterface $logger): void
+    private function setBaseUri(Api $schema, Requester $requester): void
     {
-        $this->logger = $logger;
+        $baseUri = $schema->getServers()[0]
+            ->getUrl()
+        ;
+        $requester->setBaseUri($baseUri);
     }
 }

@@ -2,20 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Command;
+namespace APITester\Command;
 
-use OpenAPITesting\Authenticator\Exception\AuthenticationException;
-use OpenAPITesting\Authenticator\Exception\AuthenticationLoadingException;
-use OpenAPITesting\Config;
-use OpenAPITesting\Config\Exception\ConfigurationException;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
-use OpenAPITesting\Preparator\Exception\InvalidPreparatorConfigException;
-use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
-use OpenAPITesting\Requester\Exception\RequesterNotFoundException;
-use OpenAPITesting\Test\Exception\SuiteNotFoundException;
-use OpenAPITesting\Test\Plan;
-use Psr\Http\Client\ClientExceptionInterface;
+use APITester\Authenticator\Exception\AuthenticationException;
+use APITester\Authenticator\Exception\AuthenticationLoadingException;
+use APITester\Config;
+use APITester\Config\Exception\ConfigurationException;
+use APITester\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
+use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Preparator\Exception\InvalidPreparatorConfigException;
+use APITester\Requester\Exception\RequesterNotFoundException;
+use APITester\Test\Exception\SuiteNotFoundException;
+use APITester\Test\Plan;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -30,9 +28,7 @@ final class ExecutePlanCommand extends Command
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
      * @throws InvalidPreparatorConfigException
-     * @throws PreparatorLoadingException
      * @throws RequesterNotFoundException
-     * @throws ClientExceptionInterface
      * @throws AuthenticationLoadingException
      * @throws ConfigurationException
      * @throws AuthenticationException
@@ -44,7 +40,9 @@ final class ExecutePlanCommand extends Command
         $testPlan = new Plan();
         $testPlan->setLogger(new ConsoleLogger($output));
         $config = Config\Loader\PlanConfigLoader::load((string) $configFilePath);
-        $testPlan->execute($config, $input->getOption('suite'), $input->getOptions());
+        /** @var string|null $suiteName */
+        $suiteName = $input->getOption('suite');
+        $testPlan->execute($config, $suiteName, $input->getOptions());
 
         return 1;
     }

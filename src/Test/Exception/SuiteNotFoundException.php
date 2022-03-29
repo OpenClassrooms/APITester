@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test\Exception;
+namespace APITester\Test\Exception;
 
 final class SuiteNotFoundException extends \Exception
 {

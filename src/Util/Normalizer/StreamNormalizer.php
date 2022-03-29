@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util\Normalizer;
+namespace APITester\Util\Normalizer;
 
 use Psr\Http\Message\StreamInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;

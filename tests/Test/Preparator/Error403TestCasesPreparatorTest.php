@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Operation;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Definition\Token;
+use APITester\Preparator\Error403TestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use OpenAPITesting\Definition\Token;
-use OpenAPITesting\Preparator\Error403TestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
 
 final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -84,7 +84,6 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test1_403_oauth2_implicit',
                     new Request(
                         'GET',
                         '/test/oauth2',
@@ -95,7 +94,6 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(403)
                 ),
                 new TestCase(
-                    'test1_403_oauth2_implicit',
                     new Request(
                         'GET',
                         '/test/oauth2',

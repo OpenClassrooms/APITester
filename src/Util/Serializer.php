@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util;
+namespace APITester\Util;
 
-use OpenAPITesting\Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
+use APITester\Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;

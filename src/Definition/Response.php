@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition;
+namespace APITester\Definition;
 
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Collection\ResponseExamples;
 use cebe\openapi\spec\Schema;
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Collection\ResponseExamples;
 
 final class Response
 {

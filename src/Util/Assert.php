@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util;
+namespace APITester\Util;
 
-use OpenAPITesting\Util\Normalizer\StreamNormalizer;
+use APITester\Util\Normalizer\StreamNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Message\ResponseInterface;
@@ -71,22 +71,6 @@ final class Assert
         );
     }
 
-    private static function getJsonSerializer(): Serializer
-    {
-        return new Serializer(
-            [
-                new JsonSerializableNormalizer(),
-                new DateTimeZoneNormalizer(),
-                new DateTimeNormalizer(),
-                new DateIntervalNormalizer(),
-                new StreamNormalizer(),
-                new PropertyNormalizer(),
-                new ObjectNormalizer(),
-            ],
-            [new JsonEncoder()]
-        );
-    }
-
     /**
      * @param mixed $actual
      *
@@ -99,8 +83,6 @@ final class Assert
 
     /**
      * @param array<string> $excludedFields
-     *
-     * @throws ExceptionInterface
      */
     public static function response(
         ResponseInterface $expected,
@@ -108,10 +90,17 @@ final class Assert
         array $excludedFields = []
     ): void {
         $serialize = self::getJsonSerializer();
-        $expected = $serialize->normalize($expected);
-        $actual = $serialize->normalize($actual);
+        try {
+            /** @var array<string, mixed> $expected */
+            $expected = $serialize->normalize($expected);
+            /** @var array<string, mixed> $actual */
+            $actual = $serialize->normalize($actual);
+        } catch (ExceptionInterface $e) {
+            throw new \RuntimeException('Failed to normalize response', 0, $e);
+        }
+
         $excludedFields = array_map(
-            static fn ($v) => $v === 'body' ? 'stream' : $v,
+            static fn ($v) => 'body' === $v ? 'stream' : $v,
             $excludedFields
         );
         self::initAccessor();
@@ -138,13 +127,29 @@ final class Assert
         }
     }
 
+    private static function getJsonSerializer(): Serializer
+    {
+        return new Serializer(
+            [
+                new JsonSerializableNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateTimeNormalizer(),
+                new DateIntervalNormalizer(),
+                new StreamNormalizer(),
+                new PropertyNormalizer(),
+                new ObjectNormalizer(),
+            ],
+            [new JsonEncoder()]
+        );
+    }
+
     private static function initAccessor(): void
     {
         self::$accessor = (new PropertyAccessorBuilder())->getPropertyAccessor();
     }
 
     /**
-     * @param array<string> $array
+     * @param array<string, mixed> $array
      *
      * @return array<string>
      */
@@ -154,7 +159,7 @@ final class Assert
         $paths = [];
         foreach ($array as $key => $value) {
             $path = null === $prefix ? $key : $prefix . '.' . $key;
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $paths = array_merge($paths, self::getPaths($value, $path));
             } else {
                 $paths[] = $path;

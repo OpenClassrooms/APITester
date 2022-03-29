@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Test\TestCase;
+use APITester\Util\Json;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
 
 abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
 {
@@ -25,19 +25,6 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
             ->map(fn (Operation $op) => $this->prepareTestCases($op))
             ->flatten()
         ;
-    }
-
-    /**
-     * @return TestCase[]
-     */
-    private function prepareTestCases(Operation $operation): array
-    {
-        $requiredParams = $operation->getParameters(true);
-
-        return array_merge(
-            $this->prepareForParameters($requiredParams, $operation),
-            $this->prepareForBodies($requiredParams, $operation)
-        );
     }
 
     /**
@@ -71,7 +58,7 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
      * @return TestCase[]
      */
     abstract protected function prepareForBodyFields(
-        \OpenAPITesting\Definition\Request $definitionRequest,
+        \APITester\Definition\Request $definitionRequest,
         array $parameters,
         Operation $operation
     ): array;
@@ -83,7 +70,7 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
      */
     protected function addRequestBody(array $testCases, Operation $operation): array
     {
-        /** @var \OpenAPITesting\Definition\Request|null $requiredBody */
+        /** @var \APITester\Definition\Request|null $requiredBody */
         $requiredBody = $operation->getRequests()
             ->where('required', true)
             ->first()
@@ -120,14 +107,26 @@ abstract class FieldLevelTestCasePreparator extends TestCasesPreparator
             $parameters[Parameter::TYPE_HEADER]->where('required', true)->toExampleArray(),
             null === $body ? null : Json::encode($body)
         );
-        $request = $this->authenticate($request, $operation);
 
-        return new TestCase(
-            $name,
+        return $this->buildTestCase(
+            $operation,
             $request,
             new Response($this->getStatusCode())
         );
     }
 
     abstract protected function getStatusCode(): int;
+
+    /**
+     * @return TestCase[]
+     */
+    private function prepareTestCases(Operation $operation): array
+    {
+        $requiredParams = $operation->getParameters(true);
+
+        return array_merge(
+            $this->prepareForParameters($requiredParams, $operation),
+            $this->prepareForBodies($requiredParams, $operation)
+        );
+    }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator\Config;
+namespace APITester\Preparator\Config;
 
 final class DefinitionExamples extends PreparatorConfig
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Loader;
+namespace APITester\Definition\Loader;
 
 final class ExampleNotExtractableException extends \Exception
 {

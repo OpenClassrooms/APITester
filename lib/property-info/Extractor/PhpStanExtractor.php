@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace OpenAPITesting\Symfony\Component\PropertyInfo\Extractor;
+namespace APITester\Symfony\Component\PropertyInfo\Extractor;
 
-use OpenAPITesting\Symfony\Component\PropertyInfo\PhpStan\NameScopeFactory;
-use OpenAPITesting\Symfony\Component\PropertyInfo\Type;
-use OpenAPITesting\Symfony\Component\PropertyInfo\Util\PhpStanTypeHelper;
+use APITester\Symfony\Component\PropertyInfo\PhpStan\NameScopeFactory;
+use APITester\Symfony\Component\PropertyInfo\Type;
+use APITester\Symfony\Component\PropertyInfo\Util\PhpStanTypeHelper;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Operation;
+use APITester\Preparator\Config\PaginationError;
+use APITester\Preparator\Config\PaginationError\Range;
+use APITester\Preparator\Exception\PreparatorLoadingException;
+use APITester\Test\TestCase;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Preparator\Config\PaginationError;
-use OpenAPITesting\Preparator\Config\PaginationError\Range;
-use OpenAPITesting\Preparator\Exception\PreparatorLoadingException;
-use OpenAPITesting\Test\TestCase;
 
 /**
  * @property PaginationError $config
@@ -34,6 +34,18 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
     {
         return 'PaginationError';
     }
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getQueryValues(): array;
+
+    abstract protected function getErrorCode(): int;
+
+    /**
+     * @return string[][]
+     */
+    abstract protected function getHeaderValues(): array;
 
     /**
      * @throws PreparatorLoadingException
@@ -112,9 +124,8 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
                 $operation->getMethod(),
                 "{$operation->getPath()}?{$configItem->getLower()}={$values['lower']}&{$configItem->getUpper()}={$values['upper']}"
             );
-            $request = $this->authenticate($request, $operation);
-            $testCases[] = new TestCase(
-                $values['name'] . '_query_range_' . $operation->getId(),
+            $testCases[] = $this->buildTestCase(
+                $operation,
                 $request,
                 new Response($this->getErrorCode())
             );
@@ -138,8 +149,8 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
                 ]
             );
             $request = $this->authenticate($request, $operation);
-            $testCases[] = new TestCase(
-                $values['name'] . '_header_range_' . $operation->getId(),
+            $testCases[] = $this->buildTestCase(
+                $operation,
                 $request,
                 new Response($this->getErrorCode())
             );
@@ -147,16 +158,4 @@ abstract class PaginationErrorTestCasesPreparator extends TestCasesPreparator
 
         return $testCases;
     }
-
-    /**
-     * @return string[][]
-     */
-    abstract protected function getQueryValues(): array;
-
-    abstract protected function getErrorCode(): int;
-
-    /**
-     * @return string[][]
-     */
-    abstract protected function getHeaderValues(): array;
 }

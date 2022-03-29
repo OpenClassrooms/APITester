@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Loader\ExamplesExtensionLoader;
+use APITester\Definition\Operation;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Preparator\Config\DefinitionExamples;
+use APITester\Test\TestCase;
+use APITester\Util\Json;
+use APITester\Util\Yaml;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\ExamplesExtensionLoader;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Preparator\Config\DefinitionExamples;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
-use OpenAPITesting\Util\Yaml;
 
 /**
  * @property DefinitionExamples $config
@@ -49,7 +49,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
             );
         }
 
-        return array_filter(array_merge(...$testCases));
+        return array_merge(...$testCases);
     }
 
     /**
@@ -123,12 +123,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
             }
         }
 
-        $authenticatedRequests = [];
-        foreach ($requests as $name => $request) {
-            $authenticatedRequests[$name] = $this->authenticate($request, $operation);
-        }
-
-        return $authenticatedRequests;
+        return $requests;
     }
 
     /**
@@ -186,7 +181,7 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
     }
 
     /**
-     * @param array<string, Request> $requests
+     * @param array<string, Request>  $requests
      * @param array<string, Response> $responses
      *
      * @return TestCase[]
@@ -208,8 +203,8 @@ final class DefinitionExamplesTestCasesPreparator extends TestCasesPreparator
             } else {
                 $key = str_replace('expects ', '', $key);
             }
-            $fixture = new TestCase(
-                "operation: {$operation->getId()} example: {$key}",
+            $fixture = $this->buildTestCase(
+                $operation,
                 $request,
                 $responses[$key],
             );

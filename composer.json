@@ -1,5 +1,5 @@
 {
-  "name": "openclassrooms/open-api-testing",
+  "name": "openclassrooms/api-tester",
   "type": "project",
   "license": "proprietary",
   "minimum-stability": "dev",
@@ -8,7 +8,6 @@
     "bin/api-tester"
   ],
   "config": {
-    "bin-dir": "bin",
     "optimize-autoloader": true,
     "preferred-install": {
       "*": "dist"
@@ -24,8 +23,8 @@
   },
   "autoload": {
     "psr-4": {
-      "OpenAPITesting\\": "src/",
-      "OpenAPITesting\\Symfony\\Component\\PropertyInfo\\": "lib/property-info/"
+      "APITester\\": "src/",
+      "APITester\\Symfony\\Component\\PropertyInfo\\": "lib/property-info/"
     },
     "files": [
       "config/constants.php"
@@ -33,7 +32,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "OpenAPITesting\\Tests\\": "tests/"
+      "APITester\\Tests\\": "tests/"
     }
   },
   "require": {
@@ -75,7 +74,7 @@
     "korbeil/phpstan-generic-rules": "^1.0",
     "nunomaduro/phpinsights": "^2.1",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "dev-master",
+    "phpstan/phpstan": "^1.6",
     "phpstan/phpstan-beberlei-assert": "^1.0",
     "phpstan/phpstan-deprecation-rules": "^1.0",
     "phpstan/phpstan-phpunit": "^1.0",
@@ -110,8 +109,8 @@
       "bin/ecs check-markdown README.md --ansi -c config/ecs.php"
     ],
     "fix-cs": [
-      "bin/ecs check --fix --ansi -c config/ecs.php ",
-      "bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
+      "vendor/bin/ecs check --fix --ansi -c config/ecs.php ",
+      "vendor/bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
     ],
     "check-static": [
       "@phpstan"
@@ -119,9 +118,9 @@
     "test": [
       "@unit"
     ],
-    "unit": "bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
-    "psalm": "bin/psalm -c config/psalm.xml",
-    "phpstan": "bin/phpstan analyse -c config/phpstan.neon --ansi",
+    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
+    "psalm": "vendor/bin/psalm -c config/psalm.xml",
+    "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"
   }
 }

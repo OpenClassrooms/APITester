@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Collection;
+namespace APITester\Definition\Collection;
 
+use APITester\Definition\Server;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\Server;
 
 /**
  * @method Server[] getIterator()

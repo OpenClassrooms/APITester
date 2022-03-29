@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator\Exception;
+namespace APITester\Preparator\Exception;
 
 final class InvalidPreparatorConfigException extends \Exception
 {

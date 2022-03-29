@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test;
+namespace APITester\Tests\Test;
 
-use OpenAPITesting\Config\Loader\PlanConfigLoader;
-use OpenAPITesting\Test\Exception\SuiteNotFoundException;
-use OpenAPITesting\Test\Plan;
-use OpenAPITesting\Tests\Fixtures\FixturesLocation;
+use APITester\Config\Loader\PlanConfigLoader;
+use APITester\Test\Exception\SuiteNotFoundException;
+use APITester\Test\Plan;
+use APITester\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;

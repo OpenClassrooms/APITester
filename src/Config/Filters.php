@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Config;
+namespace APITester\Config;
 
 final class Filters
 {
@@ -47,8 +47,7 @@ final class Filters
      */
     public function addInclude(array $include): void
     {
-        /** @var array<array<string, string>> includedGroups */
-        $this->include = [...$include, ...$this->include];
+        $this->include = array_merge($this->include, $include);
     }
 
     /**
@@ -56,7 +55,6 @@ final class Filters
      */
     public function addExclude(array $exclude): void
     {
-        /** @var array<array<string, string>> excludedGroups */
-        $this->exclude = [...$exclude, ...$this->exclude];
+        $this->exclude = array_merge($this->exclude, $exclude);
     }
 }

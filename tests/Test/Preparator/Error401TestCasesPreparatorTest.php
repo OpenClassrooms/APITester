@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Definition\Security\ApiKeySecurity;
+use APITester\Definition\Security\HttpSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Preparator\Error401TestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
 use Firebase\JWT\JWT;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Definition\Security\ApiKeySecurity;
-use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use OpenAPITesting\Preparator\Error401TestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
 
 final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -112,7 +112,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test1_401_oauth2_implicit',
                     new Request(
                         'GET',
                         '/test/oauth2/toto',
@@ -125,7 +124,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test2_401_apikey',
                     new Request(
                         'GET',
                         '/test/api/key/header',
@@ -136,7 +134,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test3_401_apikey',
                     new Request(
                         'GET',
                         '/test/api/key/cookie',
@@ -147,7 +144,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test4_401_apikey',
                     new Request(
                         'GET',
                         '/test/api/key/query?api_key=' . Error401TestCasesPreparator::FAKE_API_KEY
@@ -155,7 +151,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test5_401_http_basic',
                     new Request(
                         'GET',
                         '/test/basic',
@@ -166,7 +161,6 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    'test6_401_http_basic',
                     new Request(
                         'GET',
                         '/test/bearer',

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Requester;
+namespace APITester\Requester;
 
 use Nyholm\Psr7\Stream;
 use Nyholm\Psr7\Uri;

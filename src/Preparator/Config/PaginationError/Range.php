@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator\Config\PaginationError;
+namespace APITester\Preparator\Config\PaginationError;
 
 final class Range
 {

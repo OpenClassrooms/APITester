@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace OpenAPITesting\Symfony\Component\PropertyInfo\Util;
+namespace APITester\Symfony\Component\PropertyInfo\Util;
 
-use OpenAPITesting\Symfony\Component\PropertyInfo\PhpStan\NameScope;
-use OpenAPITesting\Symfony\Component\PropertyInfo\Type;
+use APITester\Symfony\Component\PropertyInfo\PhpStan\NameScope;
+use APITester\Symfony\Component\PropertyInfo\Type;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ReturnTagValueNode;

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Responses;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Test\TestCase;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Test\TestCase;
 
 final class Error404TestCasesPreparator extends TestCasesPreparator
 {
@@ -23,12 +23,14 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             ->select('responses.*')
             ->flatten()
             ->where('statusCode', 404)
-            ->values();
+            ->values()
+        ;
 
         /** @var TestCase[] */
         return $responses
             ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
-            ->flatten();
+            ->flatten()
+        ;
     }
 
     private function prepareTestCase(DefinitionResponse $response): TestCase
@@ -36,8 +38,10 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         $operation = $response->getParent();
         $params = array_fill(
             0,
-            $response->getParent()->getPathParameters()->count(),
-            9999
+            $response->getParent()
+                ->getPathParameters()
+                ->count(),
+            -9999
         );
         $request = new Request(
             $operation->getMethod(),
@@ -46,13 +50,8 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
             $this->generateRandomBody($operation),
         );
 
-        $request = $this->authenticate(
-            $request,
+        return $this->buildTestCase(
             $operation,
-        );
-
-        return new TestCase(
-            $operation->getId() . '_404',
             $request,
             new Response(
                 $this->config->response->statusCode ?? 404,

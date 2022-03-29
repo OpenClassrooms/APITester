@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition;
+namespace APITester\Definition;
 
 final class ResponseExample
 {

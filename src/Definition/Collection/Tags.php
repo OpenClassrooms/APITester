@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Collection;
+namespace APITester\Definition\Collection;
 
+use APITester\Definition\Tag;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\Tag;
 
 /**
  * @method Tag[] getIterator()

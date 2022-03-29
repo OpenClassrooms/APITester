@@ -2,8 +2,33 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Loader;
+namespace APITester\Definition\Loader;
 
+use APITester\Definition\Api;
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Collection\Requests;
+use APITester\Definition\Collection\Responses;
+use APITester\Definition\Collection\Scopes;
+use APITester\Definition\Collection\Securities;
+use APITester\Definition\Collection\Servers;
+use APITester\Definition\Collection\Tags;
+use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Request;
+use APITester\Definition\RequestExample;
+use APITester\Definition\Response;
+use APITester\Definition\ResponseExample;
+use APITester\Definition\Security\ApiKeySecurity;
+use APITester\Definition\Security\HttpSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2ClientCredentialsSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Definition\Security\OAuth2\OAuth2PasswordSecurity;
+use APITester\Definition\Server;
+use APITester\Definition\Tag;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\Example;
 use cebe\openapi\spec\Header;
@@ -15,31 +40,6 @@ use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
 use cebe\openapi\spec\SecurityRequirement;
 use cebe\openapi\spec\SecurityScheme;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Collection\Requests;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Collection\Scopes;
-use OpenAPITesting\Definition\Collection\Securities;
-use OpenAPITesting\Definition\Collection\Servers;
-use OpenAPITesting\Definition\Collection\Tags;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Request;
-use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Definition\Response;
-use OpenAPITesting\Definition\ResponseExample;
-use OpenAPITesting\Definition\Security\ApiKeySecurity;
-use OpenAPITesting\Definition\Security\HttpSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ClientCredentialsSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2PasswordSecurity;
-use OpenAPITesting\Definition\Server;
-use OpenAPITesting\Definition\Tag;
 
 final class OpenApiDefinitionLoader implements DefinitionLoader
 {
@@ -200,7 +200,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
             if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
                 $example = $parameter->schema->example;
-                if (is_array($parameter->schema->example)) {
+                if (\is_array($example)) {
                     $example = implode(',', $example);
                 }
                 $defParam->addExample(new ParameterExample('properties', (string) $example));

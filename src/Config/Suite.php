@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Config;
+namespace APITester\Config;
 
-use OpenAPITesting\Requester\HttpAsyncRequester;
+use APITester\Requester\HttpAsyncRequester;
+use PHPUnit\Framework\TestCase;
 
 final class Suite
 {
@@ -37,6 +38,8 @@ final class Suite
     private string $requester;
 
     private ?string $symfonyKernelClass = null;
+
+    private string $testCaseClass = TestCase::class;
 
     public function __construct(string $name, Definition $definition)
     {
@@ -181,5 +184,15 @@ final class Suite
     public function setSymfonyKernelClass(?string $symfonyKernelClass): void
     {
         $this->symfonyKernelClass = $symfonyKernelClass;
+    }
+
+    public function getTestCaseClass(): string
+    {
+        return $this->testCaseClass;
+    }
+
+    public function setTestCaseClass(string $testCaseClass): void
+    {
+        $this->testCaseClass = $testCaseClass;
     }
 }

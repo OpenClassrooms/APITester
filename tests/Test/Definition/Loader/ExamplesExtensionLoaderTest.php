@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Definition\Loader;
+namespace APITester\Tests\Test\Definition\Loader;
 
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Loader\ExamplesExtensionLoader;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Response;
-use OpenAPITesting\Definition\ResponseExample;
-use OpenAPITesting\Util\Assert;
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Loader\ExamplesExtensionLoader;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Response;
+use APITester\Definition\ResponseExample;
+use APITester\Util\Assert;
 use PHPUnit\Framework\TestCase;
 
 /**

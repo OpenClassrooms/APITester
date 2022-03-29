@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Definition\ResponseExample;
+use APITester\Preparator\Config\DefinitionExamples;
+use APITester\Preparator\DefinitionExamplesTestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
+use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Definition\ResponseExample;
-use OpenAPITesting\Preparator\Config\DefinitionExamples;
-use OpenAPITesting\Preparator\DefinitionExamplesTestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
-use OpenAPITesting\Util\Json;
 
 /**
  * @internal
@@ -367,7 +367,6 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             ),
             [
                 new TestCase(
-                    'operation: test example: 200',
                     new Request(
                         'GET',
                         new Uri('/test'),
@@ -387,7 +386,6 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                     ),
                 ),
                 new TestCase(
-                    'operation: test example: 400',
                     new Request(
                         'GET',
                         new Uri('/test'),

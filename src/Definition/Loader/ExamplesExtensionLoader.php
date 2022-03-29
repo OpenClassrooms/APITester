@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Loader;
+namespace APITester\Definition\Loader;
 
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Collection\Requests;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\ParameterExample;
-use OpenAPITesting\Definition\Request;
-use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Definition\Response;
-use OpenAPITesting\Definition\ResponseExample;
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Collection\Requests;
+use APITester\Definition\Collection\Responses;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\ParameterExample;
+use APITester\Definition\Request;
+use APITester\Definition\RequestExample;
+use APITester\Definition\Response;
+use APITester\Definition\ResponseExample;
 
 final class ExamplesExtensionLoader
 {

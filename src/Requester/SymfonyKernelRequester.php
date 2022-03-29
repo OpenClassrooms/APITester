@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Requester;
+namespace APITester\Requester;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
@@ -43,10 +43,12 @@ final class SymfonyKernelRequester extends Requester
         try {
             $request = $this->psrToSymfonyRequest($request);
             $response = $this->kernel->handle($request);
+//            $this->kernel->terminate($request, $response);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
-        } catch (\Throwable $e) {
-            $response = new Response((string) $e, 500);
-            $this->responses[$id] = $this->symfonyToPsrResponse($response);
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+//            $response = new Response((string) $e, 500);
+//            $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
 final class Error413TestCasesPreparator extends PaginationErrorTestCasesPreparator
 {

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Operation;
+use APITester\Test\TestCase;
+use APITester\Util\Json;
 use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Json;
 
 /**
- * @property \OpenAPITesting\Preparator\Config\Error405 $config
+ * @property \APITester\Preparator\Config\Error405 $config
  */
 final class Error405TestCasesPreparator extends TestCasesPreparator
 {
@@ -65,7 +65,6 @@ final class Error405TestCasesPreparator extends TestCasesPreparator
     private function prepareTestCase(string $path, string $method): TestCase
     {
         return new TestCase(
-            "{$method}_{$path}_405",
             new Request(
                 $method,
                 $path

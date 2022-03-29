@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Config\Loader;
+namespace APITester\Config\Loader;
 
-use OpenAPITesting\Config\Exception\ConfigurationException;
-use OpenAPITesting\Config\Plan;
-use OpenAPITesting\Util\Yaml;
+use APITester\Config\Exception\ConfigurationException;
+use APITester\Config\Plan;
+use APITester\Util\Yaml;
 use Symfony\Component\Dotenv\Dotenv;
 
 final class PlanConfigLoader

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
-use OpenAPITesting\Definition\Collection\Parameters;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\Request;
-use OpenAPITesting\Test\TestCase;
+use APITester\Definition\Collection\Parameters;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\Request;
+use APITester\Test\TestCase;
 
 final class Error400RequiredFieldsTestCasesPreparator extends FieldLevelTestCasePreparator
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Collection;
+namespace APITester\Definition\Collection;
 
+use APITester\Definition\Token;
 use Illuminate\Support\Collection;
-use OpenAPITesting\Definition\Token;
 
 /**
  * @method Token[] getIterator()

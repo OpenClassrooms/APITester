@@ -2,17 +2,18 @@
 ![PHPStan](https://img.shields.io/badge/PHPStan-level%207-brightgreen.svg?style=flat)
 ![PHP](https://img.shields.io/badge/PHP-%3E=%207.4-brightgreen.svg?style=flat)
 
-# Auto API Testing
+# API Tester
 
-This is project is aimed, to improve the testing experience by providing automatic tests based on your OpenAPI document.
+This is project is aimed, to improve the testing experience by providing
+automatic tests based on your OpenAPI document.
 
 ## Installation
 
 require into an existing project
-`composer require openclassrooms/open-api-testing`
+`composer require openclassrooms/api-tester`
 
 or require globally
-`composer require -g openclassrooms/open-api-testing`
+`composer require -g openclassrooms/api-tester`
 
 ## Usage
 
@@ -88,7 +89,8 @@ type: [ symfony-kernel, http-async ]
 
 #### symfony-kernel
 
-Forwards http requests directly to symfony kernel, has the advantage of being compatible with transactions (in case it's
+Forwards http requests directly to symfony kernel, has the advantage of being
+compatible with transactions (in case it's
 used in test cases callbacks)
 
 #### http-async
@@ -102,7 +104,8 @@ required: false
 default: all
 ```
 
-Theses are used to produce test cases, each one based on it's own logic and configuration.
+Theses are used to produce test cases, each one based on it's own logic and
+configuration.
 Following the list of supported preparators.
 
 #### examples
@@ -319,17 +322,17 @@ suites:
             -   name: error404
                 excludedFields: [ 'stream' ]
         filters: # select which operations to test, filters are on operations properties
-            #please refer to the class OpenAPITesting\Definition\Operation
+            #please refer to the class APITester\Definition\Operation
             include: # we include operations with the following tags
-                - {tags.*.name: Invitation}
-                - {tags.*.name: Support}
-                - {tags.*.name: Project}
-                - {tags.*.name: Course}
+                - { tags.*.name: Invitation }
+                - { tags.*.name: Support }
+                - { tags.*.name: Project }
+                - { tags.*.name: Course }
             exclude:
                 # we exclude an operation with it's id for the error404 preparator
-                - {id: oc_api_learning_activity_course_chapter_complete_post, preparator: error404}
-                - {id: oc_api_invitation_invitations_get, preparator: error401}
-                - {id: oc_api_invitation_invitations_get, preparator: error403}
+                - { id: oc_api_learning_activity_course_chapter_complete_post, preparator: error404 }
+                - { id: oc_api_invitation_invitations_get, preparator: error401 }
+                - { id: oc_api_invitation_invitations_get, preparator: error403 }
 
         auth: # authentication configuration
             -   name: 'user_with_all_roles'

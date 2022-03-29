@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Requester\Exception;
+namespace APITester\Requester\Exception;
 
 final class RequesterNotFoundException extends \Exception
 {

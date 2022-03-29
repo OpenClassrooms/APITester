@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\Request as DefinitionRequest;
+use APITester\Definition\Response as DefinitionResponse;
+use APITester\Preparator\Error404TestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
+use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\Request as DefinitionRequest;
-use OpenAPITesting\Definition\Response as DefinitionResponse;
-use OpenAPITesting\Preparator\Error404TestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
-use OpenAPITesting\Util\Json;
 
 final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -52,7 +52,6 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'getTest_404',
                     new Request('GET', '/test/-9999'),
                     new Response(404, [], 'description test')
                 ),
@@ -84,7 +83,6 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'postTest_404',
                     new Request(
                         'POST',
                         '/test',

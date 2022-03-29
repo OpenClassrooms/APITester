@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Security;
+namespace APITester\Definition\Security;
 
-use OpenAPITesting\Definition\Collection\Scopes;
-use OpenAPITesting\Definition\Security;
+use APITester\Definition\Collection\Scopes;
+use APITester\Definition\Security;
 
 final class ApiKeySecurity extends Security
 {

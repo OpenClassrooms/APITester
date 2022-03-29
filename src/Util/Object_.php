@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Util;
+namespace APITester\Util;
 
 use hanneskod\classtools\Iterator\ClassIterator;
 use PhpCsFixer\Finder;
@@ -90,5 +90,22 @@ final class Object_
 
         /** @var ClassIterator<\ReflectionClass<T>> $iter */
         return $iter->type($interface);
+    }
+
+    /**
+     * @template T
+     *
+     * @param class-string<T> $type
+     *
+     * @return class-string<T>
+     */
+    public static function validateClass(string $class, string $type): string
+    {
+        if (!class_exists($class) || !is_a($class, $type, true)) {
+            throw new \RuntimeException("Invalid class {$class} for type {$type}.");
+        }
+
+        /** @var class-string<T> $class */
+        return $class;
     }
 }

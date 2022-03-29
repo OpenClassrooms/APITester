@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
-use OpenAPITesting\Definition\Collection\Tokens;
-use OpenAPITesting\Definition\Security;
-use OpenAPITesting\Definition\Security\OAuth2\OAuth2Security;
-use OpenAPITesting\Definition\Token;
+use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Security;
+use APITester\Definition\Security\OAuth2\OAuth2Security;
+use APITester\Definition\Token;
 
 final class Error403TestCasesPreparator extends AuthorisationErrorTestCasesPreparator
 {

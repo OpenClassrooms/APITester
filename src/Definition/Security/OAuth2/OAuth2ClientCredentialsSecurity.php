@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Security\OAuth2;
+namespace APITester\Definition\Security\OAuth2;
 
-use OpenAPITesting\Definition\Collection\Scopes;
+use APITester\Definition\Collection\Scopes;
 
 final class OAuth2ClientCredentialsSecurity extends OAuth2Security
 {

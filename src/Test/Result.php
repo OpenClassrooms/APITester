@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Test;
+namespace APITester\Test;
 
 final class Result implements \JsonSerializable
 {

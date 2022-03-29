@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Security\OAuth2;
+namespace APITester\Definition\Security\OAuth2;
 
-use OpenAPITesting\Definition\Security;
+use APITester\Definition\Security;
 
 abstract class OAuth2Security extends Security
 {

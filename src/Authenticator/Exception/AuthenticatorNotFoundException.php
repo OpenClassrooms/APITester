@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Authenticator\Exception;
+namespace APITester\Authenticator\Exception;
 
 final class AuthenticatorNotFoundException extends \Exception
 {

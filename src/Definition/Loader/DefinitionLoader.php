@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Definition\Loader;
+namespace APITester\Definition\Loader;
 
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Definition\Api;
+use APITester\Definition\Loader\Exception\DefinitionLoadingException;
 
 interface DefinitionLoader
 {

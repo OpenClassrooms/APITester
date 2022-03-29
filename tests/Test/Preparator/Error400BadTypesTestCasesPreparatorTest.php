@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Tests\Test\Preparator;
+namespace APITester\Tests\Test\Preparator;
 
+use APITester\Definition\Api;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
+use APITester\Definition\RequestExample;
+use APITester\Preparator\Error400BadTypesTestCasesPreparator;
+use APITester\Test\TestCase;
+use APITester\Util\Assert;
+use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Api;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Definition\Parameter;
-use OpenAPITesting\Definition\RequestExample;
-use OpenAPITesting\Preparator\Error400BadTypesTestCasesPreparator;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Assert;
-use OpenAPITesting\Util\Json;
 
 final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -79,22 +79,18 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                 ),
             [
                 new TestCase(
-                    'foo_query_param_type_string_test',
                     new Request('GET', '/test?foo_query=foo'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_query_param_type_number_test',
                     new Request('GET', '/test?foo_query=1.234'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_query_param_type_boolean_test',
                     new Request('GET', '/test?foo_query=true'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_query_param_type_array_test',
                     new Request('GET', '/test?foo_query=foo%2Cbar'),
                     new Response(400)
                 ),
@@ -110,7 +106,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     )
                         ->setMethod('GET')
                         ->addRequest(
-                            (new \OpenAPITesting\Definition\Request(
+                            (new \APITester\Definition\Request(
                                 'application/json',
                                 new Schema([
                                     'type' => 'object',
@@ -126,7 +122,6 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                 ),
             [
                 new TestCase(
-                    'foo_body_field_type_string_test',
                     new Request(
                         'GET',
                         '/test',
@@ -138,7 +133,6 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_body_field_type_number_test',
                     new Request(
                         'GET',
                         '/test',
@@ -150,7 +144,6 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_body_field_type_boolean_test',
                     new Request(
                         'GET',
                         '/test',
@@ -162,7 +155,6 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_body_field_type_array_test',
                     new Request(
                         'GET',
                         '/test',
@@ -174,7 +166,6 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
-                    'foo_body_field_type_object_test',
                     new Request(
                         'GET',
                         '/test',

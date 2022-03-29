@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace OpenAPITesting\Symfony\Component\PropertyInfo;
+namespace APITester\Symfony\Component\PropertyInfo;
 
 /**
  * Type value object (immutable).

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Config;
+namespace APITester\Config;
 
 final class Plan
 {

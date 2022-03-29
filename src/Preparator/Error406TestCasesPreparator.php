@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenAPITesting\Preparator;
+namespace APITester\Preparator;
 
+use APITester\Definition\Collection\Operations;
+use APITester\Definition\Collection\Responses;
+use APITester\Definition\Operation;
+use APITester\Test\TestCase;
+use APITester\Util\Mime;
 use Illuminate\Support\Collection;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
-use OpenAPITesting\Definition\Collection\Operations;
-use OpenAPITesting\Definition\Collection\Responses;
-use OpenAPITesting\Definition\Operation;
-use OpenAPITesting\Test\TestCase;
-use OpenAPITesting\Util\Mime;
 
 final class Error406TestCasesPreparator extends TestCasesPreparator
 {
@@ -55,10 +55,8 @@ final class Error406TestCasesPreparator extends TestCasesPreparator
             ]
         );
 
-        $request = $this->authenticate($request, $operation);
-
-        return new TestCase(
-            "{$type}_{$operation->getId()}",
+        return $this->buildTestCase(
+            $operation,
             $request,
             new Response(406)
         );
