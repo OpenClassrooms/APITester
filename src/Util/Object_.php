@@ -108,4 +108,29 @@ final class Object_
         /** @var class-string<T> $class */
         return $class;
     }
+
+    /**
+     * @template T
+     *
+     * @param class-string<T> $interface
+     *
+     * @return array<class-string<T>>
+     */
+    public static function getImplementationsClasses(string $interface): array
+    {
+        $classes = [];
+        $implementations = self::getSubTypesOf($interface)
+            ->where('isInstantiable')
+        ;
+
+        /** @var \ReflectionClass<T> $class */
+        foreach ($implementations as $class) {
+            if (!$class->isFinal()) {
+                continue;
+            }
+            $classes[] = $class->getName();
+        }
+
+        return $classes;
+    }
 }

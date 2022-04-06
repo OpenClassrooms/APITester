@@ -9,5 +9,15 @@ final class Error405 extends PreparatorConfig
     /**
      * @var string[]
      */
-    public array $methods = [];
+    public array $methods = [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'HEAD',
+        'OPTIONS',
+        'TRACE',
+        'CONNECT',
+    ];
 }

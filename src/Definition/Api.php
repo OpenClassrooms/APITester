@@ -73,33 +73,6 @@ final class Api
         $this->description = $description;
     }
 
-    public function getServers(): Servers
-    {
-        return $this->servers;
-    }
-
-    public function setServers(Servers $servers): self
-    {
-        $this->servers = $servers;
-
-        return $this;
-    }
-
-    public function getOperations(): Operations
-    {
-        return $this->operations;
-    }
-
-    public function setOperations(Operations $operations): self
-    {
-        foreach ($operations as $operation) {
-            $operation->setParent($this);
-        }
-        $this->operations = $operations;
-
-        return $this;
-    }
-
     public function getTags(): Tags
     {
         return $this->tags;
@@ -135,5 +108,39 @@ final class Api
             ->select('securities.*')
             ->flatten()
         ;
+    }
+
+    public function getOperations(): Operations
+    {
+        return $this->operations;
+    }
+
+    public function setOperations(Operations $operations): self
+    {
+        foreach ($operations as $operation) {
+            $operation->setParent($this);
+        }
+        $this->operations = $operations;
+
+        return $this;
+    }
+
+    public function getUrl(): string
+    {
+        return $this->getServers()[0]
+            ->getUrl()
+        ;
+    }
+
+    public function getServers(): Servers
+    {
+        return $this->servers;
+    }
+
+    public function setServers(Servers $servers): self
+    {
+        $this->servers = $servers;
+
+        return $this;
     }
 }

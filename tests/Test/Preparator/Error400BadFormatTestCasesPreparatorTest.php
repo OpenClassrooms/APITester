@@ -28,8 +28,7 @@ final class Error400BadFormatTestCasesPreparatorTest extends \PHPUnit\Framework\
         $preparator = new Error400BadFormatTestCasesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'groups']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -59,6 +58,7 @@ final class Error400BadFormatTestCasesPreparatorTest extends \PHPUnit\Framework\
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo'),
                     new Response(400)
                 ),
@@ -91,6 +91,7 @@ final class Error400BadFormatTestCasesPreparatorTest extends \PHPUnit\Framework\
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [], Json::encode([
                         'foo' => 'foo',
                     ])),

@@ -24,11 +24,19 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error406TestCasesPreparator();
+        $preparator->configure(
+            [
+                'mediaTypes' => [
+                    'application/vnd.koan',
+                    'application/javascript',
+                    'application/json',
+                ],
+            ]
+        );
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups', 'headers', 'name']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -44,7 +52,8 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                         'test',
                         '/test'
                     )->addResponse(
-                        DefinitionResponse::create(406)
+                        DefinitionResponse::create(200)
+                            ->setMediaType('application/json')
                             ->setBody(
                                 new Schema([
                                     'type' => 'object',
@@ -59,20 +68,16 @@ final class Error406TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
-                        'Accept' => 'test',
+                        'Accept' => 'application/javascript',
                     ]),
                     new Response(406)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
-                        'Accept' => 'test',
-                    ]),
-                    new Response(406)
-                ),
-                new TestCase(
-                    new Request('GET', '/test', [
-                        'Accept' => 'test',
+                        'Accept' => 'application/vnd.koan',
                     ]),
                     new Response(406)
                 ),

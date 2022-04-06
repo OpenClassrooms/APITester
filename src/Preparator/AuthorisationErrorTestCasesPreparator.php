@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Operations;
-use APITester\Definition\Collection\Securities;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Security;
 use APITester\Test\TestCase;
@@ -20,16 +19,15 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): iterable
     {
-        /** @var Securities $securities */
-        $securities = $operations
+        /** @var TestCase[] */
+        return $operations
             ->where('responses.*.statusCode', 'contains', $this->getStatusCode())
             ->select('securities.*')
             ->flatten()
-        ;
-
-        /** @var iterable<array-key, TestCase> */
-        return $securities
-            ->map(fn (Security $security) => $this->prepareTestCases($security))
+            ->map(function ($security) {
+                /** @var Security $security */
+                return $this->prepareTestCases($security);
+            })
             ->flatten()
         ;
     }

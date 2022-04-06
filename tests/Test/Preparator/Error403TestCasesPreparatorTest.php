@@ -58,8 +58,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups', 'excludedFields']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -84,6 +83,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test1',
                     new Request(
                         'GET',
                         '/test/oauth2',
@@ -94,6 +94,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(403)
                 ),
                 new TestCase(
+                    'test1',
                     new Request(
                         'GET',
                         '/test/oauth2',

@@ -6,7 +6,6 @@ namespace APITester\Tests\Test\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Operation;
-use APITester\Definition\Response as DefinitionResponse;
 use APITester\Preparator\Error405TestCasesPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
@@ -23,11 +22,13 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error405TestCasesPreparator();
-
+        $preparator->configure([
+            'methods' => ['PATCH', 'PUT', 'GET', 'DELETE'],
+        ]);
         Assert::objectsEqual(
             $expected,
             $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups']
+            ['body']
         );
     }
 
@@ -37,43 +38,44 @@ final class Error405TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
     public function getData(): iterable
     {
         yield [
-            Api::create()->addOperation(
-                Operation::create('test', '/test')
-                    ->addResponse(
-                        DefinitionResponse::create(405)
-                    )
-            ),
+            Api::create()
+                ->addOperation(
+                    Operation::create('test', '/test', 'PATCH')
+                )->addOperation(
+                    Operation::create('test', '/test', 'POST')
+                )
+                ->addOperation(
+                    Operation::create('test2', '/test2')
+                ),
             [
                 new TestCase(
-                    new Request('POST', '/test'),
-                    new Response(405)
-                ),
-                new TestCase(
+                    'test',
                     new Request('PUT', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    new Request('PATCH', '/test'),
+                    'test',
+                    new Request('GET', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
+                    'test',
                     new Request('DELETE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    new Request('HEAD', '/test'),
+                    'test2',
+                    new Request('PATCH', '/test2'),
                     new Response(405)
                 ),
                 new TestCase(
-                    new Request('OPTIONS', '/test'),
+                    'test2',
+                    new Request('PUT', '/test2'),
                     new Response(405)
                 ),
                 new TestCase(
-                    new Request('TRACE', '/test'),
-                    new Response(405)
-                ),
-                new TestCase(
-                    new Request('CONNECT', '/test'),
+                    'test2',
+                    new Request('DELETE', '/test2'),
                     new Response(405)
                 ),
             ],

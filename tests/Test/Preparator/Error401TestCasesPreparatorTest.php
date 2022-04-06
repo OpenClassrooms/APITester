@@ -32,8 +32,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups', 'excludedFields']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -112,6 +111,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test1',
                     new Request(
                         'GET',
                         '/test/oauth2/toto',
@@ -124,6 +124,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
+                    'test2',
                     new Request(
                         'GET',
                         '/test/api/key/header',
@@ -134,6 +135,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
+                    'test3',
                     new Request(
                         'GET',
                         '/test/api/key/cookie',
@@ -144,6 +146,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
+                    'test4',
                     new Request(
                         'GET',
                         '/test/api/key/query?api_key=' . Error401TestCasesPreparator::FAKE_API_KEY
@@ -151,6 +154,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
+                    'test5',
                     new Request(
                         'GET',
                         '/test/basic',
@@ -161,6 +165,7 @@ final class Error401TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
+                    'test6',
                     new Request(
                         'GET',
                         '/test/bearer',

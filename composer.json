@@ -1,5 +1,6 @@
 {
   "name": "openclassrooms/api-tester",
+  "description": "Auto test your api from a definition doc ex: OpenAPI",
   "type": "project",
   "license": "proprietary",
   "minimum-stability": "dev",
@@ -47,7 +48,7 @@
     "firebase/php-jwt": "^5.3.0",
     "guzzlehttp/promises": "~1.4.0",
     "hanneskod/classtools": "^1.2",
-    "illuminate/collections": "v8.99.9",
+    "illuminate/collections": "^8.99",
     "monolog/monolog": "^1.25.1",
     "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.48",
@@ -95,6 +96,7 @@
   ],
   "scripts": {
     "check": [
+      "@composer validate --ansi --strict",
       "@fix-cs",
       "@check-static",
       "@test"

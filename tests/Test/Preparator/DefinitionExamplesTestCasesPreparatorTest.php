@@ -50,8 +50,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
         $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -331,7 +330,6 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                 Operation::create(
                     'test',
                     '/test',
-                    'GET'
                 )
                     ->addHeader(
                         Parameter::create('x-next', true)->setSchema(
@@ -367,6 +365,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
             ),
             [
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         new Uri('/test'),
@@ -386,6 +385,7 @@ final class DefinitionExamplesTestCasesPreparatorTest extends \PHPUnit\Framework
                     ),
                 ),
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         new Uri('/test'),

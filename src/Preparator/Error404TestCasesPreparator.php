@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Operations;
-use APITester\Definition\Collection\Responses;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Test\TestCase;
 use Nyholm\Psr7\Request;
@@ -18,17 +17,16 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
      */
     protected function generateTestCases(Operations $operations): iterable
     {
-        /** @var Responses $responses */
-        $responses = $operations
+        /** @var TestCase[] */
+        return $operations
             ->select('responses.*')
             ->flatten()
             ->where('statusCode', 404)
             ->values()
-        ;
-
-        /** @var TestCase[] */
-        return $responses
-            ->map(fn (DefinitionResponse $response) => $this->prepareTestCase($response))
+            ->map(function ($response) {
+                /** @var DefinitionResponse $response */
+                return $this->prepareTestCase($response);
+            })
             ->flatten()
         ;
     }

@@ -81,5 +81,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         SingleLineThrowFixer::class,
         PhpUnitTestClassRequiresCoversFixer::class,
         PhpUnitInternalClassFixer::class,
+        PhpCsFixer\Fixer\Phpdoc\PhpdocToCommentFixer::class,
     ]);
 };

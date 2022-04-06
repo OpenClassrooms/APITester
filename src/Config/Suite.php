@@ -181,7 +181,7 @@ final class Suite
         return $this->symfonyKernelClass;
     }
 
-    public function setSymfonyKernelClass(?string $symfonyKernelClass): void
+    public function setSymfonyKernelClass(string $symfonyKernelClass): void
     {
         $this->symfonyKernelClass = $symfonyKernelClass;
     }

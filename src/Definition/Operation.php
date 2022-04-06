@@ -65,11 +65,6 @@ final class Operation
         return $this;
     }
 
-    public function setParent(Api $parent): void
-    {
-        $this->parent = $parent;
-    }
-
     public function addParameterExample(?ParameterExample $example, string $type, string $name): self
     {
         if (null === $example) {
@@ -108,21 +103,6 @@ final class Operation
         return $parameters;
     }
 
-    public function getPathParameters(bool $onlyRequired = false): Parameters
-    {
-        return $this->pathParameters;
-    }
-
-    public function getQueryParameters(): Parameters
-    {
-        return $this->queryParameters;
-    }
-
-    public function getHeaders(): Parameters
-    {
-        return $this->headers;
-    }
-
     public function setParametersByType(Parameters $parameters, string $type): self
     {
         if (Parameter::TYPE_PATH === $type) {
@@ -132,6 +112,48 @@ final class Operation
         } elseif (Parameter::TYPE_HEADER === $type) {
             $this->headers = $parameters;
         }
+
+        return $this;
+    }
+
+    public function getPathParameters(bool $onlyRequired = false): Parameters
+    {
+        return $this->pathParameters;
+    }
+
+    public function setPathParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->pathParameters = $parameters;
+
+        return $this;
+    }
+
+    public function getQueryParameters(): Parameters
+    {
+        return $this->queryParameters;
+    }
+
+    public function setQueryParameters(Parameters $parameters): self
+    {
+        foreach ($parameters as $param) {
+            $param->setParent($this);
+        }
+        $this->queryParameters = $parameters;
+
+        return $this;
+    }
+
+    public function getHeaders(): Parameters
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(Parameters $headers): self
+    {
+        $this->headers = $headers;
 
         return $this;
     }
@@ -232,6 +254,16 @@ final class Operation
         return $this->responses;
     }
 
+    public function setResponses(Responses $responses): self
+    {
+        foreach ($responses as $response) {
+            $response->setParent($this);
+        }
+        $this->responses = $responses;
+
+        return $this;
+    }
+
     public function addResponse(Response $response): self
     {
         $response->setParent($this);
@@ -245,16 +277,6 @@ final class Operation
         return new static($id, $path, $method);
     }
 
-    public function setResponses(Responses $responses): self
-    {
-        foreach ($responses as $response) {
-            $response->setParent($this);
-        }
-        $this->responses = $responses;
-
-        return $this;
-    }
-
     public function addSecurity(Security $security): self
     {
         $security->setParent($this);
@@ -266,6 +288,13 @@ final class Operation
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
     }
 
     public function getExamplePath(
@@ -315,14 +344,33 @@ final class Operation
         return mb_strtoupper($this->method ?? 'GET');
     }
 
+    public function setMethod(string $method): self
+    {
+        $this->method = $method;
+
+        return $this;
+    }
+
     public function getParent(): Api
     {
         return $this->parent;
     }
 
+    public function setParent(Api $parent): void
+    {
+        $this->parent = $parent;
+    }
+
     public function getPreparator(): string
     {
         return $this->preparator;
+    }
+
+    public function setPreparator(string $string): self
+    {
+        $this->preparator = $string;
+
+        return $this;
     }
 
     public function getRequest(string $mediaType): ?Request
@@ -336,92 +384,6 @@ final class Operation
         return $this->securities;
     }
 
-    public function getSummary(): string
-    {
-        return $this->summary;
-    }
-
-    public function getTags(): Tags
-    {
-        return $this->tags;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function has(string $prop, $value): bool
-    {
-        $operation = collect([$this]);
-        $operator = '=';
-        if (str_contains($prop, '*')) {
-            $operator = 'contains';
-        }
-
-        return null !== $operation->where($prop, $operator, $value)
-            ->first()
-        ;
-    }
-
-    public function setDescription(string $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function setHeaders(Parameters $headers): self
-    {
-        $this->headers = $headers;
-
-        return $this;
-    }
-
-    public function setMethod(string $method): self
-    {
-        $this->method = $method;
-
-        return $this;
-    }
-
-    /**
-     * @param array<string, Parameters> $parameters
-     */
-    public function setParameters(array $parameters): self
-    {
-        foreach (Parameter::TYPES as $type) {
-            $this->setParametersByType($parameters[$type], $type);
-        }
-
-        return $this;
-    }
-
-    public function setPathParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->pathParameters = $parameters;
-
-        return $this;
-    }
-
-    public function setPreparator(string $string): self
-    {
-        $this->preparator = $string;
-
-        return $this;
-    }
-
-    public function setQueryParameters(Parameters $parameters): self
-    {
-        foreach ($parameters as $param) {
-            $param->setParent($this);
-        }
-        $this->queryParameters = $parameters;
-
-        return $this;
-    }
-
     public function setSecurities(Securities $securities): self
     {
         foreach ($securities as $security) {
@@ -432,6 +394,11 @@ final class Operation
         return $this;
     }
 
+    public function getSummary(): string
+    {
+        return $this->summary;
+    }
+
     public function setSummary(string $summary): self
     {
         $this->summary = $summary;
@@ -439,9 +406,41 @@ final class Operation
         return $this;
     }
 
+    public function getTags(): Tags
+    {
+        return $this->tags;
+    }
+
     public function setTags(Tags $tags): self
     {
         $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function has(string $prop, $value, string $operator = '='): bool
+    {
+        $operation = collect([$this]);
+        if (str_contains($prop, '*')) {
+            $operator = 'contains';
+        }
+
+        return null !== $operation->where($prop, $operator, $value)
+            ->first()
+        ;
+    }
+
+    /**
+     * @param array<string, Parameters> $parameters
+     */
+    public function setParameters(array $parameters): self
+    {
+        foreach (Parameter::TYPES as $type) {
+            $this->setParametersByType($parameters[$type], $type);
+        }
 
         return $this;
     }

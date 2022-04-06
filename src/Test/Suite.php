@@ -6,7 +6,6 @@ namespace APITester\Test;
 
 use APITester\Config\Filters;
 use APITester\Definition\Api;
-use APITester\Definition\Collection\Operations;
 use APITester\Definition\Operation;
 use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Preparator\TestCasesPreparator;
@@ -14,15 +13,15 @@ use APITester\Requester\Requester;
 use APITester\Util\Traits\TimeBoundTrait;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Yaml\Tag\TaggedValue;
 
 /**
  * @internal
  * @coversNothing
  * @template T of \PHPUnit\Framework\TestCase
- * @template K of \Symfony\Component\HttpKernel\KernelInterface
+ * @template K of \Symfony\Component\HttpKernel\HttpKernelInterface
  */
 final class Suite extends TestSuite
 {
@@ -89,9 +88,6 @@ final class Suite extends TestSuite
         $this->kernelClass = $kernelClass;
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     */
     public function run(TestResult $result = null): TestResult
     {
         $this->prepareTestCases();
@@ -120,7 +116,8 @@ final class Suite extends TestSuite
         foreach ($this->filters->getInclude() as $item) {
             $include = true;
             foreach ($item as $key => $value) {
-                if (!$operation->has($key, $value)) {
+                [$operator, $value] = $this->handleTags($value);
+                if (!$operation->has($key, $value, $operator)) {
                     $include = false;
                     continue 2;
                 }
@@ -134,7 +131,8 @@ final class Suite extends TestSuite
 
         foreach ($this->filters->getExclude() as $item) {
             foreach ($item as $key => $value) {
-                if (!$operation->has($key, $value)) {
+                [$operator, $value] = $this->handleTags($value);
+                if (!$operation->has($key, $value, $operator)) {
                     continue 2;
                 }
             }
@@ -161,14 +159,9 @@ final class Suite extends TestSuite
         $this->afterTestCaseCallbacks = $callbacks;
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     * @noinspection PhpRedundantVariableDocTypeInspection
-     */
     private function prepareTestCases(): void
     {
         foreach ($this->preparators as $preparator) {
-            /** @var Operations $operations */
             $operations = $this->api->getOperations()
                 ->map(
                     fn (Operation $op) => $op->setPreparator($preparator::getName())
@@ -181,7 +174,6 @@ final class Suite extends TestSuite
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
                     $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
-                    $testCase->prepare();
                     $this->addTest(
                         $testCase->toPhpUnitTestCase(
                             $this->testCaseClass,
@@ -193,5 +185,23 @@ final class Suite extends TestSuite
                 $this->logger->error($e->getMessage());
             }
         }
+    }
+
+    /**
+     * @param string|int|TaggedValue $value
+     *
+     * @return array{0: string, 1: string|int}
+     */
+    private function handleTags($value): array
+    {
+        $operator = '=';
+        if ($value instanceof TaggedValue) {
+            if ('NOT' === $value->getTag()) {
+                $operator = '!=';
+            }
+            $value = $value->getValue();
+        }
+
+        return [$operator, $value];
     }
 }

@@ -6,23 +6,27 @@ namespace APITester\Test;
 
 use APITester\Definition\Request;
 use APITester\Requester\Requester;
+use APITester\Requester\SymfonyKernelRequester;
 use APITester\Util\Assert;
 use APITester\Util\Json;
+use APITester\Util\Serializer;
 use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
 use Nyholm\Psr7\Stream;
+use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * @internal
  * @coversNothing
  */
-final class TestCase
+final class TestCase implements \JsonSerializable
 {
     use TimeBoundTrait;
 
@@ -56,10 +60,15 @@ final class TestCase
 
     private Requester $requester;
 
+    private string $name;
+
+    private ResponseInterface $response;
+
     /**
      * @param array<int, string> $excludedFields
      */
     public function __construct(
+        string $name,
         RequestInterface $request,
         ResponseInterface $expectedResponse,
         array $excludedFields = []
@@ -68,7 +77,8 @@ final class TestCase
         $this->expectedResponse = $expectedResponse;
         $this->logger = new NullLogger();
         $this->id = uniqid('testcase_', false);
-        $this->excludedFields = [...$this->excludedFields, ...$excludedFields];
+        $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
+        $this->name = $name;
     }
 
     /**
@@ -80,15 +90,16 @@ final class TestCase
         $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
     }
 
-    public function assert(): void
+    /**
+     * @throws ClientExceptionInterface
+     */
+    public function test(?HttpKernelInterface $kernel = null): void
     {
-        $response = $this->requester->getResponse($this->id);
-        $this->logger->log(LogLevel::DEBUG, 'received response: ' . $response->getBody());
-        Assert::response(
-            $this->expectedResponse,
-            $response,
-            $this->excludedFields
-        );
+        if (null !== $kernel && $this->requester instanceof SymfonyKernelRequester) {
+            $this->requester->setKernel($kernel);
+        }
+        $this->prepare();
+        $this->assert();
     }
 
     /**
@@ -100,16 +111,6 @@ final class TestCase
             ($callback)();
         }
         $this->startedAt = Carbon::now();
-        $this->logger->log(
-            LogLevel::DEBUG,
-            Json::encode([
-                'method' => $this->request->getMethod(),
-                'url' => $this->request->getUri(),
-                'body' => (string) $this->request->getBody(),
-                'headers' => $this->request->getHeaders(),
-                'expected_status' => $this->expectedResponse->getStatusCode(),
-            ], JSON_PRETTY_PRINT)
-        );
         $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
         foreach ($this->afterCallbacks as $callback) {
@@ -117,11 +118,29 @@ final class TestCase
         }
     }
 
+    public function assert(): void
+    {
+        $this->response = $this->requester->getResponse($this->id);
+        try {
+            Assert::response(
+                $this->expectedResponse,
+                $this->response,
+                $this->excludedFields
+            );
+        } catch (ExpectationFailedException $e) {
+            $this->log(LogLevel::ERROR);
+            throw $e;
+        }
+        $this->log(LogLevel::DEBUG);
+    }
+
     public function getName(): string
     {
-        return $this->request->getMethod()
+        return $this->name
+            . '(' . $this->request->getMethod()
             . '_'
             . $this->request->getUri()
+            . ')'
             . ' -> ' . $this->expectedResponse->getStatusCode();
     }
 
@@ -171,9 +190,11 @@ final class TestCase
     public function withAddedRequestBody(Request $request): self
     {
         return new self(
+            $this->name,
             $this->getRequest()
                 ->withBody(Stream::create(Json::encode($request->getBodyFromExamples()))),
-            $this->getExpectedResponse()
+            $this->getExpectedResponse(),
+            $this->excludedFields,
         );
     }
 
@@ -202,36 +223,62 @@ final class TestCase
         return $self;
     }
 
+    /**
+     * @return array{'name': string, 'request': RequestInterface, 'response': ResponseInterface}
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'name' => $this->getName(),
+            'request' => $this->request,
+            'response' => $this->expectedResponse,
+        ];
+    }
+
+    private function log(string $logLevel): void
+    {
+        $message = Json::encode([
+            'name' => $this->getName(),
+            'startedAt' => $this->getStartedAt(),
+            'finishedAt' => $this->getFinishedAt(),
+            'request' => Serializer::normalize($this->request),
+            'response' => Serializer::normalize($this->response),
+            'expected' => Serializer::normalize($this->expectedResponse),
+        ], JSON_PRETTY_PRINT);
+        $this->logger->log($logLevel, $message);
+    }
+
     private function declareClass(string $name, string $parent): void
     {
         if (!class_exists($name)) {
-            eval(
-            <<<CODE_SAMPLE
-            class {$name} extends {$parent} {
-                private \\APITester\\Test\\TestCase \$testCase;
-                private string \$name;
-    
-                public function __construct(\$testCase, \$name, \$kernelClass) {
-                    parent::__construct('test');
-                    \$this->name = \$name;
-                    \$this->testCase = \$testCase;
-                    if (property_exists(static::class, 'kernelClass')) {
-                        self::\$kernelClass = \$kernelClass;
+            $name = str_replace('\\', '', $name);
+            $code = <<<CODE_SAMPLE
+                class {$name} extends {$parent} {
+                    private \\APITester\\Test\\TestCase \$testCase;
+                    private string \$name;
+                    public function __construct(\$testCase, \$name, \$kernelClass) {
+                        parent::__construct('test');
+                        \$this->name = \$name;
+                        \$this->testCase = \$testCase;
+                        if (property_exists(static::class, 'kernelClass')) {
+                            self::\$kernelClass = \$kernelClass;
+                        }
+                    }
+                    public function getName(bool \$withDataSet = true): string
+                    {
+                        return \$this->name;
+                    }
+                    public function test(): void
+                    {
+                        \$kernel = null;
+                        if (method_exists(\$this, 'getKernel')) {
+                            \$kernel = \$this->getKernel();
+                        }
+                        \$this->testCase->test(\$kernel);
                     }
                 }
-    
-                public function getName(bool \$withDataSet = true): string
-                {
-                    return \$this->name;
-                }
-    
-                public function test(): void
-                {
-                    \$this->testCase->assert();
-                }
-            }
-CODE_SAMPLE
-            );
+            CODE_SAMPLE;
+            eval($code);
         }
     }
 }

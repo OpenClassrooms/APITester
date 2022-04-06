@@ -3,7 +3,16 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../vendor/autoload.php';
+$autoload = [
+    getcwd() . '/vendor/autoload.php',
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+foreach ($autoload as $file) {
+    if (is_file($file)) {
+        require $file;
+    }
+}
 
 use APITester\Command\ExecutePlanCommand;
 use PHPUnit\Util\TestDox\CliTestDoxPrinter;

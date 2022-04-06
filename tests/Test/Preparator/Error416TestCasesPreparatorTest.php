@@ -28,8 +28,7 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -58,14 +57,17 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?offset=20&limit=5'),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?offset=-5&limit=5'),
                     new Response(416)
                 ),
@@ -92,12 +94,14 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
                         'Range' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
                         'Range' => 'items=20-5',
                     ]),
@@ -138,26 +142,31 @@ final class Error416TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test1',
                     new Request('GET', '/test1', [
                         'Range' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test1',
                     new Request('GET', '/test1', [
                         'Range' => 'items=20-5',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test2',
                     new Request('GET', '/test2?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test2',
                     new Request('GET', '/test2?offset=20&limit=5'),
                     new Response(416)
                 ),
                 new TestCase(
+                    'test2',
                     new Request('GET', '/test2?offset=-5&limit=5'),
                     new Response(416)
                 ),

@@ -17,8 +17,8 @@ use APITester\Preparator\Exception\InvalidPreparatorConfigException;
 use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Exception\RequesterNotFoundException;
 use APITester\Requester\Requester;
-use APITester\Requester\SymfonyKernelRequester;
 use APITester\Test\Exception\SuiteNotFoundException;
+use APITester\Util\Assert;
 use APITester\Util\Object_;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\TextUI\CliArguments\Builder;
@@ -26,8 +26,8 @@ use PHPUnit\TextUI\CliArguments\Mapper;
 use PHPUnit\TextUI\TestRunner;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 final class Plan
 {
@@ -46,7 +46,7 @@ final class Plan
     private array $preparators;
 
     /**
-     * @var Requester[]
+     * @var class-string<Requester>[]
      */
     private array $requesters;
 
@@ -59,8 +59,8 @@ final class Plan
 
     /**
      * @param TestCasesPreparator[] $preparators
-     * @param Requester[]           $requesters
-     * @param DefinitionLoader[]    $definitionLoaders
+     * @param class-string<Requester>[] $requesters
+     * @param DefinitionLoader[] $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,
@@ -73,7 +73,7 @@ final class Plan
             \define('PROJECT_DIR', \dirname(__DIR__, 2));
         }
         $this->preparators = $preparators ?? Object_::getImplementations(TestCasesPreparator::class);
-        $this->requesters = $requesters ?? Object_::getImplementations(Requester::class);
+        $this->requesters = $requesters ?? Object_::getImplementationsClasses(Requester::class);
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
         $this->authenticator = $authenticator ?? new Authenticator();
         $this->logger = $logger ?? new NullLogger();
@@ -99,26 +99,7 @@ final class Plan
         $suites = $testPlanConfig->getSuites();
         $suites = $this->selectSuite($suiteName, $suites);
         foreach ($suites as $suiteConfig) {
-            $this->handleSymfonyKernel($suiteConfig);
-            $requester = $this->getRequester($suiteConfig->getRequester());
-            $api = $this->getApi($suiteConfig, $requester);
-            $tokens = $this->Authenticate($suiteConfig, $api, $requester);
-            $preparators = $this->getConfiguredPreparators($suiteConfig->getPreparators(), $tokens);
-            $testSuite = new Suite(
-                $suiteConfig->getName(),
-                $api,
-                $preparators,
-                $requester,
-                $suiteConfig->getFilters(),
-                $this->logger,
-                Object_::validateClass($suiteConfig->getTestCaseClass(), \PHPUnit\Framework\TestCase::class),
-                null !== $suiteConfig->getSymfonyKernelClass() ? Object_::validateClass(
-                    $suiteConfig->getSymfonyKernelClass(),
-                    KernelInterface::class
-                ) : null,
-            );
-            $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
-            $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
+            $testSuite = $this->prepareTestSuite($suiteConfig);
             $this->results[$suiteConfig->getName()] = $this->runner->run(
                 $testSuite,
                 (new Mapper())->mapToLegacyArray(
@@ -130,14 +111,11 @@ final class Plan
                 [],
                 false
             );
+            foreach ($this->results as $result) {
+                Assert::same(0, $result->errorCount(), "{$result->errorCount()} Error(s).");
+                Assert::same(0, $result->failureCount(), "{$result->failureCount()} Failure(s).");
+            }
         }
-    }
-
-    public function addRequester(Requester $requester): self
-    {
-        $this->requesters[] = $requester;
-
-        return $this;
     }
 
     /**
@@ -176,92 +154,45 @@ final class Plan
         return $suites;
     }
 
-    private function handleSymfonyKernel(Config\Suite $suiteConfig): void
-    {
-        $symfonyKernelClass = $suiteConfig->getSymfonyKernelClass();
-        if (null !== $symfonyKernelClass) {
-            /** @var Kernel $kernel */
-            $kernel = new $symfonyKernelClass('test', true);
-            $kernel->boot();
-            $this->addRequester(new SymfonyKernelRequester($kernel));
-        }
-    }
-
     /**
-     * @throws RequesterNotFoundException
-     */
-    private function getRequester(string $name): Requester
-    {
-        foreach ($this->requesters as $requester) {
-            if ($requester::getName() === $name) {
-                return $requester;
-            }
-        }
-
-        throw new RequesterNotFoundException($name);
-    }
-
-    /**
+     * @throws AuthenticationException
+     * @throws AuthenticationLoadingException
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
-     */
-    private function getApi(Config\Suite $config, Requester $requester): Api
-    {
-        $definitionLoader = $this->getConfiguredLoader(
-            $config->getDefinition()
-                ->getFormat()
-        );
-        $api = $definitionLoader->load(
-            $config->getDefinition()
-                ->getPath()
-        );
-
-        $this->setBaseUri($api, $requester);
-
-        return $api;
-    }
-
-    /**
-     * @throws AuthenticationLoadingException
-     * @throws AuthenticationException
-     */
-    private function Authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
-    {
-        $tokens = new Tokens();
-        foreach ($config->getAuthentifications() as $authConf) {
-            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $preparators
-     *
      * @throws InvalidPreparatorConfigException
+     * @throws RequesterNotFoundException
      *
-     * @return TestCasesPreparator[]
+     * @return Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface>
      */
-    private function getConfiguredPreparators(array $preparators, Tokens $tokens): array
+    private function prepareTestSuite(Config\Suite $suiteConfig): Suite
     {
-        if (0 === \count($preparators)) {
-            return $this->preparators;
-        }
-        $configuredPreparators = [];
-        foreach ($preparators as $name => $preparatorConfig) {
-            $preparator = collect($this->preparators)
-                ->where('name', $name)
-                ->first()
-            ;
-            if (null === $preparator) {
-                throw new InvalidPreparatorConfigException("Preparator {$name} not found.");
-            }
-            $preparator->configure($preparatorConfig);
-            $preparator->setTokens($tokens);
-            $configuredPreparators[] = $preparator;
-        }
+        $testCaseClass = Object_::validateClass(
+            $suiteConfig->getTestCaseClass(),
+            \PHPUnit\Framework\TestCase::class
+        );
+        [$kernel, $kernelClass] = $this->loadSymfonyKernel($suiteConfig);
+        $definition = $this->loadApiDefinition($suiteConfig);
+        $requester = $this->loadRequester(
+            $suiteConfig->getRequester(),
+            $definition->getUrl(),
+            $kernel
+        );
+        $tokens = $this->authenticate($suiteConfig, $definition, $requester);
+        $preparators = $this->loadPreparators($suiteConfig->getPreparators(), $tokens);
+        $testSuite = new Suite(
+            $suiteConfig->getName(),
+            $definition,
+            $preparators,
+            $requester,
+            $suiteConfig->getFilters(),
+            $this->logger,
+            $testCaseClass,
+            $kernelClass,
+        );
+        $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
+        $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
 
-        return $configuredPreparators;
+        return $testSuite;
     }
 
     /**
@@ -302,6 +233,115 @@ final class Plan
     }
 
     /**
+     * @return array{0: ?HttpKernelInterface, 1: ?class-string<HttpKernelInterface>}
+     */
+    private function loadSymfonyKernel(Config\Suite $suiteConfig): array
+    {
+        $kernel = null;
+        $kernelClass = null;
+        if (null !== $suiteConfig->getSymfonyKernelClass()) {
+            $kernelClass = Object_::validateClass(
+                $suiteConfig->getSymfonyKernelClass(),
+                HttpKernelInterface::class
+            );
+            $kernel = $this->bootSymfonyKernel($kernelClass);
+        }
+
+        return [$kernel, $kernelClass];
+    }
+
+    /**
+     * @throws DefinitionLoaderNotFoundException
+     * @throws DefinitionLoadingException
+     */
+    private function loadApiDefinition(Config\Suite $config): Api
+    {
+        $definitionLoader = $this->getConfiguredLoader(
+            $config->getDefinition()
+                ->getFormat()
+        );
+
+        return $definitionLoader->load(
+            $config->getDefinition()
+                ->getPath()
+        );
+    }
+
+    /**
+     * @throws RequesterNotFoundException
+     */
+    private function loadRequester(string $name, string $baseUri, ?HttpKernelInterface $kernel = null): Requester
+    {
+        foreach ($this->requesters as $requester) {
+            if ($requester::getName() === $name) {
+                $object = new $requester($baseUri);
+                if (null !== $kernel && method_exists($object, 'setKernel')) {
+                    $object->setKernel($kernel);
+                }
+
+                return $object;
+            }
+        }
+
+        throw new RequesterNotFoundException($name);
+    }
+
+    /**
+     * @throws AuthenticationLoadingException
+     * @throws AuthenticationException
+     */
+    private function authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
+    {
+        $tokens = new Tokens();
+        foreach ($config->getAuthentifications() as $authConf) {
+            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $preparators
+     *
+     * @throws InvalidPreparatorConfigException
+     *
+     * @return TestCasesPreparator[]
+     */
+    private function loadPreparators(array $preparators, Tokens $tokens): array
+    {
+        if (0 === \count($preparators)) {
+            return $this->preparators;
+        }
+        $configuredPreparators = [];
+        foreach ($preparators as $name => $preparatorConfig) {
+            $preparator = collect($this->preparators)
+                ->where('name', $name)
+                ->first()
+            ;
+            if (null === $preparator) {
+                throw new InvalidPreparatorConfigException("Preparator {$name} not found.");
+            }
+            $preparator->configure($preparatorConfig);
+            $preparator->setTokens($tokens);
+            $configuredPreparators[] = $preparator;
+        }
+
+        return $configuredPreparators;
+    }
+
+    /**
+     * @param class-string<HttpKernelInterface> $symfonyKernelClass
+     */
+    private function bootSymfonyKernel(string $symfonyKernelClass): HttpKernelInterface
+    {
+        /** @var Kernel $kernel */
+        $kernel = new $symfonyKernelClass('test', true);
+        $kernel->boot();
+
+        return $kernel;
+    }
+
+    /**
      * @throws DefinitionLoaderNotFoundException
      */
     private function getConfiguredLoader(string $format): DefinitionLoader
@@ -313,13 +353,5 @@ final class Plan
         }
 
         throw new DefinitionLoaderNotFoundException($format);
-    }
-
-    private function setBaseUri(Api $schema, Requester $requester): void
-    {
-        $baseUri = $schema->getServers()[0]
-            ->getUrl()
-        ;
-        $requester->setBaseUri($baseUri);
     }
 }

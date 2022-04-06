@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace APITester\Util;
 
 use APITester\Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
+use APITester\Util\Normalizer\PsrRequestNormalizer;
+use APITester\Util\Normalizer\PsrResponseNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -20,6 +22,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer as SfSerializer;
+use Symfony\Component\Yaml\Yaml as SfYaml;
 
 final class Serializer
 {
@@ -66,6 +69,8 @@ final class Serializer
                 new DateTimeNormalizer(),
                 new DateIntervalNormalizer(),
                 new ArrayDenormalizer(),
+                new PsrRequestNormalizer(),
+                new PsrResponseNormalizer(),
                 new ObjectNormalizer(
                     null,
                     null,
@@ -74,11 +79,25 @@ final class Serializer
                 ),
             ],
             [
-                new YamlEncoder(),
+                new YamlEncoder(null, null, [
+                    'yaml_flags' => SfYaml::PARSE_CUSTOM_TAGS,
+                ]),
                 new JsonEncoder(),
                 new XmlEncoder(),
                 new CsvEncoder(),
             ]
         );
+    }
+
+    /**
+     * @return mixed
+     * @noinspection PhpDocMissingThrowsInspection
+     * @noinspection PhpUnhandledExceptionInspection
+     */
+    public static function normalize(object $object)
+    {
+        return self::create()
+            ->normalize($object)
+        ;
     }
 }

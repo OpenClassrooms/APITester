@@ -28,8 +28,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
         $preparator = new Error400BadTypesTestCasesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'groups']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -79,18 +78,22 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo'),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=1.234'),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=true'),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo%2Cbar'),
                     new Response(400)
                 ),
@@ -122,6 +125,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         '/test',
@@ -133,6 +137,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         '/test',
@@ -144,6 +149,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         '/test',
@@ -155,6 +161,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         '/test',
@@ -166,6 +173,7 @@ final class Error400BadTypesTestCasesPreparatorTest extends \PHPUnit\Framework\T
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request(
                         'GET',
                         '/test',

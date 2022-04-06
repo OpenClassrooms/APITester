@@ -28,8 +28,7 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'headerNames', 'groups']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -58,6 +57,7 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?offset=0&limit=1000000000'),
                     new Response(413)
                 ),
@@ -84,6 +84,7 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
                         'Range' => 'items=0-1000000000',
                     ]),
@@ -124,12 +125,14 @@ final class Error413TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
+                    'test1',
                     new Request('GET', '/test1', [
                         'Range' => 'items=0-1000000000',
                     ]),
                     new Response(413)
                 ),
                 new TestCase(
+                    'test2',
                     new Request('GET', '/test2?offset=0&limit=1000000000'),
                     new Response(413)
                 ),

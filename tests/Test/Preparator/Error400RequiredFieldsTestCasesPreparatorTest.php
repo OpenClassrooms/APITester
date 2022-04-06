@@ -29,8 +29,7 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
         $preparator = new Error400RequiredFieldsTestCasesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->prepare($api->getOperations()),
-            ['size', 'id', 'groups']
+            $preparator->prepare($api->getOperations())
         );
     }
 
@@ -53,8 +52,9 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test'),
-                    new Response(400)
+                    new Response(400),
                 ),
             ],
         ];
@@ -76,10 +76,12 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?bar_query=bar1'),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -103,6 +105,7 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test/1234'),
                     new Response(400)
                 ),
@@ -126,12 +129,14 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -165,16 +170,19 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test2',
                     new Request('GET', '/test2'),
                     new Response(400)
                 ),
@@ -206,10 +214,12 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request('POST', '/test', [], Json::encode([])),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('POST', '/test'),
                     new Response(400)
                 ),
@@ -244,6 +254,7 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                 ),
             [
                 new TestCase(
+                    'test',
                     new Request(
                         'POST',
                         '/test',
@@ -255,10 +266,12 @@ final class Error400RequiredFieldsTestCasesPreparatorTest extends \PHPUnit\Frame
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('POST', '/test?foo_query=foo1', [], Json::encode([])),
                     new Response(400)
                 ),
                 new TestCase(
+                    'test',
                     new Request('POST', '/test?foo_query=foo1'),
                     new Response(400)
                 ),

@@ -13,22 +13,21 @@ use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class SymfonyKernelRequester extends Requester
 {
     private string $baseUri;
 
-    private KernelInterface $kernel;
+    private HttpKernelInterface $kernel;
 
     /**
      * @var ResponseInterface[]
      */
     private array $responses = [];
 
-    public function __construct(KernelInterface $kernel, string $baseUri = '')
+    public function __construct(string $baseUri = '')
     {
-        $this->kernel = $kernel;
         $this->baseUri = rtrim($baseUri, '/');
     }
 
@@ -65,6 +64,11 @@ final class SymfonyKernelRequester extends Requester
     public function setBaseUri(string $baseUri): void
     {
         $this->baseUri = $baseUri;
+    }
+
+    public function setKernel(HttpKernelInterface $kernel): void
+    {
+        $this->kernel = $kernel;
     }
 
     private function psrToSymfonyRequest(RequestInterface $request): Request

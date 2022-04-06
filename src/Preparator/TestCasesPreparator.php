@@ -62,7 +62,7 @@ abstract class TestCasesPreparator
             $request = $this->authenticate($request, $operation);
         }
 
-        return new TestCase($request, $response, $excludedFields);
+        return new TestCase($operation->getId(), $request, $response, $excludedFields);
     }
 
     /**

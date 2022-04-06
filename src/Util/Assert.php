@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Util;
 
-use APITester\Util\Normalizer\StreamNormalizer;
+use APITester\Util\Normalizer\PsrRequestNormalizer;
+use APITester\Util\Normalizer\PsrResponseNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Message\ResponseInterface;
@@ -72,6 +73,17 @@ final class Assert
     }
 
     /**
+     * @template T
+     *
+     * @param T $expected
+     * @param T $actual
+     */
+    public static function same($expected, $actual, string $message = ''): void
+    {
+        BaseAssert::assertSame($expected, $actual, $message);
+    }
+
+    /**
      * @param mixed $actual
      *
      * @throws ExpectationFailedException
@@ -99,22 +111,17 @@ final class Assert
             throw new \RuntimeException('Failed to normalize response', 0, $e);
         }
 
-        $excludedFields = array_map(
-            static fn ($v) => 'body' === $v ? 'stream' : $v,
-            $excludedFields
-        );
         self::initAccessor();
         $paths = self::getPaths($expected);
         $paths = array_diff($paths, $excludedFields);
         foreach ($paths as $path) {
             $expectedValue = self::$accessor->getValue((object) $expected, $path);
             $actualValue = self::$accessor->getValue((object) $actual, $path);
-            $label = str_replace('stream', 'body', $path);
-            $message = "Checking {$label}";
+            $message = "Checking {$path}";
             if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
                 BaseAssert::assertMatchesRegularExpression(
-                    (string) $expectedValue,
-                    (string) $actualValue,
+                    \is_array($expectedValue) ? Json::encode($expectedValue) : (string) $expectedValue,
+                    \is_array($actualValue) ? Json::encode($actualValue) : (string) $actualValue,
                     $message,
                 );
             } else {
@@ -135,7 +142,8 @@ final class Assert
                 new DateTimeZoneNormalizer(),
                 new DateTimeNormalizer(),
                 new DateIntervalNormalizer(),
-                new StreamNormalizer(),
+                new PsrRequestNormalizer(),
+                new PsrResponseNormalizer(),
                 new PropertyNormalizer(),
                 new ObjectNormalizer(),
             ],
