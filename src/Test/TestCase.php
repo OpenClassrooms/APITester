@@ -173,18 +173,17 @@ final class TestCase implements \JsonSerializable
     /**
      * @template T of \PHPUnit\Framework\TestCase
      *
-     * @param class-string<T>   $testCaseClass
-     * @param class-string|null $kernelClass
+     * @param class-string<T> $testCaseClass
      *
      * @return T
      */
-    public function toPhpUnitTestCase(string $testCaseClass, ?string $kernelClass = null): \PHPUnit\Framework\TestCase
+    public function toPhpUnitTestCase(string $testCaseClass): \PHPUnit\Framework\TestCase
     {
         $className = '\ApiTestCase';
         $testCaseName = $this->getName();
-        $this->declareClass($className, $testCaseClass);
+        $this->declareTestCaseClass($className, $testCaseClass);
 
-        return new $className($this, $testCaseName, $kernelClass);
+        return new $className($this, $testCaseName);
     }
 
     public function withAddedRequestBody(Request $request): self
@@ -248,7 +247,7 @@ final class TestCase implements \JsonSerializable
         $this->logger->log($logLevel, $message);
     }
 
-    private function declareClass(string $name, string $parent): void
+    private function declareTestCaseClass(string $name, string $parent): void
     {
         if (!class_exists($name)) {
             $name = str_replace('\\', '', $name);
@@ -256,13 +255,10 @@ final class TestCase implements \JsonSerializable
                 class {$name} extends {$parent} {
                     private \\APITester\\Test\\TestCase \$testCase;
                     private string \$name;
-                    public function __construct(\$testCase, \$name, \$kernelClass) {
+                    public function __construct(\$testCase, \$name) {
                         parent::__construct('test');
                         \$this->name = \$name;
                         \$this->testCase = \$testCase;
-                        if (property_exists(static::class, 'kernelClass')) {
-                            self::\$kernelClass = \$kernelClass;
-                        }
                     }
                     public function getName(bool \$withDataSet = true): string
                     {

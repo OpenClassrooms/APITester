@@ -34,11 +34,13 @@ parameters:
         - '/Casting to string something that.s already string./'
         - '/Class APITester\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
         - '/Short ternary operator is not allowed.*/'
-        - '/Instantiated class \\ApiTestCase not found.*/'
+        - '/Instantiated class \\ApiTestCase not found./'
+        - '/Call to method getTestCaseKernel\(\) on an unknown class \\TestCaseKernelProvider./'
+        - '/Instantiated class \\TestCaseKernelProvider not found./'
         - '/Method APITester\\Test\\TestCase::toPhpUnitTestCase\(\) should return T of PHPUnit\\Framework\\TestCase but returns .+/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
-        - {path: ../src/Test/TestCase.php, message: '/Calling eval\(\) is forbidden, eval is evil, please write more code and do not use eval\(\)/'}
-        - {path: ../src/Test/TestCase.php, message: '/Language construct eval\(\) should not be used./'}
+        - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Calling eval\(\) is forbidden, eval is evil, please write more code and do not use eval\(\)/'}
+        - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Language construct eval\(\) should not be used./'}
     exceptions:
         check:
             missingCheckedExceptionInThrows: true

@@ -170,7 +170,7 @@ final class Plan
             $suiteConfig->getTestCaseClass(),
             \PHPUnit\Framework\TestCase::class
         );
-        [$kernel, $kernelClass] = $this->loadSymfonyKernel($suiteConfig);
+        $kernel = $this->loadSymfonyKernel($suiteConfig, $testCaseClass);
         $definition = $this->loadApiDefinition($suiteConfig);
         $requester = $this->loadRequester(
             $suiteConfig->getRequester(),
@@ -187,7 +187,6 @@ final class Plan
             $suiteConfig->getFilters(),
             $this->logger,
             $testCaseClass,
-            $kernelClass,
         );
         $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
         $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
@@ -236,21 +235,40 @@ final class Plan
     }
 
     /**
-     * @return array{0: ?HttpKernelInterface, 1: ?class-string<HttpKernelInterface>}
+     * @param class-string<\PHPUnit\Framework\TestCase> $testCaseClass
      */
-    private function loadSymfonyKernel(Config\Suite $suiteConfig): array
+    private function loadSymfonyKernel(Config\Suite $suiteConfig, string $testCaseClass): Kernel
     {
         $kernel = null;
-        $kernelClass = null;
         if (null !== $suiteConfig->getSymfonyKernelClass()) {
             $kernelClass = Object_::validateClass(
                 $suiteConfig->getSymfonyKernelClass(),
                 HttpKernelInterface::class
             );
-            $kernel = $this->bootSymfonyKernel($kernelClass);
+            if (method_exists($testCaseClass, 'getKernel')) {
+                $className = 'TestCaseKernelProvider';
+                $code = <<<CODE_SAMPLE
+                class {$className} extends {$testCaseClass} {
+                    public function __construct() {
+                        parent::__construct('test');
+                        self::\$kernelClass = '{$kernelClass}';
+                        \$this->bootKernel();
+                    }
+                    public function getTestCaseKernel() {
+                        return \$this->getKernel();
+                    }
+                }
+                CODE_SAMPLE;
+                eval($code);
+                $className = '\\' . $className;
+                $kernelProvider = new $className();
+                $kernel = $kernelProvider->getTestCaseKernel();
+            } else {
+                $kernel = $this->bootSymfonyKernel($kernelClass);
+            }
         }
 
-        return [$kernel, $kernelClass];
+        return $kernel;
     }
 
     /**
@@ -335,7 +353,7 @@ final class Plan
     /**
      * @param class-string<HttpKernelInterface> $symfonyKernelClass
      */
-    private function bootSymfonyKernel(string $symfonyKernelClass): HttpKernelInterface
+    private function bootSymfonyKernel(string $symfonyKernelClass): Kernel
     {
         /** @var Kernel $kernel */
         $kernel = new $symfonyKernelClass('test', true);

@@ -58,14 +58,8 @@ final class Suite extends TestSuite
     private string $testCaseClass;
 
     /**
-     * @var class-string<K>|null
-     */
-    private ?string $kernelClass;
-
-    /**
      * @param array<TestCasesPreparator> $preparators
      * @param class-string<T>            $testCaseClass
-     * @param class-string<K>|null       $kernelClass
      */
     public function __construct(
         string $title,
@@ -74,8 +68,7 @@ final class Suite extends TestSuite
         Requester $requester,
         ?Filters $filters = null,
         ?LoggerInterface $logger = null,
-        string $testCaseClass = \PHPUnit\Framework\TestCase::class,
-        ?string $kernelClass = null
+        string $testCaseClass = \PHPUnit\Framework\TestCase::class
     ) {
         parent::__construct('', $title);
         $this->title = $title;
@@ -85,7 +78,6 @@ final class Suite extends TestSuite
         $this->logger = $logger ?? new NullLogger();
         $this->filters = $filters ?? new Filters([], []);
         $this->testCaseClass = $testCaseClass;
-        $this->kernelClass = $kernelClass;
     }
 
     public function run(TestResult $result = null): TestResult
@@ -177,7 +169,6 @@ final class Suite extends TestSuite
                     $this->addTest(
                         $testCase->toPhpUnitTestCase(
                             $this->testCaseClass,
-                            $this->kernelClass
                         )
                     );
                 }
