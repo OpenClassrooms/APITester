@@ -76,6 +76,12 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_NONE,
                 'testdox print format'
             )
+            ->addOption(
+                'coverage-php',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'coverage export to php'
+            )
         ;
     }
 }

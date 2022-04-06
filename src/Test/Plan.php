@@ -219,6 +219,9 @@ final class Plan
         return array_filter(
             array_map(
                 static function (string $key, $value) {
+                    if (null === $value) {
+                        return null;
+                    }
                     if (true === $value) {
                         return "--{$key}";
                     }
