@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace APITester\Config;
 
+use APITester\Util\Path;
+
 final class Plan
 {
+    private ?string $bootstrap = null;
+
     /**
      * @var Suite[]
      */
@@ -43,5 +47,15 @@ final class Plan
         }
 
         return $this;
+    }
+
+    public function getBootstrap(): ?string
+    {
+        return $this->bootstrap;
+    }
+
+    public function setBootstrap(?string $bootstrap): void
+    {
+        $this->bootstrap = Path::getBasePath() . '/' . $bootstrap;
     }
 }

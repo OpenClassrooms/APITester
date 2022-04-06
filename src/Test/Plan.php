@@ -96,6 +96,10 @@ final class Plan
         ?string $suiteName = null,
         array $options = []
     ): void {
+        $bootstrap = $testPlanConfig->getBootstrap();
+        if (null !== $bootstrap) {
+            require_once $bootstrap;
+        }
         $suites = $testPlanConfig->getSuites();
         $suites = $this->selectSuite($suiteName, $suites);
         foreach ($suites as $suiteConfig) {

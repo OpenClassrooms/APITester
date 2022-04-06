@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Config;
 
-use Composer\Autoload\ClassLoader;
+use APITester\Util\Path;
 
 final class Definition
 {
@@ -17,8 +17,7 @@ final class Definition
         $path = trim($path, '/');
         $fullPath = $path;
         if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
-            $reflection = new \ReflectionClass(ClassLoader::class);
-            $fullPath = \dirname((string) $reflection->getFileName(), 3) . '/' . $path;
+            $fullPath = Path::getBasePath() . '/' . $path;
         }
         $this->path = $fullPath;
         $this->format = $format;
