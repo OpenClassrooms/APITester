@@ -241,7 +241,7 @@ final class Plan
     /**
      * @param class-string<\PHPUnit\Framework\TestCase> $testCaseClass
      */
-    private function loadSymfonyKernel(Config\Suite $suiteConfig, string $testCaseClass): Kernel
+    private function loadSymfonyKernel(Config\Suite $suiteConfig, string $testCaseClass): ?Kernel
     {
         $kernel = null;
         if (null !== $suiteConfig->getSymfonyKernelClass()) {
@@ -250,23 +250,7 @@ final class Plan
                 HttpKernelInterface::class
             );
             if (method_exists($testCaseClass, 'getKernel')) {
-                $className = 'TestCaseKernelProvider';
-                $code = <<<CODE_SAMPLE
-                class {$className} extends {$testCaseClass} {
-                    public function __construct() {
-                        parent::__construct('test');
-                        self::\$kernelClass = '{$kernelClass}';
-                        \$this->bootKernel();
-                    }
-                    public function getTestCaseKernel() {
-                        return \$this->getKernel();
-                    }
-                }
-                CODE_SAMPLE;
-                eval($code);
-                $className = '\\' . $className;
-                $kernelProvider = new $className();
-                $kernel = $kernelProvider->getTestCaseKernel();
+                $kernel = $this->getTestCaseKernel($testCaseClass, $kernelClass);
             } else {
                 $kernel = $this->bootSymfonyKernel($kernelClass);
             }
@@ -352,6 +336,35 @@ final class Plan
         }
 
         return $configuredPreparators;
+    }
+
+    /**
+     * @param class-string $testCaseClass
+     * @param class-string $kernelClass
+     */
+    private function getTestCaseKernel(string $testCaseClass, string $kernelClass): Kernel
+    {
+        $className = 'TestCaseKernelProvider';
+        $code = <<<CODE_SAMPLE
+                class {$className} extends {$testCaseClass} {
+                    public function __construct() {
+                        parent::__construct('test');
+                        self::\$kernelClass = '{$kernelClass}';
+                        if (method_exists(\$this, 'resetDatabase'))
+                            \$this->resetDatabase();
+                        if (method_exists(\$this, 'bootKernel'))
+                            \$this->bootKernel();
+                    }
+                    public function getTestCaseKernel() {
+                        return \$this->getKernel();
+                    }
+                }
+                CODE_SAMPLE;
+        eval($code);
+        $className = '\\' . $className;
+        $kernelProvider = new $className();
+
+        return $kernelProvider->getTestCaseKernel();
     }
 
     /**
