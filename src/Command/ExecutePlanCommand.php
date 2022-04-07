@@ -44,7 +44,7 @@ final class ExecutePlanCommand extends Command
         $suiteName = $input->getOption('suite');
         $testPlan->execute($config, $suiteName, $input->getOptions());
 
-        return 1;
+        return 0;
     }
 
     protected function configure(): void
