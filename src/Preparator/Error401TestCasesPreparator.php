@@ -27,6 +27,7 @@ final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
         if ($security instanceof HttpSecurity && $security->isBasic()) {
             $tokens->add(
                 new Token(
+                    '401_false_token',
                     $security->getType(),
                     base64_encode('aaaa:bbbbb')
                 )
@@ -36,6 +37,7 @@ final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
         if ($security instanceof HttpSecurity && $security->isBearer()) {
             $tokens->add(
                 new Token(
+                    '401_false_token',
                     $security->getType(),
                     JWT::encode([
                         'test' => 1234,
@@ -47,6 +49,7 @@ final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
         if ($security instanceof OAuth2Security) {
             $tokens->add(
                 new Token(
+                    '401_false_token',
                     $security->getType(),
                     JWT::encode([
                         'test' => 1234,
@@ -58,6 +61,7 @@ final class Error401TestCasesPreparator extends AuthorisationErrorTestCasesPrepa
         if ($security instanceof ApiKeySecurity) {
             $tokens->add(
                 new Token(
+                    '401_false_token',
                     $security->getType(),
                     self::FAKE_API_KEY
                 )

@@ -41,6 +41,7 @@ final class Authenticator
         $body = Json::decode((string) $response->getBody());
 
         return new Token(
+            $config->getName(),
             $security->getType(),
             $body['access_token'],
             explode(' ', $config->getBody()['scope'] ?? ''),

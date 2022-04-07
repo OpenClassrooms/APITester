@@ -27,6 +27,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator = new Error403TestCasesPreparator();
         $preparator->addToken(
             new Token(
+                'test1',
                 'oauth2_implicit',
                 '1111',
                 [
@@ -37,6 +38,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
         )
             ->addToken(
                 new Token(
+                    'test2',
                     'oauth2_implicit',
                     '2222',
                     [
@@ -47,6 +49,7 @@ final class Error403TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
             )
             ->addToken(
                 new Token(
+                    'test3',
                     'oauth2_implicit',
                     '3333',
                     [

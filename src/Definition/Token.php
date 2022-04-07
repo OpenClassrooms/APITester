@@ -21,10 +21,13 @@ final class Token
      */
     private array $scopes;
 
+    private string $name;
+
     /**
      * @param string[] $scopes
      */
     public function __construct(
+        string $name,
         string $authType,
         string $accessToken,
         array $scopes = [],
@@ -38,6 +41,7 @@ final class Token
         $this->expiresIn = $expiresIn ?? 3600;
         $this->scopes = $scopes;
         $this->authType = $authType;
+        $this->name = $name;
     }
 
     public function getAccessToken(): string
@@ -71,5 +75,10 @@ final class Token
     public function getAuthType(): string
     {
         return $this->authType;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }
