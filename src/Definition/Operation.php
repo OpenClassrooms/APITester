@@ -118,6 +118,10 @@ final class Operation
 
     public function getPathParameters(bool $onlyRequired = false): Parameters
     {
+        if ($onlyRequired) {
+            return $this->pathParameters->where('required', true);
+        }
+
         return $this->pathParameters;
     }
 
@@ -332,6 +336,17 @@ final class Operation
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
+    }
+
+    public function getRandomPath(): string
+    {
+        $pathParameters = $this->getPathParameters();
+        $queryParameters = $this->getQueryParameters();
+
+        return $this->getPath(
+            $pathParameters->toRandomArray(),
+            $queryParameters->toRandomArray()
+        );
     }
 
     public function getId(): string

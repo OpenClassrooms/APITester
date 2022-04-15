@@ -27,7 +27,7 @@ final class Parameter
 
     private ParameterExamples $examples;
 
-    public function __construct(string $name, bool $required = false, ?Schema $schema = null)
+    public function __construct(string $name, bool $required = true, ?Schema $schema = null)
     {
         $this->name = $name;
         $this->examples = new ParameterExamples();
@@ -35,7 +35,7 @@ final class Parameter
         $this->schema = $schema;
     }
 
-    public static function create(string $name, bool $required = false): self
+    public static function create(string $name, bool $required = true): self
     {
         return new self($name, $required);
     }

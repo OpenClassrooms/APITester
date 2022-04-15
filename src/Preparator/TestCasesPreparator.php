@@ -7,6 +7,7 @@ namespace APITester\Preparator;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Operation;
+use APITester\Definition\Request;
 use APITester\Definition\Security;
 use APITester\Definition\Security\ApiKeySecurity;
 use APITester\Definition\Security\HttpSecurity;
@@ -195,14 +196,8 @@ abstract class TestCasesPreparator
      */
     abstract protected function generateTestCases(Operations $operations): iterable;
 
-    protected function generateRandomBody(Operation $operation): ?string
+    protected function generateRandomBody(Request $request): ?string
     {
-        $request = $operation->getRequest('application/json');
-
-        if (null === $request) {
-            return null;
-        }
-
         return Json::encode(
             $request->getBodyFromExamples() ?: (array) (new SchemaFaker(
                 $request->getBody(),

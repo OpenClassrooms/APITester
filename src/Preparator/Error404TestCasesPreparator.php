@@ -31,31 +31,49 @@ final class Error404TestCasesPreparator extends TestCasesPreparator
         ;
     }
 
-    private function prepareTestCase(DefinitionResponse $response): TestCase
+    /**
+     * @return array<TestCase>
+     */
+    private function prepareTestCase(DefinitionResponse $response): array
     {
         $operation = $response->getParent();
-        $params = array_fill(
-            0,
-            $response->getParent()
-                ->getPathParameters()
-                ->count(),
-            -9999
-        );
-        $request = new Request(
-            $operation->getMethod(),
-            $operation->getPath($params),
-            [],
-            $this->generateRandomBody($operation),
-        );
 
-        return $this->buildTestCase(
-            $operation,
-            $request,
-            new Response(
-                $this->config->response->statusCode ?? 404,
-                $this->config->response->headers ?? [],
-                $this->config->response->body ?? $response->getDescription()
-            ),
-        );
+        $testcases = [];
+
+        if (0 === $operation->getRequests()->count()) {
+            $testcases[] = $this->buildTestCase(
+                $operation,
+                new Request(
+                    $operation->getMethod(),
+                    $operation->getRandomPath(),
+                ),
+                new Response(
+                    $this->config->response->statusCode ?? 404,
+                    $this->config->response->headers ?? [],
+                    $this->config->response->body ?? $response->getDescription()
+                ),
+            );
+        }
+
+        foreach ($operation->getRequests() as $request) {
+            $testcases[] = $this->buildTestCase(
+                $operation,
+                new Request(
+                    $operation->getMethod(),
+                    $operation->getRandomPath(),
+                    [
+                        'content-type' => $request->getMediaType(),
+                    ],
+                    $this->generateRandomBody($request),
+                ),
+                new Response(
+                    $this->config->response->statusCode ?? 404,
+                    $this->config->response->headers ?? [],
+                    $this->config->response->body ?? $response->getDescription()
+                ),
+            );
+        }
+
+        return $testcases;
     }
 }
