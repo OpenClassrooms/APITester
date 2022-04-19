@@ -49,24 +49,44 @@ abstract class AuthorisationErrorTestCasesPreparator extends TestCasesPreparator
             if ($token->getAuthType() !== $security->getType()) {
                 continue;
             }
-            $request = $this->setAuthentication(
-                new Request(
-                    $operation->getMethod(),
-                    $operation->getExamplePath(),
-                    [],
-                    $this->generateRandomBody($operation),
-                ),
-                $security,
-                $token,
-            );
-            $testCases->add(
-                $this->buildTestCase(
-                    $operation,
-                    $request,
-                    new Response($this->getStatusCode()),
-                    false,
-                ),
-            );
+            if (0 === $operation->getRequests()->count()) {
+                $testCases->add(
+                    $this->buildTestCase(
+                        $operation,
+                        $this->setAuthentication(
+                            new Request(
+                                $operation->getMethod(),
+                                $operation->getExamplePath(),
+                            ),
+                            $security,
+                            $token,
+                        ),
+                        new Response($this->getStatusCode()),
+                        false,
+                    ),
+                );
+            }
+            foreach ($operation->getRequests() as $request) {
+                $testCases->add(
+                    $this->buildTestCase(
+                        $operation,
+                        $this->setAuthentication(
+                            new Request(
+                                $operation->getMethod(),
+                                $operation->getExamplePath(),
+                                [
+                                    'content-type' => $request->getMediaType(),
+                                ],
+                                $this->generateRandomBody($request),
+                            ),
+                            $security,
+                            $token,
+                        ),
+                        new Response($this->getStatusCode()),
+                        false,
+                    ),
+                );
+            }
         }
 
         return $testCases;

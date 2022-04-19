@@ -40,55 +40,67 @@ final class Error404TestCasesPreparatorTest extends \PHPUnit\Framework\TestCase
      */
     public function getData(): iterable
     {
-        yield [
-            Api::create()->addOperation(
-                Operation::create('getTest', '/test/{id}')
-                    ->addPathParameter(Parameter::create('id'))
-                    ->addResponse(DefinitionResponse::create(200))
-                    ->addResponse(
-                        DefinitionResponse::create(404)
-                            ->setDescription('description test')
-                    )
-            ),
+        yield 'with param' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create('getTest', '/test/{id}')
+                        ->addPathParameter(
+                            Parameter::create('id')->setSchema(
+                                new Schema([
+                                    'type' => 'integer',
+                                    'minimum' => 1,
+                                    'maximum' => 1,
+                                ])
+                            )
+                        )
+                        ->addResponse(DefinitionResponse::create(200))
+                        ->addResponse(
+                            DefinitionResponse::create(404)
+                                ->setDescription('description test')
+                        )
+                ),
             [
                 new TestCase(
                     'getTest',
-                    new Request('GET', '/test/-9999'),
+                    new Request('GET', '/test/1'),
                     new Response(404, [], 'description test')
                 ),
             ],
         ];
 
-        yield [
-            Api::create()->addOperation(
-                Operation::create('postTest', '/test', 'POST')
-                    ->addRequest(
-                        DefinitionRequest::create(
-                            'application/json',
-                            new Schema([
-                                'type' => 'object',
-                                'required' => ['name'],
-                                'properties' => [
-                                    'name' => [
-                                        'type' => 'string',
+        yield 'without param' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create('postTest', '/test', 'POST')
+                        ->addRequest(
+                            DefinitionRequest::create(
+                                'application/json',
+                                new Schema([
+                                    'type' => 'object',
+                                    'required' => ['name'],
+                                    'properties' => [
+                                        'name' => [
+                                            'type' => 'string',
+                                        ],
                                     ],
-                                ],
-                            ])
+                                ])
+                            )
                         )
-                    )
-                    ->addResponse(DefinitionResponse::create(200))
-                    ->addResponse(
-                        DefinitionResponse::create(404)
-                            ->setDescription('description test')
-                    )
-            ),
+                        ->addResponse(DefinitionResponse::create(200))
+                        ->addResponse(
+                            DefinitionResponse::create(404)
+                                ->setDescription('description test')
+                        )
+                ),
             [
                 new TestCase(
                     'postTest',
                     new Request(
                         'POST',
                         '/test',
-                        [],
+                        [
+                            'content-type' => 'application/json',
+                        ],
                         Json::encode([
                             'name' => 'aaa',
                         ])
