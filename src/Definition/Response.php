@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace APITester\Definition;
 
 use APITester\Definition\Collection\Parameters;
-use APITester\Definition\Collection\ResponseExamples;
 use cebe\openapi\spec\Schema;
 
 final class Response
@@ -20,15 +19,12 @@ final class Response
 
     private ?Schema $body = null;
 
-    private ResponseExamples $examples;
-
     private string $description = '';
 
     public function __construct(int $statusCode)
     {
         $this->statusCode = $statusCode;
         $this->headers = new Parameters();
-        $this->examples = new ResponseExamples();
     }
 
     public static function create(int $statusCode): self
@@ -72,6 +68,13 @@ final class Response
         return $this;
     }
 
+    public function addHeader(Parameter $header): self
+    {
+        $this->headers->add($header);
+
+        return $this;
+    }
+
     public function getBody(): ?Schema
     {
         return $this->body;
@@ -80,29 +83,6 @@ final class Response
     public function setBody(?Schema $body): self
     {
         $this->body = $body;
-
-        return $this;
-    }
-
-    public function getExamples(): ResponseExamples
-    {
-        return $this->examples;
-    }
-
-    public function setExamples(ResponseExamples $examples): self
-    {
-        foreach ($examples as $example) {
-            $example->setParent($this);
-        }
-        $this->examples = $examples;
-
-        return $this;
-    }
-
-    public function addExample(ResponseExample $example): self
-    {
-        $example->setParent($this);
-        $this->examples->add($example);
 
         return $this;
     }

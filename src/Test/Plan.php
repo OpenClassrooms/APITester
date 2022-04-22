@@ -41,12 +41,12 @@ final class Plan
     private LoggerInterface $logger;
 
     /**
-     * @var TestCasesPreparator[]
+     * @var \APITester\Preparator\TestCasesPreparator[]
      */
     private array $preparators;
 
     /**
-     * @var class-string<Requester>[]
+     * @var class-string<\APITester\Requester\Requester>[]
      */
     private array $requesters;
 
@@ -58,8 +58,8 @@ final class Plan
     private TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[] $preparators
-     * @param class-string<Requester>[] $requesters
+     * @param \APITester\Preparator\TestCasesPreparator[] $preparators
+     * @param class-string<\APITester\Requester\Requester>[] $requesters
      * @param DefinitionLoader[] $definitionLoaders
      */
     public function __construct(
@@ -314,7 +314,7 @@ final class Plan
      *
      * @throws InvalidPreparatorConfigException
      *
-     * @return TestCasesPreparator[]
+     * @return \APITester\Preparator\TestCasesPreparator[]
      */
     private function loadPreparators(array $preparators, Tokens $tokens): array
     {

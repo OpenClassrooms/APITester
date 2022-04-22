@@ -33,7 +33,6 @@ parameters:
         - '/Unable to resolve the template type TValue in call to function collect/'
         - '/Casting to string something that.s already string./'
         - '/Class APITester\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
-        - '/Short ternary operator is not allowed.*/'
         - '/Instantiated class \\ApiTestCase not found./'
         - '/Call to method getTestCaseKernel\(\) on an unknown class \\TestCaseKernelProvider./'
         - '/Instantiated class \\TestCaseKernelProvider not found./'

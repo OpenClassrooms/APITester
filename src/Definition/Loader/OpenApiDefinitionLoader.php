@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace APITester\Definition\Loader;
 
 use APITester\Definition\Api;
+use APITester\Definition\Body;
+use APITester\Definition\Collection\Bodies;
+use APITester\Definition\Collection\OperationExamples;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Parameters;
-use APITester\Definition\Collection\Requests;
 use APITester\Definition\Collection\Responses;
 use APITester\Definition\Collection\Scopes;
 use APITester\Definition\Collection\Securities;
 use APITester\Definition\Collection\Servers;
 use APITester\Definition\Collection\Tags;
+use APITester\Definition\Example\BodyExample;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
-use APITester\Definition\ParameterExample;
-use APITester\Definition\Request;
-use APITester\Definition\RequestExample;
 use APITester\Definition\Response;
-use APITester\Definition\ResponseExample;
 use APITester\Definition\Security\ApiKeySecurity;
 use APITester\Definition\Security\HttpSecurity;
 use APITester\Definition\Security\OAuth2\OAuth2AuthorizationCodeSecurity;
@@ -110,10 +111,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setPathParameters($this->getParameters($parameters, 'path'))
                         ->setQueryParameters($this->getParameters($parameters, 'query'))
                         ->setHeaders($this->getParameters($parameters, 'header'))
-                        ->setRequests($this->getRequests($requestBody))
+                        ->setRequestBodies($this->getRequests($requestBody))
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))
                         ->setSecurities($this->getSecurities($securitySchemes, $requirements))
+                        ->setExamples($this->getExamples($operation))
                 );
             }
         }
@@ -192,28 +194,15 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $defParam = Parameter::create($parameter->name ?? $name)
                 ->setSchema($schema)
             ;
-            foreach ($parameter->examples ?? [] as $exampleName => $example) {
-                $defParam->addExample(new ParameterExample($exampleName, (string) $example->value));
-            }
-            if (null !== $parameter->example) {
-                $defParam->addExample(new ParameterExample('default', (string) $parameter->example));
-            }
-            if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
-                $example = $parameter->schema->example;
-                if (\is_array($example)) {
-                    $example = implode(',', $example);
-                }
-                $defParam->addExample(new ParameterExample('properties', (string) $example));
-            }
             $collection->add($defParam);
         }
 
         return $collection;
     }
 
-    private function getRequests(?RequestBody $requestBody): Requests
+    private function getRequests(?RequestBody $requestBody): Bodies
     {
-        $collection = new Requests();
+        $collection = new Bodies();
         if (null === $requestBody) {
             return $collection;
         }
@@ -223,26 +212,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 continue;
             }
             $schema = $mediaType->schema;
-            $request = Request::create(
+            $request = Body::create(
                 $type,
                 $schema,
             );
-            /** @var Example $example */
-            foreach ($mediaType->examples ?? [] as $name => $example) {
-                $request->addExample(new RequestExample((string) $name, $example->value));
-            }
-            if (null !== $mediaType->example) {
-                $request->addExample(new RequestExample('default', $mediaType->example));
-            }
-            if (null !== $schema->example) {
-                $request->addExample(new RequestExample('default', $schema->example));
-            }
-            try {
-                $example = $this->extractDeepExamples($schema);
-                $request->addExample(new RequestExample('properties', $example));
-            } catch (ExampleNotExtractableException $e) {
-                // @ignoreException
-            }
             $collection->add($request);
         }
 
@@ -285,32 +258,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     ->setBody($schema)
                     ->setDescription((string) $response->description)
                 ;
-
-                /**
-                 * @var string  $name
-                 * @var Example $example
-                 */
-                foreach ($mediaType->examples ?? [] as $name => $example) {
-                    $defResponse->addExample(new ResponseExample($name, (array) $example->value));
-                }
-                /** @var Example|null $example */
-                $example = $mediaType->example;
-                if (null !== $example) {
-                    $defResponse->addExample(new ResponseExample('default', (array) $example->value));
-                }
-                if ($schema instanceof Schema) {
-                    if (null !== $schema->example) {
-                        $defResponse->addExample(new ResponseExample('default', (array) $schema->example));
-                    }
-                    try {
-                        $example = $this->extractDeepExamples($schema);
-                        $defResponse->addExample(
-                            new ResponseExample($defResponse->getStatusCode() . '_properties', $example)
-                        );
-                    } catch (ExampleNotExtractableException $e) {
-                        // @ignoreException
-                    }
-                }
                 $collection->add($defResponse);
             }
         }
@@ -394,6 +341,128 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         return new Securities($collection);
     }
 
+    private function getExamples(\cebe\openapi\spec\Operation $operation): OperationExamples
+    {
+        $examples = [];
+
+        /** @var \cebe\openapi\spec\Parameter $parameter */
+        foreach ($operation->parameters as $parameter) {
+            foreach ($parameter->examples ?? [] as $name => $example) {
+                $operationExample = $this->getExample((string) $name, $examples);
+                $operationExample->setParameter($parameter->name, (string) $example->value, $parameter->in);
+            }
+            if (null !== $parameter->example) {
+                $operationExample = $this->getExample('default', $examples);
+                $operationExample->setParameter($parameter->name, (string) $parameter->example, $parameter->in);
+            }
+            if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
+                $example = $parameter->schema->example;
+                if (\is_array($example)) {
+                    $example = implode(',', $example);
+                }
+                $operationExample = $this->getExample('properties', $examples);
+                $operationExample->setParameter($parameter->name, (string) $example, $parameter->in);
+            }
+        }
+
+        if ($operation->requestBody instanceof RequestBody) {
+            foreach ($operation->requestBody->content as $mediaType) {
+                /** @var Example $example */
+                foreach ($mediaType->examples ?? [] as $name => $example) {
+                    $operationExample = $this->getExample($name, $examples);
+                    $operationExample->setBody(BodyExample::create((array) $example->value));
+                }
+                if (null !== $mediaType->example) {
+                    $operationExample = $this->getExample('default', $examples);
+                    $operationExample->setBody(BodyExample::create((array) $mediaType->example));
+                }
+                if ($mediaType->schema instanceof Schema) {
+                    if (null !== $mediaType->schema->example) {
+                        $operationExample = $this->getExample('default', $examples);
+                        $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example));
+                    }
+                    try {
+                        $example = $this->extractDeepExamples($mediaType->schema);
+                        $operationExample = $this->getExample('properties', $examples);
+                        $operationExample->setBody(BodyExample::create($example));
+                    } catch (ExampleNotExtractableException $e) {
+                        // @ignoreException
+                    }
+                }
+            }
+        }
+
+        foreach ($operation->responses ?? [] as $statusCode => $response) {
+            foreach ($response->content as $mediaType) {
+                /**
+                 * @var string  $name
+                 * @var Example $example
+                 */
+                foreach ($mediaType->examples ?? [] as $name => $example) {
+                    $operationExample = $this->getExample($name, $examples);
+                    $operationExample->setResponse(ResponseExample::create((array) $example->value, (int) $statusCode));
+                }
+                /** @var Example|null $example */
+                $example = $mediaType->example;
+                if (null !== $example) {
+                    $operationExample = $this->getExample('default', $examples);
+                    $operationExample->setResponse(new ResponseExample((array) $example->value, (int) $statusCode));
+                }
+                if ($mediaType->schema instanceof Schema) {
+                    if (null !== $mediaType->schema->example) {
+                        $operationExample = $this->getExample('default', $examples);
+                        $operationExample->setResponse(
+                            new ResponseExample((array) $mediaType->schema->example, (int) $statusCode)
+                        );
+                    }
+                    try {
+                        $operationExample = $this->getExample($statusCode . '_properties', $examples);
+                        $example = $this->extractDeepExamples($mediaType->schema);
+                        $operationExample->setResponse(
+                            new ResponseExample($example, (int) $statusCode)
+                        );
+                    } catch (ExampleNotExtractableException $e) {
+                        // @ignoreException
+                    }
+                }
+            }
+        }
+
+        return new OperationExamples($examples);
+    }
+
+    /**
+     * @param Header[] $headers
+     */
+    private function getHeaders(array $headers): Parameters
+    {
+        $collection = new Parameters();
+        foreach ($headers as $name => $header) {
+            /** @var Schema|null $schema */
+            $schema = $header->schema;
+            $defHeader = new Parameter(
+                $header->name ?? $name,
+                $header->required,
+                $schema
+            );
+            $collection->add($defHeader);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * @param array<OperationExample> $examples
+     */
+    private function getExample(string $name, array &$examples): OperationExample
+    {
+        if (!isset($examples[$name])) {
+            $examples[$name] = new OperationExample($name);
+        }
+
+        return $examples[$name];
+    }
+
     /**
      * @throws ExampleNotExtractableException
      *
@@ -437,28 +506,5 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         return $parent;
-    }
-
-    /**
-     * @param Header[] $headers
-     */
-    private function getHeaders(array $headers): Parameters
-    {
-        $collection = new Parameters();
-        foreach ($headers as $name => $header) {
-            /** @var Schema|null $schema */
-            $schema = $header->schema;
-            $defHeader = new Parameter(
-                $header->name ?? $name,
-                $header->required,
-                $schema
-            );
-            foreach ($header->examples ?? [] as $exampleName => $example) {
-                $defHeader->addExample(new ParameterExample($exampleName, (string) $example->value));
-            }
-            $collection->add($defHeader);
-        }
-
-        return $collection;
     }
 }

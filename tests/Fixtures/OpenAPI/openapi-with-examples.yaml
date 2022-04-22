@@ -189,21 +189,21 @@ components:
                 message:
                     type: string
     examples:
-        # Request parameters examples
+        # Body parameters examples
 
-        # Request body examples
+        # Body body examples
         petCreationBody:
             value:
                 id: 10
                 name: Jessica Smith
             summary: expects 201
-        badPetCreationBody: # RequestExample 2
+        badPetCreationBody: # BodyExample 2
             value:
                 id: 11
                 name: 123
             summary: expects default.badRequest
 
-        # Response body examples
+        # ResponseConfig body examples
         petExample:
             value:
                 id: 10

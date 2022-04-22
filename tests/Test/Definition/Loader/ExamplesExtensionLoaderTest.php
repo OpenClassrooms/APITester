@@ -5,105 +5,81 @@ declare(strict_types=1);
 namespace APITester\Tests\Test\Definition\Loader;
 
 use APITester\Definition\Collection\Operations;
+use APITester\Definition\Example\BodyExample;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Loader\ExamplesExtensionLoader;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
-use APITester\Definition\ParameterExample;
 use APITester\Definition\Response;
-use APITester\Definition\ResponseExample;
+use APITester\Tests\Fixtures\FixturesLocation;
 use APITester\Util\Assert;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @phpstan-type FixtureFormat array{
- *      operationId: string,
- *      request: array{
- *          path?: array<string, string>,
- *          query?: array<string, string>,
- *          header?: array<string, string>,
- *          body?: array{
- *              mediaType: string,
- *              content: array<array-key, mixed>
- *          }
- *      },
- *      response: array{
- *          statusCode: int,
- *          header?: array<string, string>,
- *          body?: array{
- *              mediaType: string,
- *              content: array<array-key, mixed>
- *          }
- *      }
- * }
- */
 final class ExamplesExtensionLoaderTest extends TestCase
 {
     /**
      * @dataProvider getLoadAndAppendData
-     *
-     * @param array<string, FixtureFormat> $data
      */
-    public function testLoadAndAppend(array $data, Operations $operations, Operations $expected): void
+    public function testLoadAndAppend(string $path, Operations $operations, Operations $expected): void
     {
-        $operations = ExamplesExtensionLoader::load($data, $operations);
+        $operations = ExamplesExtensionLoader::load(
+            $path,
+            $operations
+        );
 
         Assert::objectsEqual($expected, $operations);
     }
 
     /**
-     * @return iterable<string, array{array<string, FixtureFormat>, Operations, Operations}>
+     * @return iterable<array{0: string, 1: Operations, 2: Operations}>
      */
     public function getLoadAndAppendData(): iterable
     {
         yield 'Nominal case' => [
-            [
-                'listPets400' => [
-                    'operationId' => 'listPets',
-                    'request' => [
-                        'parameters' => [
-                            'query' => [
-                                'type' => 'Horse',
-                            ],
-                        ],
-                    ],
-                    'response' => [
-                        'statusCode' => 400,
-                        'body' => [
-                            'mediaType' => 'application/json',
-                            'content' => [
-                                'message' => 'Bad request',
-                            ],
-                        ],
-                    ],
-                ],
-            ],
+            FixturesLocation::CONFIG_EXAMPLES_EXTENSION,
             new Operations([
                 Operation::create('listPets', '/pets')
                     ->addPathParameter(Parameter::create('id'))
-                    ->addQueryParameter(
-                        Parameter::create('type')
-                            ->addExample(new ParameterExample('200', 'Dog'))
-                    )
+                    ->addQueryParameter(Parameter::create('type'))
                     ->addResponse(Response::create(200))
                     ->addResponse(Response::create(400)->setMediaType('application/json')),
             ]),
             new Operations([
                 Operation::create('listPets', '/pets')
                     ->addPathParameter(Parameter::create('id'))
-                    ->addQueryParameter(
-                        Parameter::create('type')
-                            ->addExample(new ParameterExample('200', 'Dog'))
-                            ->addExample(new ParameterExample('listPets400', 'Horse'))
-                    )
+                    ->addQueryParameter(Parameter::create('type'))
                     ->addResponse(Response::create(200))
-                    ->addResponse(
-                        Response::create(400)
-                            ->setMediaType('application/json')
-                            ->addExample(
-                                new ResponseExample('listPets400', [
-                                    'message' => 'Bad request',
+                    ->addResponse(Response::create(400)->setMediaType('application/json'))
+                    ->addExample(
+                        OperationExample::create('listPets400')
+                            ->setPathParameters([
+                                'id' => 123,
+                            ])
+                            ->setQueryParameters([
+                                'id' => 123,
+                            ])
+                            ->setHeaders([
+                                'id' => 123,
+                            ])
+                            ->setBody(
+                                BodyExample::create([
+                                    'id' => 123,
                                 ])
                             )
+                            ->setResponse(
+                                ResponseExample::create([
+                                    'message' => 'Bad request',
+                                ])
+                                    ->setStatusCode(400)
+                                    ->setHeaders([
+                                        'id' => 123,
+                                    ])
+                            )
+                    )
+                    ->addExample(
+                        OperationExample::create('listPets200')
+                            ->setResponse(new ResponseExample())
                     ),
             ]),
         ];

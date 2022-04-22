@@ -11,6 +11,19 @@ final class Yaml
     /**
      * @return array<array-key, mixed>
      */
+    public static function parseFile(?string $path): array
+    {
+        if (null === $path) {
+            return [];
+        }
+
+        /** @var array<array-key, mixed> */
+        return \Symfony\Component\Yaml\Yaml::parseFile($path);
+    }
+
+    /**
+     * @return array<array-key, mixed>
+     */
     public static function concatFromDirectory(?string $path): array
     {
         if (null === $path) {

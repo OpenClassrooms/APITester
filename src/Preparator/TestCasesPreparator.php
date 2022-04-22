@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace APITester\Preparator;
 
+use APITester\Definition\Body;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Operation;
-use APITester\Definition\Request;
 use APITester\Definition\Security;
 use APITester\Definition\Security\ApiKeySecurity;
 use APITester\Definition\Security\HttpSecurity;
@@ -19,9 +20,10 @@ use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Test\TestCase;
 use APITester\Util\Json;
 use APITester\Util\Object_;
+use Nyholm\Psr7\Request;
+use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
@@ -38,6 +40,39 @@ abstract class TestCasesPreparator
         $this->config = $this->newConfigInstance(static::getConfigFQCN());
     }
 
+    /**
+     * @param string[] $excludedFields
+     */
+    public function buildTestCase(OperationExample $example, bool $auth = true, array $excludedFields = []): TestCase
+    {
+        $operation = $example->getParent();
+        $request = new Request(
+            $example->getMethod(),
+            $example->getPath(),
+            $example->getHeaders(),
+            $example->getStringBody(),
+        );
+        $response = new Response(
+            $example->getResponse()
+                ->getStatusCode(),
+            $example->getResponse()
+                ->getHeaders(),
+            $example->getResponse()
+                ->getStringContent(),
+        );
+
+        if ($auth) {
+            $request = $this->authenticate($request, $operation);
+        }
+
+        return new TestCase(
+            $operation->getId() . '/' . $example->getName(),
+            $request,
+            $response,
+            $excludedFields,
+        );
+    }
+
     public static function getName(): string
     {
         return mb_strtolower(
@@ -50,30 +85,13 @@ abstract class TestCasesPreparator
     }
 
     /**
-     * @param string[] $excludedFields
-     */
-    public function buildTestCase(
-        Operation $operation,
-        RequestInterface $request,
-        ResponseInterface $response,
-        bool $auth = true,
-        array $excludedFields = []
-    ): TestCase {
-        if ($auth) {
-            $request = $this->authenticate($request, $operation);
-        }
-
-        return new TestCase($operation->getId(), $request, $response, $excludedFields);
-    }
-
-    /**
      * @throws PreparatorLoadingException
      *
      * @return iterable<array-key, TestCase>
      */
-    public function prepare(Operations $operations): iterable
+    public function getTestCases(Operations $operations): iterable
     {
-        $testCases = $this->generateTestCases($operations);
+        $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {
             $testCase->addExcludedFields($this->config->excludedFields);
         }
@@ -131,8 +149,8 @@ abstract class TestCasesPreparator
     protected static function getConfigClassName(): string
     {
         return str_replace(
-            'TestCasesPreparator',
-            '',
+            'Preparator',
+            'Config',
             (new \ReflectionClass(static::class))->getShortName(),
         );
     }
@@ -163,26 +181,19 @@ abstract class TestCasesPreparator
 
     protected function setAuthentication(RequestInterface $request, Security $security, Token $token): RequestInterface
     {
-        if ($security instanceof HttpSecurity && $security->isBasic()) {
+        $headers = $this->getAuthenticationParams($security, $token);
+        foreach ($headers['headers'] ?? [] as $header => $value) {
             $request = $request->withHeader(
-                'Authorization',
-                "Basic {$token->getAccessToken()}",
+                $header,
+                $value,
             );
-        } elseif ($security instanceof HttpSecurity && $security->isBearer()) {
-            $request = $request->withHeader(
-                'Authorization',
-                "Bearer {$token->getAccessToken()}",
-            );
-        } elseif ($security instanceof OAuth2Security) {
-            $request = $request->withHeader(
-                'Authorization',
-                "Bearer {$token->getAccessToken()}",
-            );
-        } elseif ($security instanceof ApiKeySecurity) {
-            $request = $this->addApiKeyToRequest(
-                $request,
-                $security,
-                $token->getAccessToken(),
+        }
+
+        if (isset($headers['query'])) {
+            $oldUri = (string) $request->getUri();
+            $prefix = str_contains($oldUri, '?') ? '&' : '?';
+            $request = $request->withUri(
+                new Uri($oldUri . $prefix . http_build_query($headers['query']))
             );
         }
 
@@ -190,17 +201,70 @@ abstract class TestCasesPreparator
     }
 
     /**
+     * @return array{headers?: array<string, string>, query?: array<string, string>}
+     */
+    protected function getAuthenticationParams(Security $security, Token $token): array
+    {
+        if ($security instanceof HttpSecurity && $security->isBasic()) {
+            return [
+                'headers' => [
+                    'Authorization' => "Basic {$token->getAccessToken()}",
+                ],
+            ];
+        }
+        if ($security instanceof HttpSecurity && $security->isBearer()) {
+            return [
+                'headers' => [
+                    'Authorization' => "Bearer {$token->getAccessToken()}",
+                ],
+            ];
+        }
+        if ($security instanceof OAuth2Security) {
+            return [
+                'headers' => [
+                    'Authorization' => "Bearer {$token->getAccessToken()}",
+                ],
+            ];
+        }
+        if ($security instanceof ApiKeySecurity) {
+            if ('header' === $security->getIn()) {
+                return [
+                    'headers' => [
+                        $security->getKeyName() => $token->getAccessToken(),
+                    ],
+                ];
+            }
+            if ('cookie' === $security->getIn()) {
+                return [
+                    'headers' => [
+                        'Cookie' => "{$security->getKeyName()}={$token->getAccessToken()}",
+                    ],
+                ];
+            }
+            if ('query' === $security->getIn()) {
+                return [
+                    'query' => [
+                        $security->getKeyName() => $token->getAccessToken(),
+                    ],
+                ];
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * @throws PreparatorLoadingException
      *
      * @return iterable<array-key, TestCase>
      */
-    abstract protected function generateTestCases(Operations $operations): iterable;
+    abstract protected function prepare(Operations $operations): iterable;
 
-    protected function generateRandomBody(Request $request): ?string
+    protected function generateRandomBody(Body $request): ?string
     {
         return Json::encode(
-            $request->getBodyFromExamples() ?: (array) (new SchemaFaker(
-                $request->getBody(),
+            (array) (new SchemaFaker(
+                $request->getSchema(),
                 new Options(),
                 true
             ))->generate()
@@ -217,26 +281,5 @@ abstract class TestCasesPreparator
     private function newConfigInstance(string $class)
     {
         return new $class();
-    }
-
-    private function addApiKeyToRequest(
-        RequestInterface $request,
-        ApiKeySecurity $security,
-        string $apiKey
-    ): RequestInterface {
-        $newRequest = $request;
-        if ('header' === $security->getIn()) {
-            $newRequest = $request->withHeader($security->getKeyName(), $apiKey);
-        } elseif ('cookie' === $security->getIn()) {
-            $newRequest = $request->withHeader('Cookie', "{$security->getKeyName()}={$apiKey}");
-        } elseif ('query' === $security->getIn()) {
-            $oldUri = (string) $request->getUri();
-            $prefix = str_contains($oldUri, '?') ? '&' : '?';
-            $newRequest = $request->withUri(
-                new Uri($oldUri . "{$prefix}{$security->getKeyName()}={$apiKey}")
-            );
-        }
-
-        return $newRequest;
     }
 }

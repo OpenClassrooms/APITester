@@ -160,7 +160,7 @@ final class Suite extends TestSuite
                 )
             ;
             try {
-                $tests = $preparator->prepare($operations->filter([$this, 'includes']));
+                $tests = $preparator->getTestCases($operations->filter([$this, 'includes']));
                 foreach ($tests as $testCase) {
                     $testCase->setRequester($this->requester);
                     $testCase->setLogger($this->logger);
