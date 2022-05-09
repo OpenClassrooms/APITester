@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Definition;
 
-use APITester\Definition\Collection\ParameterExamples;
 use cebe\openapi\spec\Schema;
 
 final class Parameter
@@ -21,16 +20,15 @@ final class Parameter
 
     private string $name;
 
+    private string $in;
+
     private bool $required;
 
     private ?Schema $schema;
 
-    private ParameterExamples $examples;
-
     public function __construct(string $name, bool $required = true, ?Schema $schema = null)
     {
         $this->name = $name;
-        $this->examples = new ParameterExamples();
         $this->required = $required;
         $this->schema = $schema;
     }
@@ -43,41 +41,6 @@ final class Parameter
     public function getName(): string
     {
         return $this->name;
-    }
-
-    public function getExamples(): ParameterExamples
-    {
-        return $this->examples;
-    }
-
-    public function setExamples(ParameterExamples $examples): self
-    {
-        foreach ($examples as $example) {
-            $example->setParent($this);
-        }
-        $this->examples = $examples;
-
-        return $this;
-    }
-
-    public function addExample(ParameterExample $example): self
-    {
-        $example->setParent($this);
-        $this->examples->add($example);
-
-        return $this;
-    }
-
-    public function getParent(): Operation
-    {
-        return $this->parent;
-    }
-
-    public function setParent(Operation $operation): self
-    {
-        $this->parent = $operation;
-
-        return $this;
     }
 
     public function isRequired(): bool
@@ -124,5 +87,40 @@ final class Parameter
         }
 
         return null;
+    }
+
+    /**
+     * @return string|int
+     */
+    public function getExample(?string $name = null)
+    {
+        $example = $this
+            ->getParent()
+            ->getExample()
+        ;
+
+        $parameters = $example->getParametersFrom($this->in);
+        if (!isset($parameters[$this->name])) {
+            throw new ExampleNotFoundException("Example {$name} not found for parameter {$this->name}.");
+        }
+
+        return $example->getParametersFrom($this->in)[$this->name];
+    }
+
+    public function getParent(): Operation
+    {
+        return $this->parent;
+    }
+
+    public function setParent(Operation $operation): self
+    {
+        $this->parent = $operation;
+
+        return $this;
+    }
+
+    public function setIn(string $in): void
+    {
+        $this->in = $in;
     }
 }

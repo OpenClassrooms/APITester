@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Test;
 
-use APITester\Definition\Request;
+use APITester\Definition\Body;
 use APITester\Requester\Requester;
 use APITester\Requester\SymfonyKernelRequester;
 use APITester\Util\Assert;
@@ -186,12 +186,12 @@ final class TestCase implements \JsonSerializable
         return new $className($this, $testCaseName);
     }
 
-    public function withAddedRequestBody(Request $request): self
+    public function withAddedRequestBody(Body $request): self
     {
         return new self(
             $this->name,
             $this->getRequest()
-                ->withBody(Stream::create(Json::encode($request->getBodyFromExamples()))),
+                ->withBody(Stream::create($request->getStringExample())),
             $this->getExpectedResponse(),
             $this->excludedFields,
         );

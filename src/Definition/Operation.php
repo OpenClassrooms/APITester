@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace APITester\Definition;
 
+use APITester\Definition\Collection\Bodies;
+use APITester\Definition\Collection\OperationExamples;
 use APITester\Definition\Collection\Parameters;
-use APITester\Definition\Collection\Requests;
 use APITester\Definition\Collection\Responses;
 use APITester\Definition\Collection\Securities;
 use APITester\Definition\Collection\Tags;
+use APITester\Definition\Example\BodyExample;
+use APITester\Definition\Example\OperationExample;
 
 final class Operation
 {
@@ -30,7 +33,7 @@ final class Operation
 
     private Parameters $queryParameters;
 
-    private Requests $requests;
+    private Bodies $bodies;
 
     private Responses $responses;
 
@@ -39,6 +42,8 @@ final class Operation
     private string $summary = '';
 
     private Tags $tags;
+
+    private OperationExamples $examples;
 
     public function __construct(
         string $id,
@@ -51,38 +56,20 @@ final class Operation
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
         $this->headers = new Parameters();
-        $this->requests = new Requests();
+        $this->bodies = new Bodies();
         $this->responses = new Responses();
         $this->tags = new Tags();
         $this->securities = new Securities();
+        $this->examples = new OperationExamples();
     }
 
     public function addHeader(Parameter $header): self
     {
+        $header->setIn(Parameter::TYPE_HEADER);
         $header->setParent($this);
         $this->headers->add($header);
 
         return $this;
-    }
-
-    public function addParameterExample(?ParameterExample $example, string $type, string $name): self
-    {
-        if (null === $example) {
-            return $this;
-        }
-
-        $parameters = $this->getParameters()[$type];
-        $parameters->map(
-            function (Parameter $p) use ($example, $name) {
-                if ($name === $p->getName()) {
-                    $p->addExample($example);
-                }
-
-                return $p;
-            }
-        );
-
-        return $this->setParametersByType($parameters, $type);
     }
 
     /**
@@ -101,19 +88,6 @@ final class Operation
         }
 
         return $parameters;
-    }
-
-    public function setParametersByType(Parameters $parameters, string $type): self
-    {
-        if (Parameter::TYPE_PATH === $type) {
-            $this->pathParameters = $parameters;
-        } elseif (Parameter::TYPE_QUERY === $type) {
-            $this->queryParameters = $parameters;
-        } elseif (Parameter::TYPE_HEADER === $type) {
-            $this->headers = $parameters;
-        }
-
-        return $this;
     }
 
     public function getPathParameters(bool $onlyRequired = false): Parameters
@@ -162,8 +136,17 @@ final class Operation
         return $this;
     }
 
+    public function addExample(OperationExample $example): self
+    {
+        $example->setParent($this);
+        $this->examples->add($example);
+
+        return $this;
+    }
+
     public function addPathParameter(Parameter $parameter): self
     {
+        $parameter->setIn(Parameter::TYPE_PATH);
         $parameter->setParent($this);
         $this->pathParameters->add($parameter);
 
@@ -172,85 +155,34 @@ final class Operation
 
     public function addQueryParameter(Parameter $parameter): self
     {
+        $parameter->setIn(Parameter::TYPE_QUERY);
         $parameter->setParent($this);
         $this->queryParameters->add($parameter);
 
         return $this;
     }
 
-    public function addQueryParameters(Parameter $parameter): self
-    {
-        $this->queryParameters->add($parameter);
-
-        return $this;
-    }
-
-    public function addRequest(Request $request): self
+    public function addRequestBody(Body $request): self
     {
         $request->setParent($this);
-        $this->requests->add($request);
+        $this->bodies->add($request);
 
         return $this;
     }
 
-    public function addRequestExample(?RequestExample $example, string $mediaType): self
+    public function getRequestBodies(): Bodies
     {
-        if (null === $example) {
-            return $this;
-        }
-
-        $requests = $this->getRequests();
-        $requests->map(
-            function (Request $r) use ($example, $mediaType) {
-                if ($mediaType === $r->getMediaType()) {
-                    $r->addExample($example);
-                }
-
-                return $r;
-            }
-        );
-
-        return $this->setRequests($requests);
+        return $this->bodies;
     }
 
-    public function getRequests(): Requests
+    public function setRequestBodies(Bodies $bodies): self
     {
-        return $this->requests;
-    }
-
-    public function setRequests(Requests $requests): self
-    {
-        foreach ($requests as $request) {
+        foreach ($bodies as $request) {
             $request->setParent($this);
         }
-        $this->requests = $requests;
+        $this->bodies = $bodies;
 
         return $this;
-    }
-
-    public function addResponseExample(int $statusCode, ?ResponseExample $example, ?string $mediaType): self
-    {
-        if (null === $example) {
-            return $this;
-        }
-
-        $responses = $this->getResponses();
-
-        if (0 === $responses->where('statusCode', $statusCode)->count()) {
-            return $this->addResponse(Response::create($statusCode)->addExample($example));
-        }
-
-        $responses->map(
-            function (Response $r) use ($example, $mediaType) {
-                if ($mediaType === $r->getMediaType()) {
-                    $r->addExample($example);
-                }
-
-                return $r;
-            }
-        );
-
-        return $this->setResponses($responses);
     }
 
     public function getResponses(): Responses
@@ -274,11 +206,6 @@ final class Operation
         $this->responses->add($response);
 
         return $this;
-    }
-
-    public static function create(string $id, string $path, string $method = 'GET'): self
-    {
-        return new static($id, $path, $method);
     }
 
     public function addSecurity(Security $security): self
@@ -313,8 +240,8 @@ final class Operation
         }
 
         return $this->getPath(
-            $pathParameters->toExampleArray(),
-            $queryParameters->toExampleArray()
+            $pathParameters->getExamples(),
+            $queryParameters->getExamples()
         );
     }
 
@@ -322,7 +249,7 @@ final class Operation
      * @param array<string|int, string|int> $params
      * @param array<string|int, string|int> $query
      */
-    public function getPath(array $params = [], array $query = [], string $providedPath = null): string
+    public function getPath(array $params = [], array $query = []): string
     {
         $params = $this->substituteParams($params, 'path');
         $query = $this->substituteParams($query, 'query');
@@ -332,21 +259,22 @@ final class Operation
                 array_keys($params),
             ),
             array_values($params),
-            $providedPath ?? $this->path
+            $this->path
         );
 
         return rtrim($path . '?' . http_build_query($query), '?');
     }
 
-    public function getRandomPath(): string
+    public function getExamples(): OperationExamples
     {
-        $pathParameters = $this->getPathParameters();
-        $queryParameters = $this->getQueryParameters();
+        return $this->examples;
+    }
 
-        return $this->getPath(
-            $pathParameters->toRandomArray(),
-            $queryParameters->toRandomArray()
-        );
+    public function setExamples(OperationExamples $examples): self
+    {
+        $this->examples = $examples;
+
+        return $this;
     }
 
     public function getId(): string
@@ -386,12 +314,6 @@ final class Operation
         $this->preparator = $string;
 
         return $this;
-    }
-
-    public function getRequest(string $mediaType): ?Request
-    {
-        /** @var Request|null */
-        return $this->requests->firstWhere('mediaType', $mediaType);
     }
 
     public function getSecurities(): Securities
@@ -434,6 +356,58 @@ final class Operation
     }
 
     /**
+     * @param array<string, Parameters> $parameters
+     */
+    public function setParameters(array $parameters): self
+    {
+        foreach (Parameter::TYPES as $type) {
+            $this->setParametersIn($parameters[$type], $type);
+        }
+
+        return $this;
+    }
+
+    public function setParametersIn(Parameters $parameters, string $in): self
+    {
+        foreach ($parameters as $parameter) {
+            $parameter->setIn($in);
+        }
+        if (Parameter::TYPE_PATH === $in) {
+            $this->pathParameters = $parameters;
+        } elseif (Parameter::TYPE_QUERY === $in) {
+            $this->queryParameters = $parameters;
+        } elseif (Parameter::TYPE_HEADER === $in) {
+            $this->headers = $parameters;
+        }
+
+        return $this;
+    }
+
+    public function getExample(?string $name = null): OperationExample
+    {
+        $examples = $this->getExamples();
+        if (null !== $name) {
+            return $examples
+                ->get($name)
+            ;
+        }
+
+        $firstExampleName = (string) $examples
+            ->keys()
+            ->first()
+        ;
+        foreach (['properties', 'default', $firstExampleName] as $key) {
+            if ($examples->has($key)) {
+                return $examples
+                    ->get($key)
+                ;
+            }
+        }
+
+        return $this->generateRandomExample();
+    }
+
+    /**
      * @param mixed $value
      */
     public function has(string $prop, $value, string $operator = '='): bool
@@ -443,21 +417,49 @@ final class Operation
             $operator = 'contains';
         }
 
-        return null !== $operation->where($prop, $operator, $value)
+        return null !== $operation
+            ->where($prop, $operator, $value)
             ->first()
         ;
     }
 
-    /**
-     * @param array<string, Parameters> $parameters
-     */
-    public function setParameters(array $parameters): self
+    public function generateRandomExample(): OperationExample
     {
-        foreach (Parameter::TYPES as $type) {
-            $this->setParametersByType($parameters[$type], $type);
+        $body = $this->getBody();
+        $bodyExample = null;
+        if (null !== $body) {
+            $bodyExample = BodyExample::create($body->getRandomContent());
         }
 
-        return $this;
+        return OperationExample::create('_random')
+            ->setParent($this)
+            ->setPathParameters($this->getPathParameters()->getRandomExamples())
+            ->setQueryParameters($this->getQueryParameters()->getRandomExamples())
+            ->setHeaders($this->getHeaders()->getRandomExamples())
+            ->setBody($bodyExample)
+        ;
+    }
+
+    public function getBody(string $mediaType = 'application/json'): ?Body
+    {
+        /** @var Body|null */
+        return $this->bodies->firstWhere('mediaType', $mediaType);
+    }
+
+    public static function create(string $id, string $path, string $method = 'GET'): self
+    {
+        return new static($id, $path, $method);
+    }
+
+    public function getRandomPath(): string
+    {
+        $pathParameters = $this->getPathParameters();
+        $queryParameters = $this->getQueryParameters();
+
+        return $this->getPath(
+            $pathParameters->getRandomExamples(),
+            $queryParameters->getRandomExamples()
+        );
     }
 
     /**

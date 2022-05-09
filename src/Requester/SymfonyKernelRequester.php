@@ -46,7 +46,7 @@ final class SymfonyKernelRequester extends Requester
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
         } catch (\Exception $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-//            $response = new Response((string) $e, 500);
+//            $response = new ResponseConfig((string) $e, 500);
 //            $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }
     }

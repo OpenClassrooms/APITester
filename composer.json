@@ -19,7 +19,10 @@
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "roave/you-are-using-it-wrong": true,
       "veewee/composer-run-parallel": true,
-      "composer/package-versions-deprecated": true
+      "composer/package-versions-deprecated": true,
+      "sllh/composer-versions-check": true,
+      "ergebnis/composer-normalize": true,
+      "pyrech/composer-changelogs": true
     }
   },
   "autoload": {
@@ -71,6 +74,7 @@
     "symfony/yaml": " ^4.4"
   },
   "require-dev": {
+    "ergebnis/composer-normalize": "^2.25",
     "ergebnis/phpstan-rules": "^1.0",
     "korbeil/phpstan-generic-rules": "^1.0",
     "nunomaduro/phpinsights": "^2.1",
@@ -81,7 +85,9 @@
     "phpstan/phpstan-phpunit": "^1.0",
     "phpstan/phpstan-strict-rules": "^1.1",
     "phpstan/phpstan-symfony": "^1.0",
+    "pyrech/composer-changelogs": "^1.8",
     "roave/security-advisories": "dev-latest",
+    "sllh/composer-versions-check": "^2.0",
     "spaze/phpstan-disallowed-calls": "^2.1",
     "symfony/var-dumper": "^4.4",
     "symplify/easy-coding-standard": "^9.4",

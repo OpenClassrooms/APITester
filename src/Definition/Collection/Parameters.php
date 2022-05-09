@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace APITester\Definition\Collection;
 
 use APITester\Definition\Parameter;
-use APITester\Definition\ParameterExample;
 use Illuminate\Support\Collection;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
@@ -23,48 +22,29 @@ final class Parameters extends Collection
     protected $items;
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|int>
      */
-    public function toExampleArray(): array
-    {
-        $params = [];
-        foreach ($this->getExamples() as $example) {
-            $params[$example->getParent()->getName()] = $example->getValue();
-        }
-
-        return $params;
-    }
-
-    public function getExamples(): ParameterExamples
+    public function getExamples(): array
     {
         $examples = [];
         foreach ($this->items as $item) {
-            /** @var ParameterExample|null $example */
-            $example = $item->getExamples()
-                ->first()
-            ;
-            if (null !== $example) {
-                $examples[] = $example;
-            }
+            $examples[$item->getName()] = $item->getExample();
         }
 
-        return new ParameterExamples($examples);
+        return $examples;
     }
 
     /**
      * @return array<string, string>
      */
-    public function toRandomArray(): array
+    public function getRandomExamples(): array
     {
         $params = [];
         foreach ($this as $parameter) {
             $schema = $parameter->getSchema();
             if (null !== $schema) {
                 /** @var string|int $random */
-                $random = (new SchemaFaker(
-                    $schema,
-                    new Options(),
-                ))->generate();
+                $random = (new SchemaFaker($schema, new Options()))->generate();
             } else {
                 try {
                     $random = base64_encode(random_bytes(30));

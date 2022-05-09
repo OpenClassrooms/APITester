@@ -1,0 +1,27 @@
+# Example using references
+examples:
+    -   name: listPets400 # Name of the example
+        pathParameters: # List path parameters
+            id: 123
+        queryParameters: # List query parameters
+            id: 123
+        headers: # List headers
+            id: 123
+        body: # Describe the request body and its media type
+            mediaType: application/json
+            content:
+                id: 123
+        response: # Describe the expected response. Fields 'headers' and 'body' can be omitted if not needed.
+            statusCode: 400
+            headers: # List expected headers
+                id: 123
+            mediaType: application/json
+            content:
+                message: Bad request
+
+    -   name: listPets200
+        response:
+            statusCode: 200
+
+operations:
+    listPets: [ listPets400, listPets200 ]

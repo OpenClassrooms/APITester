@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace APITester\Preparator\Config;
 
-class PreparatorConfig
+final class Error403Config extends PreparatorConfig
 {
     /**
      * @var string[]
      */
-    public array $excludedFields = [];
-
-    public ?ResponseConfig $response = null;
+    public array $excludedTokens = [];
 }

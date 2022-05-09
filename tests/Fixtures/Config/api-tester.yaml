@@ -38,12 +38,12 @@ suites:
             -   name: error413
                 range:
                     -   in: header
-                        names: [ 'Range' ]
+                        names: [ 'RangeConfig' ]
                         unit: items
             -   name: error416
                 range:
                     -   in: header
-                        names: [ 'Range' ]
+                        names: [ 'RangeConfig' ]
                         unit: items
             -   name: examples
                 extensionPath: tests/Fixtures/Examples/oc
