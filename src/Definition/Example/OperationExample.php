@@ -34,7 +34,9 @@ final class OperationExample
 
     private ResponseExample $response;
 
-    private bool $randomAutoComplete = true;
+    private bool $autoComplete = true;
+
+    private bool $forceRandom = false;
 
     public function __construct(string $name, Operation $parent = null)
     {
@@ -89,6 +91,7 @@ final class OperationExample
 
     public function setResponse(ResponseExample $response): self
     {
+        $response->setParent($this);
         $this->response = $response;
 
         return $this;
@@ -102,28 +105,39 @@ final class OperationExample
     }
 
     /**
-     * @return array<string, int|string>
+     * @param mixed[] $content
      */
-    public function getHeaders(): array
+    public function setBodyContent(array $content): self
     {
-        if (null !== $this->getBody() && !isset($this->headers['content-type'])) {
-            $this->headers['content-type'] = $this
-                ->getBody()
-                ->getMediaType()
-            ;
-        }
-
-        return $this->headers;
-    }
-
-    /**
-     * @param array<string, int|string> $headers
-     */
-    public function setHeaders(array $headers): self
-    {
-        $this->headers = $headers;
+        $body = BodyExample::create($content);
+        $body->setParent($this);
+        $this->body = $body;
 
         return $this;
+    }
+
+    public static function create(string $name, Operation $operation = null): self
+    {
+        return new self($name, $operation);
+    }
+
+    public function withBody(BodyExample $body): self
+    {
+        $clone = clone $this;
+        $clone->setBody($body);
+
+        return $clone;
+    }
+
+    public function getStringBody(): ?string
+    {
+        if (null === $this->getBody()) {
+            return null;
+        }
+
+        return $this->getBody()
+            ->getStringContent()
+        ;
     }
 
     public function getBody(): ?BodyExample
@@ -148,42 +162,6 @@ final class OperationExample
         $this->body = $body;
 
         return $this;
-    }
-
-    public static function create(string $name, Operation $operation = null): self
-    {
-        return new self($name, $operation);
-    }
-
-    /**
-     * @param mixed[] $content
-     */
-    public function setBodyContent(array $content): self
-    {
-        $body = BodyExample::create($content);
-        $body->setParent($this);
-        $this->body = $body;
-
-        return $this;
-    }
-
-    public function withBody(BodyExample $body): self
-    {
-        $clone = clone $this;
-        $clone->setBody($body);
-
-        return $clone;
-    }
-
-    public function getStringBody(): ?string
-    {
-        if (null === $this->getBody()) {
-            return null;
-        }
-
-        return $this->getBody()
-            ->getStringContent()
-        ;
     }
 
     public function getName(): string
@@ -215,36 +193,23 @@ final class OperationExample
         $pathParameters = $this->pathParameters;
         $queryParameters = $this->queryParameters;
 
-        if (0 === \count($pathParameters)) {
+        $example = null;
+        if ($this->forceRandom) {
             $example = $this->getParent()
-                ->getExamples()
-                ->where('name', 'default')
-                ->first()
+                ->getRandomExample()
             ;
-            if (null !== $example) {
-                $pathParameters = $example->getPathParameters();
-            } elseif ($this->randomAutoComplete) {
-                $pathParameters = $this->getParent()
-                    ->getPathParameters()
-                    ->getExamples()
-                ;
-            }
+        } elseif ($this->autoComplete) {
+            $example = $this->getParent()
+                ->getExample()
+            ;
         }
 
-        if (0 === \count($this->queryParameters)) {
-            $example = $this->getParent()
-                ->getExamples()
-                ->where('name', 'default')
-                ->first()
-            ;
-            if (null !== $example) {
-                $queryParameters = $example->getQueryParameters();
-            } elseif ($this->randomAutoComplete) {
-                $queryParameters = $this->getParent()
-                    ->getQueryParameters()
-                    ->getExamples()
-                ;
-            }
+        if (null !== $example && (0 === \count($pathParameters) || $this->forceRandom)) {
+            $pathParameters = $example->getPathParameters();
+        }
+
+        if (null !== $example && (0 === \count($this->queryParameters) || $this->forceRandom)) {
+            $queryParameters = $example->getQueryParameters();
         }
 
         return $this->parent->getPath($pathParameters, $queryParameters);
@@ -267,6 +232,16 @@ final class OperationExample
      */
     public function getPathParameters(): array
     {
+        if ($this->forceRandom || ($this->autoComplete
+                && \count($this->pathParameters) < $this->parent->getPathParameters()
+                    ->count())
+        ) {
+            return $this->getParent()
+                ->getPathParameters()
+                ->getRandomExamples()
+            ;
+        }
+
         return $this->pathParameters;
     }
 
@@ -285,6 +260,17 @@ final class OperationExample
      */
     public function getQueryParameters(): array
     {
+        if ($this->forceRandom || (
+            $this->autoComplete
+                && \count($this->queryParameters) < $this->parent->getQueryParameters()
+                    ->count()
+        )) {
+            return $this->getParent()
+                ->getQueryParameters()
+                ->getRandomExamples()
+            ;
+        }
+
         return $this->queryParameters;
     }
 
@@ -304,21 +290,53 @@ final class OperationExample
     public function getParametersFrom(string $from): array
     {
         if (Parameter::TYPE_PATH === $from) {
-            return $this->pathParameters;
+            return $this->getPathParameters();
         }
         if (Parameter::TYPE_QUERY === $from) {
-            return $this->queryParameters;
+            return $this->getQueryParameters();
         }
         if (Parameter::TYPE_HEADER === $from) {
-            return $this->headers;
+            return $this->getHeaders();
         }
 
         throw new \InvalidArgumentException("Invalid from {$from}");
     }
 
-    public function setRandomAutoComplete(bool $randomAutoComplete = true): self
+    /**
+     * @return array<string, int|string>
+     */
+    public function getHeaders(): array
     {
-        $this->randomAutoComplete = $randomAutoComplete;
+        if (null !== $this->getBody() && !isset($this->headers['content-type'])) {
+            $this->headers['content-type'] = $this
+                ->getBody()
+                ->getMediaType()
+            ;
+        }
+
+        return $this->headers;
+    }
+
+    /**
+     * @param array<string, int|string> $headers
+     */
+    public function setHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function setAutoComplete(bool $autoComplete = true): self
+    {
+        $this->autoComplete = $autoComplete;
+
+        return $this;
+    }
+
+    public function setForceRandom(bool $forceRandom = true): self
+    {
+        $this->forceRandom = $forceRandom;
 
         return $this;
     }

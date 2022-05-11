@@ -96,7 +96,7 @@ final class Parameter
     {
         $example = $this
             ->getParent()
-            ->getExample()
+            ->getExample($name)
         ;
 
         $parameters = $example->getParametersFrom($this->in);

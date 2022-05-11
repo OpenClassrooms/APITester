@@ -63,6 +63,9 @@ final class Response
 
     public function setHeaders(Parameters $headers): self
     {
+        foreach ($headers as $header) {
+            $header->setIn(Parameter::TYPE_HEADER);
+        }
         $this->headers = $headers;
 
         return $this;
@@ -70,6 +73,7 @@ final class Response
 
     public function addHeader(Parameter $header): self
     {
+        $header->setIn(Parameter::TYPE_HEADER);
         $this->headers->add($header);
 
         return $this;

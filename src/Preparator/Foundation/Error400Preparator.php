@@ -95,7 +95,7 @@ abstract class Error400Preparator extends TestCasesPreparator
     ): TestCase {
         return $this->buildTestCase(
             OperationExample::create($name, $operation)
-                ->setRandomAutoComplete(false)
+                ->setAutoComplete(false)
                 ->setQueryParameters($parameters[Parameter::TYPE_QUERY]->getExamples())
                 ->setPathParameters($parameters[Parameter::TYPE_PATH]->getExamples())
                 ->setHeaders(

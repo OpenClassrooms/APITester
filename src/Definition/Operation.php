@@ -103,6 +103,7 @@ final class Operation
     {
         foreach ($parameters as $param) {
             $param->setParent($this);
+            $param->setIn(Parameter::TYPE_PATH);
         }
         $this->pathParameters = $parameters;
 
@@ -118,6 +119,7 @@ final class Operation
     {
         foreach ($parameters as $param) {
             $param->setParent($this);
+            $param->setIn(Parameter::TYPE_QUERY);
         }
         $this->queryParameters = $parameters;
 
@@ -131,6 +133,10 @@ final class Operation
 
     public function setHeaders(Parameters $headers): self
     {
+        foreach ($headers as $header) {
+            $header->setParent($this);
+            $header->setIn(Parameter::TYPE_PATH);
+        }
         $this->headers = $headers;
 
         return $this;
@@ -188,6 +194,11 @@ final class Operation
     public function getResponses(): Responses
     {
         return $this->responses;
+    }
+
+    public function getResponse(int $status): ?Response
+    {
+        return $this->responses->get($status);
     }
 
     public function setResponses(Responses $responses): self
@@ -272,6 +283,9 @@ final class Operation
 
     public function setExamples(OperationExamples $examples): self
     {
+        foreach ($examples as $example) {
+            $example->setParent($this);
+        }
         $this->examples = $examples;
 
         return $this;
@@ -404,7 +418,7 @@ final class Operation
             }
         }
 
-        return $this->generateRandomExample();
+        return $this->getRandomExample();
     }
 
     /**
@@ -423,7 +437,7 @@ final class Operation
         ;
     }
 
-    public function generateRandomExample(): OperationExample
+    public function getRandomExample(): OperationExample
     {
         $body = $this->getBody();
         $bodyExample = null;

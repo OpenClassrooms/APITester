@@ -43,6 +43,7 @@ final class Error404Preparator extends TestCasesPreparator
         if (0 === $operation->getRequestBodies()->count()) {
             $testcases[] = $this->buildTestCase(
                 OperationExample::create('RandomPath', $operation)
+                    ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
                             ->setStatusCode($this->config->response->statusCode ?? 404)
@@ -54,8 +55,8 @@ final class Error404Preparator extends TestCasesPreparator
 
         foreach ($operation->getRequestBodies() as $ignored) {
             $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath')
-                    ->setParent($operation)
+                OperationExample::create('RandomPath', $operation)
+                    ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
                             ->setStatusCode($this->config->response->statusCode ?? 404)

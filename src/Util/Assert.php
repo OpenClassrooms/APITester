@@ -112,11 +112,17 @@ final class Assert
         }
 
         self::initAccessor();
-        $paths = self::getPaths($expected);
-        $paths = array_diff($paths, $excludedFields);
+        $paths = self::getPaths($expected, $excludedFields);
         foreach ($paths as $path) {
-            $expectedValue = self::$accessor->getValue((object) $expected, $path);
-            $actualValue = self::$accessor->getValue((object) $actual, $path);
+            $path = (string) preg_replace('/\.(\d)/', '[$1]', $path);
+            $expectedValue = self::$accessor->getValue(
+                Json::decodeAsObject(Json::encode($expected)),
+                $path
+            );
+            $actualValue = self::$accessor->getValue(
+                Json::decodeAsObject(Json::encode($actual)),
+                $path
+            );
             $message = "Checking {$path}";
             if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
                 BaseAssert::assertMatchesRegularExpression(
@@ -158,17 +164,28 @@ final class Assert
 
     /**
      * @param array<string, mixed> $array
+     * @param array<string>        $excludedFields
      *
      * @return array<string>
      */
-    private static function getPaths(array $array, string $prefix = null): array
+    private static function getPaths(array $array, array $excludedFields = [], string $prefix = null): array
     {
         self::initAccessor();
         $paths = [];
         foreach ($array as $key => $value) {
             $path = null === $prefix ? $key : $prefix . '.' . $key;
+            if (\in_array($path, $excludedFields, true)) {
+                continue;
+            }
             if (\is_array($value)) {
-                $paths = array_merge($paths, self::getPaths($value, $path));
+                $paths = array_merge(
+                    $paths,
+                    self::getPaths(
+                        $value,
+                        $excludedFields,
+                        $path
+                    )
+                );
             } else {
                 $paths[] = $path;
             }

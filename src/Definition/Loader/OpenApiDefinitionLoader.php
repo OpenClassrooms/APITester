@@ -115,7 +115,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setResponses($this->getResponses($responses))
                         ->setTags($this->getTags($operation->tags))
                         ->setSecurities($this->getSecurities($securitySchemes, $requirements))
-                        ->setExamples($this->getExamples($operation))
+                        ->setExamples($this->getExamples($operation, $parameters))
                 );
             }
         }
@@ -341,12 +341,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         return new Securities($collection);
     }
 
-    private function getExamples(\cebe\openapi\spec\Operation $operation): OperationExamples
+    /**
+     * @param \cebe\openapi\spec\Parameter[] $parameters
+     */
+    private function getExamples(\cebe\openapi\spec\Operation $operation, array $parameters): OperationExamples
     {
         $examples = [];
 
-        /** @var \cebe\openapi\spec\Parameter $parameter */
-        foreach ($operation->parameters as $parameter) {
+        foreach ($parameters as $parameter) {
             foreach ($parameter->examples ?? [] as $name => $example) {
                 $operationExample = $this->getExample((string) $name, $examples);
                 $operationExample->setParameter($parameter->name, (string) $example->value, $parameter->in);
@@ -416,8 +418,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         );
                     }
                     try {
-                        $operationExample = $this->getExample($statusCode . '_properties', $examples);
                         $example = $this->extractDeepExamples($mediaType->schema);
+                        $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setResponse(
                             new ResponseExample($example, (int) $statusCode)
                         );
@@ -426,6 +428,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     }
                 }
             }
+            break;
         }
 
         return new OperationExamples($examples);

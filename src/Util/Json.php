@@ -30,6 +30,16 @@ final class Json
     }
 
     /**
+     * @param int<1, max> $depth
+     *
+     * @throws \JsonException
+     */
+    public static function decodeAsObject(string $json, int $depth = 512): object
+    {
+        return (object) json_decode($json, false, $depth, JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * @throws \JsonException
      */
     public static function prettify(string $json): string

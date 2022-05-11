@@ -77,7 +77,7 @@ abstract class TestCasesPreparator
     {
         return mb_strtolower(
             str_replace(
-                (new \ReflectionClass(self::class))->getShortName(),
+                str_replace('TestCases', '', (new \ReflectionClass(self::class))->getShortName()),
                 '',
                 (new \ReflectionClass(static::class))->getShortName()
             )
