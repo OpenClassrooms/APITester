@@ -20,6 +20,8 @@ use APITester\Requester\Requester;
 use APITester\Test\Exception\SuiteNotFoundException;
 use APITester\Util\Assert;
 use APITester\Util\Object_;
+use APITester\Util\TestCase\Printer\DefaultPrinter;
+use APITester\Util\TestCase\Printer\TestDoxPrinter;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\TextUI\CliArguments\Builder;
 use PHPUnit\TextUI\CliArguments\Mapper;
@@ -206,6 +208,7 @@ final class Plan
     private function getPhpUnitOptions(array $options): array
     {
         $options['colors'] = 'always';
+        $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
         $options = array_filter(
             $options,
             static fn ($key) => !\in_array($key, [
