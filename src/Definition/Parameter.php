@@ -90,7 +90,7 @@ final class Parameter
     }
 
     /**
-     * @return string|int
+     * @return string|int|null
      */
     public function getExample(?string $name = null)
     {
@@ -100,11 +100,11 @@ final class Parameter
         ;
 
         $parameters = $example->getParametersFrom($this->in);
-        if (!isset($parameters[$this->name])) {
-            throw new ExampleNotFoundException("Example {$name} not found for parameter {$this->name}.");
-        }
+//        if (!isset($parameters[$this->name])) {
+//            throw new ExampleNotFoundException("Example {$name} not found for parameter {$this->name}.");
+//        }
 
-        return $example->getParametersFrom($this->in)[$this->name];
+        return $parameters[$this->name] ?? null;
     }
 
     public function getParent(): Operation

@@ -128,7 +128,7 @@ final class TestCase implements \JsonSerializable
                 $this->excludedFields
             );
         } catch (ExpectationFailedException $e) {
-            $this->log(LogLevel::ERROR);
+            $this->log(LogLevel::NOTICE);
             throw $e;
         }
         $this->log(LogLevel::DEBUG);

@@ -75,7 +75,7 @@ abstract class TestCasesPreparator
 
     public static function getName(): string
     {
-        return mb_strtolower(
+        return lcfirst(
             str_replace(
                 str_replace('TestCases', '', (new \ReflectionClass(self::class))->getShortName()),
                 '',
