@@ -48,4 +48,9 @@ final class Error403Preparator extends SecurityErrorPreparator
 
         throw new \LogicException('Unhandled security instance of type ' . \get_class($security));
     }
+
+    protected function getTestCaseName(): string
+    {
+        return 'DeniedToken';
+    }
 }

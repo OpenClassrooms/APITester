@@ -117,7 +117,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    Error401Preparator::getName() . ' - test1 - DeniedToken',
+                    Error401Preparator::getName() . ' - test1 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/oauth2/toto',
@@ -130,7 +130,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test2 - DeniedToken',
+                    Error401Preparator::getName() . ' - test2 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/api/key/header',
@@ -141,7 +141,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test3 - DeniedToken',
+                    Error401Preparator::getName() . ' - test3 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/api/key/cookie',
@@ -152,7 +152,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test4 - DeniedToken',
+                    Error401Preparator::getName() . ' - test4 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/api/key/query?api_key=' . Error401Preparator::FAKE_API_KEY
@@ -160,7 +160,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test5 - DeniedToken',
+                    Error401Preparator::getName() . ' - test5 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/basic',
@@ -171,7 +171,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(401)
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test6 - DeniedToken',
+                    Error401Preparator::getName() . ' - test6 - InvalidToken',
                     new Request(
                         'GET',
                         '/test/bearer',

@@ -37,6 +37,8 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
 
     abstract protected function getTestTokens(Security $security): Tokens;
 
+    abstract protected function getTestCaseName(): string;
+
     /**
      * @return Collection<array-key, TestCase>
      */
@@ -53,7 +55,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
             if (0 === $operation->getRequestBodies()->count()) {
                 $testCases->add(
                     $this->buildTestCase(
-                        OperationExample::create('DeniedToken', $operation)
+                        OperationExample::create($this->getTestCaseName(), $operation)
                             ->setHeaders($this->getAuthenticationParams($security, $token)['headers'] ?? [])
                             ->setQueryParameters($this->getAuthenticationParams($security, $token)['query'] ?? [])
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
@@ -64,7 +66,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
             foreach ($operation->getRequestBodies() as $ignored) {
                 $testCases->add(
                     $this->buildTestCase(
-                        OperationExample::create('DeniedToken', $operation)
+                        OperationExample::create($this->getTestCaseName(), $operation)
                             ->setHeaders($this->getAuthenticationParams($security, $token)['headers'] ?? [])
                             ->setQueryParameters($this->getAuthenticationParams($security, $token)['query'] ?? [])
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),

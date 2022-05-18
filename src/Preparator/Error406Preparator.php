@@ -41,7 +41,7 @@ final class Error406Preparator extends TestCasesPreparator
     private function prepareTestCase(Operation $operation, string $type): TestCase
     {
         return $this->buildTestCase(
-            OperationExample::create($type, $operation)
+            OperationExample::create('InvalidMediaType', $operation)
                 ->setHeaders([
                     'Accept' => $type,
                 ])->setResponse(

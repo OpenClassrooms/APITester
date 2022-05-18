@@ -108,7 +108,7 @@ final class Suite extends TestSuite
      * @param array<array<string, string>> $includeFilters
      * @param array<array<string, string>> $excludeFilters
      */
-    public function includes(Filterable $object, array $includeFilters, array $excludeFilters): bool
+    public function includes(Filterable $object, array $includeFilters = [], array $excludeFilters = []): bool
     {
         $include = true;
         foreach ($includeFilters as $item) {
@@ -192,10 +192,10 @@ final class Suite extends TestSuite
                 )
             ;
             try {
-                $tests = $preparator->doPrepare(
-                    $this->filterOperation($operations)
-                );
-                foreach ($this->filterTestCases($tests) as $testCase) {
+                $operations = $this->filterOperation($operations);
+                $tests = $preparator->doPrepare($operations);
+                $tests = $this->filterTestCases($tests);
+                foreach ($tests as $testCase) {
                     $testCase->setRequester($this->requester);
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
@@ -230,13 +230,16 @@ final class Suite extends TestSuite
      */
     private function filterTestCases(iterable $tests): iterable
     {
-        return collect($tests)->filter(
-            fn (TestCase $testCase) => $this->includes(
-                $testCase,
-                $this->toTestCaseFilter($this->filters->getInclude()),
-                $this->toTestCaseFilter($this->filters->getExclude()),
-            )
+        $excludedTests = array_column(
+            $this->toTestCaseFilter($this->filters->getBaseLineExclude()),
+            'name'
         );
+
+        return collect($tests)->filter(fn (TestCase $test) => !\in_array(
+            $test->getName(),
+            $excludedTests,
+            true
+        ));
     }
 
     /**

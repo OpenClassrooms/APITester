@@ -71,4 +71,9 @@ final class Error401Preparator extends SecurityErrorPreparator
 
         return $tokens;
     }
+
+    protected function getTestCaseName(): string
+    {
+        return 'InvalidToken';
+    }
 }

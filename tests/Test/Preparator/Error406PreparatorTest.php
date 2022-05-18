@@ -68,14 +68,14 @@ final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    Error406Preparator::getName() . ' - test - application/javascript',
+                    Error406Preparator::getName() . ' - test - InvalidMediaType',
                     new Request('GET', '/test', [
                         'Accept' => 'application/javascript',
                     ]),
                     new Response(406)
                 ),
                 new TestCase(
-                    Error406Preparator::getName() . ' - test - application/vnd.koan',
+                    Error406Preparator::getName() . ' - test - InvalidMediaType',
                     new Request('GET', '/test', [
                         'Accept' => 'application/vnd.koan',
                     ]),

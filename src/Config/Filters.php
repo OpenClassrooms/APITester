@@ -44,7 +44,7 @@ final class Filters
      */
     public function getExclude(): array
     {
-        return array_merge($this->exclude, $this->getBaseLineExclude());
+        return $this->exclude;
     }
 
     /**
