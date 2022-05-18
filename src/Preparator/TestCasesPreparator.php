@@ -66,7 +66,11 @@ abstract class TestCasesPreparator
         }
 
         return new TestCase(
-            $operation->getId() . '/' . $example->getName(),
+            static::getName()
+            . ' - '
+            . $operation->getId()
+            . ' - '
+            . $example->getName(),
             $request,
             $response,
             $excludedFields,
@@ -89,7 +93,7 @@ abstract class TestCasesPreparator
      *
      * @return iterable<array-key, TestCase>
      */
-    public function getTestCases(Operations $operations): iterable
+    public function doPrepare(Operations $operations): iterable
     {
         $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {

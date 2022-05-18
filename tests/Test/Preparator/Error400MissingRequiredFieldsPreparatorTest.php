@@ -29,7 +29,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
         $preparator = new Error400MissingRequiredFieldsPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -51,7 +51,8 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request('GET', '/test'),
                     new Response(400),
                 ),
@@ -76,12 +77,14 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request('GET', '/test?bar_query=bar1'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_bar_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_bar_query_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -106,7 +109,8 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request('GET', '/test/1234'),
                     new Response(400)
                 ),
@@ -131,14 +135,16 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_bar_header_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_bar_header_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
@@ -172,19 +178,22 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request('GET', '/test', [
                         'bar_header' => 'bar1',
                     ]),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_bar_header_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName()
+                    . ' - test - required_bar_header_param_missing_test',
                     new Request('GET', '/test?foo_query=foo1'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test2/required_foo_query2_param_missing_test2',
+                    Error400MissingRequiredFieldsPreparator::getName()
+                    . ' - test2 - required_foo_query2_param_missing_test2',
                     new Request('GET', '/test2'),
                     new Response(400)
                 ),
@@ -222,14 +231,14 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_body_field_missing',
+                    Error400MissingRequiredFieldsPreparator::getName() . ' - test - required_foo_body_field_missing',
                     new Request('POST', '/test', [
                         'content-type' => 'application/json',
                     ], Json::encode([])),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_body_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName() . ' - test - required_body_missing_test',
                     new Request('POST', '/test', [
                         'content-type' => 'application/json',
                     ], Json::encode([])),
@@ -271,7 +280,8 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             [
                 new TestCase(
-                    'test/required_foo_query_param_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName(
+                    ) . ' - test - required_foo_query_param_missing_test',
                     new Request(
                         'POST',
                         '/test',
@@ -285,7 +295,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_foo_body_field_missing',
+                    Error400MissingRequiredFieldsPreparator::getName() . ' - test - required_foo_body_field_missing',
                     new Request(
                         'POST',
                         '/test?foo_query=foo1',
@@ -297,7 +307,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/required_body_missing_test',
+                    Error400MissingRequiredFieldsPreparator::getName() . ' - test - required_body_missing_test',
                     new Request(
                         'POST',
                         '/test?foo_query=foo1',

@@ -18,7 +18,6 @@ use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Exception\RequesterNotFoundException;
 use APITester\Requester\Requester;
 use APITester\Test\Exception\SuiteNotFoundException;
-use APITester\Util\Assert;
 use APITester\Util\Object_;
 use APITester\Util\TestCase\Printer\DefaultPrinter;
 use APITester\Util\TestCase\Printer\TestDoxPrinter;
@@ -105,21 +104,13 @@ final class Plan
         $suites = $testPlanConfig->getSuites();
         $suites = $this->selectSuite($suiteName, $suites);
         foreach ($suites as $suiteConfig) {
-            $testSuite = $this->prepareTestSuite($suiteConfig);
-            $this->results[$suiteConfig->getName()] = $this->runner->run(
-                $testSuite,
-                (new Mapper())->mapToLegacyArray(
-                    (new Builder())->fromParameters(
-                        $this->getPhpUnitOptions($options),
-                        []
-                    )
-                ),
-                [],
-                false
-            );
-            foreach ($this->results as $result) {
-                Assert::same(0, $result->errorCount(), "{$result->errorCount()} Error(s).");
-                Assert::same(0, $result->failureCount(), "{$result->failureCount()} Failure(s).");
+            if (!empty($options['set-baseline'])) {
+                $this->resetBaseLine($suiteConfig);
+            }
+            $testSuite = $this->prepareSuite($suiteConfig);
+            $this->runSuite($suiteConfig, $testSuite, $options);
+            if (!empty($options['update-baseline']) || !empty($options['set-baseline'])) {
+                $this->updateBaseLine($suiteConfig);
             }
         }
     }
@@ -160,6 +151,17 @@ final class Plan
         return $suites;
     }
 
+    private function resetBaseLine(Config\Suite $suiteConfig): void
+    {
+        $baselineFile = $suiteConfig
+            ->getFilters()
+            ->getBaseline()
+        ;
+        if (file_exists($suiteConfig->getFilters()->getBaseline())) {
+            unlink($baselineFile);
+        }
+    }
+
     /**
      * @throws AuthenticationException
      * @throws AuthenticationLoadingException
@@ -170,7 +172,7 @@ final class Plan
      *
      * @return Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface>
      */
-    private function prepareTestSuite(Config\Suite $suiteConfig): Suite
+    private function prepareSuite(Config\Suite $suiteConfig): Suite
     {
         $testCaseClass = Object_::validateClass(
             $suiteConfig->getTestCaseClass(),
@@ -201,44 +203,41 @@ final class Plan
     }
 
     /**
-     * @param array<string, mixed> $options
-     *
-     * @return array<array-key, string>
+     * @param Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface> $testSuite
+     * @param array<string, mixed>                                    $options
      */
-    private function getPhpUnitOptions(array $options): array
+    private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
-        $options['colors'] = 'always';
-        $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
-        $options = array_filter(
-            $options,
-            static fn ($key) => !\in_array($key, [
-                'config',
-                'quiet',
-                'ansi',
-                'no-ansi',
-                'no-interaction',
-                'suite',
-            ], true),
-            ARRAY_FILTER_USE_KEY
+        $this->results[$suiteConfig->getName()] = $this->runner->run(
+            $testSuite,
+            (new Mapper())->mapToLegacyArray(
+                (new Builder())->fromParameters(
+                    $this->getPhpUnitOptions($options),
+                    []
+                )
+            ),
+            [],
+            false
         );
+        restore_exception_handler();
+    }
 
-        return array_filter(
-            array_map(
-                static function (string $key, $value) {
-                    if (null === $value) {
-                        return null;
-                    }
-                    if (true === $value) {
-                        return "--{$key}";
-                    }
-
-                    /** @var string|bool|int $value */
-                    return false !== $value ? "--{$key}={$value}" : null;
-                },
-                array_keys($options),
-                array_values($options),
-            )
-        );
+    private function updateBaseLine(Config\Suite $suiteConfig): void
+    {
+        $exclude = [];
+        foreach ($this->results as $result) {
+            foreach (array_merge($result->failures(), $result->errors()) as $failure) {
+                /** @var TestCase $testCase */
+                $testCase = $failure->failedTest();
+                $exclude[] = [
+                    'testcase.name' => $testCase->getName(),
+                ];
+            }
+        }
+        $suiteConfig
+            ->getFilters()
+            ->writeBaseline($exclude)
+        ;
     }
 
     /**
@@ -339,6 +338,49 @@ final class Plan
         }
 
         return $configuredPreparators;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<array-key, string>
+     */
+    private function getPhpUnitOptions(array $options): array
+    {
+        $options['colors'] = 'always';
+        $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+        $options = array_filter(
+            $options,
+            static fn ($key) => !\in_array($key, [
+                'config',
+                'quiet',
+                'ansi',
+                'no-ansi',
+                'no-interaction',
+                'suite',
+                'set-baseline',
+                'update-baseline',
+            ], true),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return array_filter(
+            array_map(
+                static function (string $key, $value) {
+                    if (null === $value) {
+                        return null;
+                    }
+                    if (true === $value) {
+                        return "--{$key}";
+                    }
+
+                    /** @var string|bool|int $value */
+                    return false !== $value ? "--{$key}={$value}" : null;
+                },
+                array_keys($options),
+                array_values($options),
+            )
+        );
     }
 
     /**

@@ -42,6 +42,12 @@ final class ExecutePlanCommand extends Command
         $config = Config\Loader\PlanConfigLoader::load((string) $configFilePath);
         /** @var string|null $suiteName */
         $suiteName = $input->getOption('suite');
+        if (false !== $input->getOption('set-baseline')) {
+            $output->writeln('Creating baseline after tests run.');
+        }
+        if (false !== $input->getOption('update-baseline')) {
+            $output->writeln('Updating baseline after tests run.');
+        }
         $testPlan->execute($config, $suiteName, $input->getOptions());
 
         return 0;
@@ -81,6 +87,18 @@ final class ExecutePlanCommand extends Command
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'coverage export to php'
+            )
+            ->addOption(
+                'set-baseline',
+                null,
+                InputOption::VALUE_NONE,
+                'if set it will create a baseline file that will register all errors so they become ignored on the next run'
+            )
+            ->addOption(
+                'update-baseline',
+                null,
+                InputOption::VALUE_NONE,
+                'update baseline with new errors to ignore'
             )
         ;
     }

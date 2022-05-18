@@ -36,7 +36,7 @@ final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -68,14 +68,14 @@ final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/application/javascript',
+                    Error406Preparator::getName() . ' - test - application/javascript',
                     new Request('GET', '/test', [
                         'Accept' => 'application/javascript',
                     ]),
                     new Response(406)
                 ),
                 new TestCase(
-                    'test/application/vnd.koan',
+                    Error406Preparator::getName() . ' - test - application/vnd.koan',
                     new Request('GET', '/test', [
                         'Accept' => 'application/vnd.koan',
                     ]),

@@ -51,7 +51,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -82,7 +82,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'test/200.default',
+                    ExamplesPreparator::getName() . ' - test - 200.default',
                     new Request(
                         'GET',
                         new Uri('/test?foo=bar'),
@@ -129,7 +129,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'test/200.default',
+                    ExamplesPreparator::getName() . ' - test - 200.default',
                     new Request(
                         'GET',
                         new Uri('/test?foo=bar'),
@@ -139,7 +139,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                     ),
                 ),
                 new TestCase(
-                    'test/400',
+                    ExamplesPreparator::getName() . ' - test - 400',
                     new Request(
                         'GET',
                         new Uri('/test?foo=1234'),
@@ -213,7 +213,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'test/201',
+                    ExamplesPreparator::getName() . ' - test - 201',
                     new Request(
                         'POST',
                         new Uri('/test'),
@@ -230,7 +230,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(201),
                 ),
                 new TestCase(
-                    'test/400.missingParameter',
+                    ExamplesPreparator::getName() . ' - test - 400.missingParameter',
                     new Request(
                         'POST',
                         new Uri('/test'),
@@ -306,7 +306,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'test/200',
+                    ExamplesPreparator::getName() . ' - test - 200',
                     new Request(
                         'GET',
                         new Uri('/user/123/comment/456'),
@@ -325,7 +325,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                     ),
                 ),
                 new TestCase(
-                    'test/400.default',
+                    ExamplesPreparator::getName() . ' - test - 400.default',
                     new Request(
                         'GET',
                         new Uri('/user/foo/comment/bar'),
@@ -393,7 +393,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             ),
             [
                 new TestCase(
-                    'test/200',
+                    ExamplesPreparator::getName() . ' - test - 200',
                     new Request(
                         'GET',
                         new Uri('/test'),
@@ -416,7 +416,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                     ),
                 ),
                 new TestCase(
-                    'test/400',
+                    ExamplesPreparator::getName() . ' - test - 400',
                     new Request(
                         'GET',
                         new Uri('/test'),

@@ -43,7 +43,7 @@ final class Error405Preparator extends TestCasesPreparator
     private function prepareTestCase(Operation $operation, string $method): TestCase
     {
         return $this->buildTestCase(
-            OperationExample::create('UnsupportedMethod', $operation)
+            OperationExample::create("UnsupportedMethod/{$method}", $operation)
                 ->setMethod($method)
                 ->setResponse(
                     ResponseExample::create()

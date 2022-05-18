@@ -28,7 +28,7 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -57,17 +57,17 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/NonNumericRange',
+                    Error416Preparator::getName() . ' - test - NonNumericRange',
                     new Request('GET', '/test?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test/InversedRange',
+                    Error416Preparator::getName() . ' - test - InversedRange',
                     new Request('GET', '/test?offset=20&limit=5'),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test/NegativeRange',
+                    Error416Preparator::getName() . ' - test - NegativeRange',
                     new Request('GET', '/test?offset=-5&limit=5'),
                     new Response(416)
                 ),
@@ -94,14 +94,14 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/NonNumericRange',
+                    Error416Preparator::getName() . ' - test - NonNumericRange',
                     new Request('GET', '/test', [
                         'RangeConfig' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test/InversedRange',
+                    Error416Preparator::getName() . ' - test - InversedRange',
                     new Request('GET', '/test', [
                         'RangeConfig' => 'items=20-5',
                     ]),
@@ -142,31 +142,31 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test1/NonNumericRange',
+                    Error416Preparator::getName() . ' - test1 - NonNumericRange',
                     new Request('GET', '/test1', [
                         'RangeConfig' => 'items=foo-bar',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test1/InversedRange',
+                    Error416Preparator::getName() . ' - test1 - InversedRange',
                     new Request('GET', '/test1', [
                         'RangeConfig' => 'items=20-5',
                     ]),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test2/NonNumericRange',
+                    Error416Preparator::getName() . ' - test2 - NonNumericRange',
                     new Request('GET', '/test2?offset=foo&limit=bar'),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test2/InversedRange',
+                    Error416Preparator::getName() . ' - test2 - InversedRange',
                     new Request('GET', '/test2?offset=20&limit=5'),
                     new Response(416)
                 ),
                 new TestCase(
-                    'test2/NegativeRange',
+                    Error416Preparator::getName() . ' - test2 - NegativeRange',
                     new Request('GET', '/test2?offset=-5&limit=5'),
                     new Response(416)
                 ),

@@ -28,7 +28,7 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -57,7 +57,7 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/TooLargeRange',
+                    Error413Preparator::getName() . ' - test - TooLargeRange',
                     new Request('GET', '/test?offset=0&limit=1000000000'),
                     new Response(413)
                 ),
@@ -84,7 +84,7 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/TooLargeRange',
+                    Error413Preparator::getName() . ' - test - TooLargeRange',
                     new Request('GET', '/test', [
                         'RangeConfig' => 'items=0-1000000000',
                     ]),
@@ -125,14 +125,14 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test1/TooLargeRange',
+                    Error413Preparator::getName() . ' - test1 - TooLargeRange',
                     new Request('GET', '/test1', [
                         'RangeConfig' => 'items=0-1000000000',
                     ]),
                     new Response(413)
                 ),
                 new TestCase(
-                    'test2/TooLargeRange',
+                    Error413Preparator::getName() . ' - test2 - TooLargeRange',
                     new Request('GET', '/test2?offset=0&limit=1000000000'),
                     new Response(413)
                 ),

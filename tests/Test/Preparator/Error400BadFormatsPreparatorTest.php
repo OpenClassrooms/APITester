@@ -30,7 +30,7 @@ final class Error400BadFormatsPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator = new Error400BadFormatsPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -60,7 +60,7 @@ final class Error400BadFormatsPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/foo_query_param_bad_email_format',
+                    Error400BadFormatsPreparator::getName() . ' - test - foo_query_param_bad_email_format',
                     new Request(
                         'GET',
                         '/test?foo_query=foo',
@@ -103,7 +103,7 @@ final class Error400BadFormatsPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/foo_body_field_bad_format_test',
+                    Error400BadFormatsPreparator::getName() . ' - test - foo_body_field_bad_format_test',
                     new Request(
                         'GET',
                         '/test',

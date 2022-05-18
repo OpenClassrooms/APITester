@@ -30,7 +30,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations()),
+            $preparator->doPrepare($api->getOperations()),
             ['body']
         );
     }
@@ -61,7 +61,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'getTest/RandomPath',
+                    Error404Preparator::getName() . ' - getTest - RandomPath',
                     new Request('GET', '/test/1'),
                     new Response(
                         404,
@@ -100,7 +100,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'postTest/RandomPath',
+                    Error404Preparator::getName() . ' - postTest - RandomPath',
                     new Request(
                         'POST',
                         '/test',

@@ -12,9 +12,13 @@ use APITester\Definition\Collection\Securities;
 use APITester\Definition\Collection\Tags;
 use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Example\OperationExample;
+use APITester\Util\Filterable;
+use APITester\Util\Traits\FilterableTrait;
 
-final class Operation
+final class Operation implements Filterable
 {
+    use FilterableTrait;
+
     private string $description = '';
 
     private Parameters $headers;
@@ -196,11 +200,6 @@ final class Operation
         return $this->responses;
     }
 
-    public function getResponse(int $status): ?Response
-    {
-        return $this->responses->get($status);
-    }
-
     public function setResponses(Responses $responses): self
     {
         foreach ($responses as $response) {
@@ -209,6 +208,11 @@ final class Operation
         $this->responses = $responses;
 
         return $this;
+    }
+
+    public function getResponse(int $status): ?Response
+    {
+        return $this->responses->get($status);
     }
 
     public function addResponse(Response $response): self
@@ -419,22 +423,6 @@ final class Operation
         }
 
         return $this->getRandomExample();
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function has(string $prop, $value, string $operator = '='): bool
-    {
-        $operation = collect([$this]);
-        if (str_contains($prop, '*')) {
-            $operator = 'contains';
-        }
-
-        return null !== $operation
-            ->where($prop, $operator, $value)
-            ->first()
-        ;
     }
 
     public function getRandomExample(): OperationExample

@@ -8,8 +8,10 @@ use APITester\Definition\Body;
 use APITester\Requester\Requester;
 use APITester\Requester\SymfonyKernelRequester;
 use APITester\Util\Assert;
+use APITester\Util\Filterable;
 use APITester\Util\Json;
 use APITester\Util\Serializer;
+use APITester\Util\Traits\FilterableTrait;
 use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
 use Nyholm\Psr7\Stream;
@@ -26,9 +28,10 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  * @internal
  * @coversNothing
  */
-final class TestCase implements \JsonSerializable
+final class TestCase implements \JsonSerializable, Filterable
 {
     use TimeBoundTrait;
+    use FilterableTrait;
 
     /**
      * @var \Closure[]
@@ -64,6 +67,10 @@ final class TestCase implements \JsonSerializable
 
     private ResponseInterface $response;
 
+    private ?string $operation;
+
+    private ?string $preparator;
+
     /**
      * @param array<int, string> $excludedFields
      */
@@ -79,6 +86,9 @@ final class TestCase implements \JsonSerializable
         $this->id = uniqid('testcase_', false);
         $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
         $this->name = $name;
+        $nameParts = explode(' - ', $name);
+        $this->preparator = $nameParts[0] ?? null;
+        $this->operation = $nameParts[1] ?? null;
     }
 
     /**
@@ -136,12 +146,7 @@ final class TestCase implements \JsonSerializable
 
     public function getName(): string
     {
-        return $this->name
-            . '(' . $this->request->getMethod()
-            . '_'
-            . $this->request->getUri()
-            . ')'
-            . ' -> ' . $this->expectedResponse->getStatusCode();
+        return $this->name;
     }
 
     /**
@@ -186,15 +191,19 @@ final class TestCase implements \JsonSerializable
         return new $className($this, $testCaseName);
     }
 
-    public function withAddedRequestBody(Body $request): self
+    public function withRequestBody(Body $request): self
     {
-        return new self(
-            $this->name,
-            $this->getRequest()
-                ->withBody(Stream::create($request->getStringExample())),
-            $this->getExpectedResponse(),
-            $this->excludedFields,
-        );
+        $request = $this->request->withBody(Stream::create($request->getStringExample()));
+
+        return $this->withRequest($request);
+    }
+
+    public function withRequest(RequestInterface $request): self
+    {
+        $self = clone $this;
+        $self->request = $request;
+
+        return $self;
     }
 
     public function getRequest(): RequestInterface
@@ -214,14 +223,6 @@ final class TestCase implements \JsonSerializable
         return $this->expectedResponse;
     }
 
-    public function withRequest(RequestInterface $request): self
-    {
-        $self = clone $this;
-        $self->request = $request;
-
-        return $self;
-    }
-
     /**
      * @return array{'name': string, 'request': RequestInterface, 'response': ResponseInterface}
      */
@@ -232,6 +233,26 @@ final class TestCase implements \JsonSerializable
             'request' => $this->request,
             'response' => $this->expectedResponse,
         ];
+    }
+
+    public function getOperation(): ?string
+    {
+        return $this->operation;
+    }
+
+    public function setOperation(string $operation): void
+    {
+        $this->operation = $operation;
+    }
+
+    public function getPreparator(): ?string
+    {
+        return $this->preparator;
+    }
+
+    public function setPreparator(string $preparator): void
+    {
+        $this->preparator = $preparator;
     }
 
     private function log(string $logLevel): void
@@ -263,6 +284,10 @@ final class TestCase implements \JsonSerializable
                     public function getName(bool \$withDataSet = true): string
                     {
                         return \$this->name;
+                    }
+                    public function getMetadata(): array
+                    {
+                        return \$this->testCase->getMetadata();
                     }
                     public function test(): void
                     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Requester;
 
+use APITester\Util\Json;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
 use Nyholm\Psr7\Uri;
@@ -44,10 +45,11 @@ final class SymfonyKernelRequester extends Requester
             $response = $this->kernel->handle($request);
 //            $this->kernel->terminate($request, $response);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
-        } catch (\Exception $e) {
-            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-//            $response = new ResponseConfig((string) $e, 500);
-//            $this->responses[$id] = $this->symfonyToPsrResponse($response);
+        } catch (\Throwable $e) {
+//            print_r($e->getTrace()[0]);
+//            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            $response = new Response(Json::encode($e), 500);
+            $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }
     }
 

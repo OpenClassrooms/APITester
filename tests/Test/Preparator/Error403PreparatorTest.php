@@ -61,7 +61,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -86,7 +86,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test1/DeniedToken',
+                    Error403Preparator::getName() . ' - test1 - DeniedToken',
                     new Request(
                         'GET',
                         '/test/oauth2',
@@ -97,7 +97,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(403)
                 ),
                 new TestCase(
-                    'test1/DeniedToken',
+                    Error403Preparator::getName() . ' - test1 - DeniedToken',
                     new Request(
                         'GET',
                         '/test/oauth2',

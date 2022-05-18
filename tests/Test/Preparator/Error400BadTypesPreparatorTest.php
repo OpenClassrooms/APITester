@@ -30,7 +30,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator = new Error400BadTypesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations())
+            $preparator->doPrepare($api->getOperations())
         );
     }
 
@@ -80,22 +80,22 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/foo_query_param_bad_string_type',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_string_type',
                     new Request('GET', '/test?foo_query=foo'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_query_param_bad_number_type',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_number_type',
                     new Request('GET', '/test?foo_query=1.234'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_query_param_bad_boolean_type',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_boolean_type',
                     new Request('GET', '/test?foo_query=true'),
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_query_param_bad_array_type',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_array_type',
                     new Request('GET', '/test?foo_query=foo%2Cbar'),
                     new Response(400)
                 ),
@@ -125,14 +125,16 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                             )
                         )->addExample(
                             OperationExample::create('foo')
-                                ->setBody(BodyExample::create([
-                                    'foo' => '123',
-                                ]))
+                                ->setBody(
+                                    BodyExample::create([
+                                        'foo' => '123',
+                                    ])
+                                )
                         )
                 ),
             [
                 new TestCase(
-                    'test/foo_body_field_type_string',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_string',
                     new Request(
                         'GET',
                         '/test',
@@ -146,7 +148,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_body_field_type_number',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_number',
                     new Request(
                         'GET',
                         '/test',
@@ -160,7 +162,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_body_field_type_boolean',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_boolean',
                     new Request(
                         'GET',
                         '/test',
@@ -174,7 +176,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_body_field_type_array',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_array',
                     new Request(
                         'GET',
                         '/test',
@@ -188,7 +190,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                     new Response(400)
                 ),
                 new TestCase(
-                    'test/foo_body_field_type_object',
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_object',
                     new Request(
                         'GET',
                         '/test',

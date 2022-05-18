@@ -6,10 +6,12 @@ namespace APITester\Test;
 
 use APITester\Config\Filters;
 use APITester\Definition\Api;
+use APITester\Definition\Collection\Operations;
 use APITester\Definition\Operation;
 use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Requester;
+use APITester\Util\Filterable;
 use APITester\Util\Traits\TimeBoundTrait;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
@@ -102,14 +104,18 @@ final class Suite extends TestSuite
         $this->logger = $logger;
     }
 
-    public function includes(Operation $operation): bool
+    /**
+     * @param array<array<string, string>> $includeFilters
+     * @param array<array<string, string>> $excludeFilters
+     */
+    public function includes(Filterable $object, array $includeFilters, array $excludeFilters): bool
     {
         $include = true;
-        foreach ($this->filters->getInclude() as $item) {
+        foreach ($includeFilters as $item) {
             $include = true;
             foreach ($item as $key => $value) {
                 [$operator, $value] = $this->handleTags($value);
-                if (!$operation->has($key, $value, $operator)) {
+                if (!$object->has($key, $value, $operator)) {
                     $include = false;
                     continue 2;
                 }
@@ -121,10 +127,10 @@ final class Suite extends TestSuite
             return false;
         }
 
-        foreach ($this->filters->getExclude() as $item) {
+        foreach ($excludeFilters as $item) {
             foreach ($item as $key => $value) {
                 [$operator, $value] = $this->handleTags($value);
-                if (!$operation->has($key, $value, $operator)) {
+                if (!$object->has($key, $value, $operator)) {
                     continue 2;
                 }
             }
@@ -133,6 +139,32 @@ final class Suite extends TestSuite
         }
 
         return $include;
+    }
+
+    /**
+     * @param array<array<string, string>> $filter
+     *
+     * @return array<array<string, string>>
+     */
+    public function toTestCaseFilter(array $filter): array
+    {
+        /** @var array<array<string, string>> */
+        return collect($filter)
+            ->map(
+                fn ($value) => collect($value)
+                    ->filter(fn ($value, $key) => str_starts_with(
+                        $key,
+                        'testcase.'
+                    ))
+                    ->mapWithKeys(
+                        fn ($value, $key) => [
+                            str_replace('testcase.', '', $key) => $value,
+                        ]
+                    )
+            )
+            ->filter()
+            ->toArray()
+        ;
     }
 
     /**
@@ -160,8 +192,10 @@ final class Suite extends TestSuite
                 )
             ;
             try {
-                $tests = $preparator->getTestCases($operations->filter([$this, 'includes']));
-                foreach ($tests as $testCase) {
+                $tests = $preparator->doPrepare(
+                    $this->filterOperation($operations)
+                );
+                foreach ($this->filterTestCases($tests) as $testCase) {
                     $testCase->setRequester($this->requester);
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
@@ -176,6 +210,33 @@ final class Suite extends TestSuite
                 $this->logger->error($e->getMessage());
             }
         }
+    }
+
+    private function filterOperation(Operations $operations): Operations
+    {
+        return $operations->filter(
+            fn (Operation $operation) => $this->includes(
+                $operation,
+                $this->filters->getInclude(),
+                $this->filters->getExclude(),
+            )
+        );
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterTestCases(iterable $tests): iterable
+    {
+        return collect($tests)->filter(
+            fn (TestCase $testCase) => $this->includes(
+                $testCase,
+                $this->toTestCaseFilter($this->filters->getInclude()),
+                $this->toTestCaseFilter($this->filters->getExclude()),
+            )
+        );
     }
 
     /**

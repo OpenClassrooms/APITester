@@ -27,7 +27,7 @@ final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase
         ]);
         Assert::objectsEqual(
             $expected,
-            $preparator->getTestCases($api->getOperations()),
+            $preparator->doPrepare($api->getOperations()),
             ['body']
         );
     }
@@ -49,32 +49,32 @@ final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    'test/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test - UnsupportedMethod/PUT',
                     new Request('PUT', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'test/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test - UnsupportedMethod/GET',
                     new Request('GET', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'test/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test - UnsupportedMethod/DELETE',
                     new Request('DELETE', '/test'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'test2/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test2 - UnsupportedMethod/PATCH',
                     new Request('PATCH', '/test2'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'test2/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test2 - UnsupportedMethod/PUT',
                     new Request('PUT', '/test2'),
                     new Response(405)
                 ),
                 new TestCase(
-                    'test2/UnsupportedMethod',
+                    Error405Preparator::getName() . ' - test2 - UnsupportedMethod/DELETE',
                     new Request('DELETE', '/test2'),
                     new Response(405)
                 ),
