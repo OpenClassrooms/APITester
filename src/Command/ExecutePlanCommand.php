@@ -48,9 +48,8 @@ final class ExecutePlanCommand extends Command
         if (false !== $input->getOption('update-baseline')) {
             $output->writeln('Updating baseline after tests run.');
         }
-        $testPlan->execute($config, $suiteName, $input->getOptions());
 
-        return 0;
+        return (int) !$testPlan->execute($config, $suiteName, $input->getOptions());
     }
 
     protected function configure(): void

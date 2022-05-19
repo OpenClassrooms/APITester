@@ -96,7 +96,7 @@ final class Plan
         Config\Plan $testPlanConfig,
         ?string $suiteName = null,
         array $options = []
-    ): void {
+    ): bool {
         $bootstrap = $testPlanConfig->getBootstrap();
         if (null !== $bootstrap) {
             require_once $bootstrap;
@@ -113,6 +113,8 @@ final class Plan
                 $this->updateBaseLine($suiteConfig);
             }
         }
+
+        return $this->isSuccessful();
     }
 
     /**
@@ -436,5 +438,16 @@ final class Plan
         }
 
         throw new DefinitionLoaderNotFoundException($format);
+    }
+
+    private function isSuccessful(): bool
+    {
+        foreach ($this->results as $suiteResult) {
+            if ($suiteResult->failureCount() > 0 || $suiteResult->errorCount() > 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
