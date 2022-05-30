@@ -304,25 +304,25 @@ suites:
                 - { id: oc_api_learning_activity_course_chapter_complete_post, preparator: error404 }
                 - { id: oc_api_invitation_invitations_get, preparator: error401 }
                 - { id: oc_api_invitation_invitations_get, preparator: error403 }
-
-        auth: # authentication configuration
-            -   name: 'user_with_all_roles'
-                type: 'oauth2_password'
-                username: 'tech-tests+1111111@openclassrooms.com'
-                password: 'test'
-                scopes: [ 'openclassrooms_client', 'learning_content', 'user_learning_activity' ]
-                headers:
-                    Authorization: 'Basic b2ZBbDhoVXh2UEx5Mzh5Z0RRMXN6QU9SOmdQbFd0YWlIZ245RDZleUhyOTBLbTBsaWpiVlM2bQ=='
-                    Accept: 'application/json'
-                    Content-Type: 'application/json'
-            -   name: 'user_without_any_scope'
-                type: 'oauth2_password'
-                username: 'tech-tests+1111111@openclassrooms.com'
-                password: 'test'
-                scopes: [ 'learning_content' ]
-                headers:
-                    Authorization: 'Basic b2ZBbDhoVXh2UEx5Mzh5Z0RRMXN6QU9SOmdQbFd0YWlIZ245RDZleUhyOTBLbTBsaWpiVlM2bQ=='
-                    Accept: 'application/json'
-                    Content-Type: 'application/json'
+        
+        auth: # authentication requests configuration
+          - name: 'user_1'
+            body:
+              grant_type: 'password'
+              scope: 'scope 1'
+              username: 'tech-tests+1111111@openclassrooms.com'
+              password: 'test'
+            headers:
+              Authorization: 'Basic xxx'
+              Accept: 'application/json'
+              Content-Type: 'application/json'
+          - name: 'user_2'
+            body:
+              grant_type: 'client_credentials'
+              scope: 'scope2 scope3'
+            headers:
+              Authorization: 'Basic xxx'
+              Accept: 'application/json'
+              Content-Type: 'application/json'
 
 ```
