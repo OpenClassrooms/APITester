@@ -5,7 +5,9 @@
 # API Tester
 
 This is project is aimed, to improve the testing experience by providing
-automatic tests based on your OpenAPI document.
+automatic tests based on your OpenAPI document. It is based on PHPUnit so it support all of it's feature, like coverage for example.
+
+It also provides special support for symonfy kernel, as it provides a mode where it uses directly the kernel to send requests instead of an http client, which is useful for transactions support.
 
 ## Installation
 
