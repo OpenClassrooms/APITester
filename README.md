@@ -283,15 +283,15 @@ suites:
             path: 'src/OC/ApiBundle/Resources/schema/openclassrooms-api.yml' # path/url of the definition document
             format: 'openapi' # type of the definition
         requester: 'symfony-kernel' # how requests are executed, default: http-async
-        preparators: # are responsible of preparing test cases
+        preparators: # are responsible of preparing test cases, leaving them empty will load all prepartors with optional config
             -   name: error400 # which preparator
-                excludedFields: [ 'stream' ]
+                excludedFields: [ 'body' ]
             -   name: error401
-                excludedFields: [ 'stream' ]
+                excludedFields: [ 'body' ]
             -   name: error403
-                excludedFields: [ 'stream' ]
+                excludedFields: [ 'body' ]
             -   name: error404
-                excludedFields: [ 'stream' ]
+                excludedFields: [ 'body' ]
         filters: # select which operations to test, filters are on operations properties
             #please refer to the class APITester\Definition\Operation
             include: # we include operations with the following tags
