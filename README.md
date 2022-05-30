@@ -17,40 +17,11 @@ or require globally
 
 ## Usage
 
-`./bin/api-tester launch -vvv -c tests/Fixtures/Config/api-tester.yaml`
+### Run tests
+`./bin/api-tester -c api-tester.yaml`
 
-## Advanced Usage
-
-An example of an integration with symfony kernel and phpunit
-
-```php    
-public function test(): void
-    {
-        //need to create a plan
-        $testPlan = new Plan();
-        
-        //we init the symfony kernel request passing our app kernel 
-        $testPlan->addRequester(new SymfonyKernelRequester($this->getKernel()))
-        
-        //init the logger
-        $testPlan->setLogger(
-            new ConsoleLogger(new ConsoleOutput(OutputInterface::VERBOSITY_VERY_VERBOSE))
-        );
-       
-        //init the plan config
-        $config = PlanConfigLoader::load(__DIR__ . '/api-tester.yaml');
-        
-        //we can pass some callbacks to be executed before/after each test
-        $config->addBeforeTestCaseCallback([$this, 'init']);
-        $config->addAfterTestCaseCallback([$this, 'shutdown']);
-        
-        //we execute the test plan with the loaded config
-        $testPlan->execute($config);
-        
-        //we call assertions which use phpunit assertions to check that all tests are passing
-        $testPlan->assert();
-    }
-```
+### Help 
+`./bin/api-tester --help`
 
 ## Configuration Reference
 
