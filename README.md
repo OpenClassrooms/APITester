@@ -24,4 +24,4 @@ or require globally
 `./bin/api-tester --help`
 
 ## Configuration Reference
-![/docs/configuration_reference.md](./docs/configuration_reference.md)
+[link](./docs/configuration_reference.md)
