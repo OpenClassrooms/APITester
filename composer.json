@@ -69,7 +69,7 @@
     "symfony/http-kernel": "^4.4",
     "symfony/property-access": " ^4.4",
     "symfony/property-info": " ^4.4",
-    "symfony/psr-http-message-bridge": "^1.0",
+    "symfony/psr-http-message-bridge": "^1.2 || ^2.1.2",
     "symfony/serializer": " ^4.4",
     "symfony/yaml": " ^4.4"
   },
