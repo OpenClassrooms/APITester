@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Body;
@@ -12,15 +12,11 @@ use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
-use APITester\Preparator\Config\ExamplesConfig;
+use APITester\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Preparator\ExamplesPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
-use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
-use Nyholm\Psr7\Uri;
 
 /**
  * @internal
@@ -34,7 +30,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator->configure([
             'extensionPath' => '/foo/bar/',
         ]);
-        /** @var ExamplesConfig $config */
+        /** @var ExamplesPreparatorConfig $config */
         $config = $preparator->getConfig();
         static::assertSame('/foo/bar/', $config->extensionPath);
     }
@@ -51,7 +47,8 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -83,13 +80,10 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 200.default',
-                    new Request(
-                        'GET',
-                        new Uri('/test?foo=bar'),
-                    ),
-                    new Response(
-                        200
-                    ),
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo', 'bar')
+                        ->setResponse(ResponseExample::create('200')),
                 ),
             ],
         ];
@@ -120,39 +114,31 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 'foo' => '1234',
                             ])
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'message' => 'Bad request',
                                 ])
-                                    ->setStatusCode(400)
+                                    ->setStatusCode('400')
                             )
                     )
             ),
             [
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 200.default',
-                    new Request(
-                        'GET',
-                        new Uri('/test?foo=bar'),
-                    ),
-                    new Response(
-                        200
-                    ),
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo', 'bar')
+                        ->setResponse(ResponseExample::create('200')),
                 ),
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 400',
-                    new Request(
-                        'GET',
-                        new Uri('/test?foo=1234'),
-                    ),
-                    new Response(
-                        400,
-                        [
-                            'content-type' => 'application/json',
-                        ],
-                        Json::encode([
-                            'message' => 'Bad request',
-                        ])
-                    ),
+                    OperationExample::create('test1')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo', '1234')
+                        ->setResponse(
+                            ResponseExample::create('400', [
+                                'message' => 'Bad request',
+                            ])
+                        ),
                 ),
             ],
         ];
@@ -166,7 +152,6 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                 )
                     ->addRequestBody(
                         Body::create(
-                            'application/json',
                             new Schema([
                                 'type' => 'object',
                                 'properties' => [
@@ -194,7 +179,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                     'age' => 25,
                                 ])
                             )
-                            ->setResponse(ResponseExample::create()->setStatusCode(201))
+                            ->setResponse(ResponseExample::create()->setStatusCode('201'))
                     )
                     ->addExample(
                         OperationExample::create('400.missingParameter')
@@ -204,56 +189,40 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 ])
                             )
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'message' => 'Missing parameter',
                                 ])
-                                    ->setStatusCode(400)
+                                    ->setStatusCode('400')
                             )
                     )
             ),
             [
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 201',
-                    new Request(
-                        'POST',
-                        new Uri('/test'),
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setMethod('POST')
+                        ->setBodyContent([
                             'name' => 'John Doe',
                             'age' => 25,
                         ])
-                    ),
-                    new Response(201),
+                        ->setResponse(
+                            ResponseExample::create('201')
+                        ),
                 ),
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 400.missingParameter',
-                    new Request(
-                        'POST',
-                        new Uri('/test'),
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setMethod('POST')
+                        ->setBodyContent([
                             'name' => 'John Doe',
                         ])
-                    ),
-                    new Response(
-                        400,
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
-                            'message' => 'Missing parameter',
-                        ])
-                    ),
+                        ->setResponse(
+                            ResponseExample::create('400', [
+                                'message' => 'Missing parameter',
+                            ])
+                        ),
                 ),
             ],
         ];
@@ -284,7 +253,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 'commentId' => 456,
                             ])
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'title' => 'foo',
                                     'content' => 'bar',
                                 ])
@@ -297,50 +266,34 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 'commentId' => 'bar',
                             ])
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'message' => 'Bad request',
                                 ])
-                                    ->setStatusCode(400)
+                                    ->setStatusCode('400')
                             )
                     )
             ),
             [
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 200',
-                    new Request(
-                        'GET',
-                        new Uri('/user/123/comment/456'),
-                    ),
-                    new Response(
-                        200,
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
-                            'title' => 'foo',
-                            'content' => 'bar',
-                        ])
-                    ),
+                    OperationExample::create('test')
+                        ->setPath('/user/123/comment/456')
+                        ->setResponse(
+                            ResponseExample::create('200', [
+                                'title' => 'foo',
+                                'content' => 'bar',
+                            ])
+                        ),
                 ),
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 400.default',
-                    new Request(
-                        'GET',
-                        new Uri('/user/foo/comment/bar'),
-                    ),
-                    new Response(
-                        400,
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
-                            'message' => 'Bad request',
-                        ])
-                    ),
+                    OperationExample::create('test')
+                        ->setPath('/user/foo/comment/bar')
+                        ->setResponse(
+                            ResponseExample::create('400', [
+                                'message' => 'Bad request',
+                            ])
+                        ),
                 ),
             ],
         ];
@@ -370,7 +323,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 'x-next' => '/test?offset=20&limit=20',
                             ])
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'title' => 'foo',
                                     'content' => 'bar',
                                 ])->setHeaders([
@@ -384,57 +337,43 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                                 'x-next' => '123',
                             ])
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'message' => 'Bad request',
                                 ])
-                                    ->setStatusCode(400)
+                                    ->setStatusCode('400')
                             )
                     )
             ),
             [
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 200',
-                    new Request(
-                        'GET',
-                        new Uri('/test'),
-                        [
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeaders([
                             'x-next' => '/test?offset=20&limit=20',
-                        ]
-                    ),
-                    new Response(
-                        200,
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                            'x-foo' => 'bar',
-                        ],
-                        Json::encode([
-                            'title' => 'foo',
-                            'content' => 'bar',
                         ])
-                    ),
+                        ->setResponse(
+                            ResponseExample::create('200', [
+                                'title' => 'foo',
+                                'content' => 'bar',
+                            ])->setHeaders([
+                                'x-foo' => 'bar',
+                            ])
+                        ),
                 ),
                 new TestCase(
                     ExamplesPreparator::getName() . ' - test - 400',
-                    new Request(
-                        'GET',
-                        new Uri('/test'),
-                        [
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeaders([
                             'x-next' => '123',
-                        ]
-                    ),
-                    new Response(
-                        400,
-                        [
-                            'content-type' => [
-                                'application/json',
-                            ],
-                        ],
-                        Json::encode([
-                            'message' => 'Bad request',
                         ])
-                    ),
+                        ->setResponse(
+                            ResponseExample::create('400', [
+                                'message' => 'Bad request',
+                            ])
+                                ->setStatusCode('400'),
+                        ),
                 ),
             ],
         ];

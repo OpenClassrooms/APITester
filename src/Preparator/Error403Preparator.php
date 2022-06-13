@@ -8,17 +8,16 @@ use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Security;
 use APITester\Definition\Security\OAuth2\OAuth2Security;
 use APITester\Definition\Token;
-use APITester\Preparator\Config\Error403Config;
-use APITester\Preparator\Foundation\SecurityErrorPreparator;
+use APITester\Preparator\Config\Error403PreparatorConfig;
 
 /**
- * @property Error403Config $config
+ * @property Error403PreparatorConfig $config
  */
 final class Error403Preparator extends SecurityErrorPreparator
 {
-    protected function getStatusCode(): int
+    protected function getStatusCode(): string
     {
-        return 403;
+        return '403';
     }
 
     protected function getTestTokens(Security $security): Tokens

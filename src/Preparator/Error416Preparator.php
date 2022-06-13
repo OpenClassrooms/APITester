@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Preparator;
 
-use APITester\Preparator\Foundation\PaginationErrorPreparator;
-
 final class Error416Preparator extends PaginationErrorPreparator
 {
     public const NEGATIVE_VALUES = [
@@ -24,9 +22,9 @@ final class Error416Preparator extends PaginationErrorPreparator
         'upper' => '5',
     ];
 
-    protected function getStatusCode(): int
+    protected function getStatusCode(): string
     {
-        return 416;
+        return '416';
     }
 
     /**

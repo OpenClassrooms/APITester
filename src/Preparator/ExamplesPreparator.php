@@ -8,13 +8,13 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Loader\ExamplesExtensionLoader;
 use APITester\Definition\Operation;
-use APITester\Preparator\Config\ExamplesConfig;
+use APITester\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Test\TestCase;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
- * @property ExamplesConfig $config
+ * @property ExamplesPreparatorConfig $config
  */
 final class ExamplesPreparator extends TestCasesPreparator
 {

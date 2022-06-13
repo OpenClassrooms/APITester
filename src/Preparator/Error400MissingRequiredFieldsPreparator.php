@@ -8,7 +8,6 @@ use APITester\Definition\Body;
 use APITester\Definition\Collection\Parameters;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
-use APITester\Preparator\Foundation\Error400Preparator;
 use APITester\Test\TestCase;
 
 final class Error400MissingRequiredFieldsPreparator extends Error400Preparator

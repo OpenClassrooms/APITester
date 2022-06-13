@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Preparator\Config;
 
-final class Error405Config extends PreparatorConfig
+final class Error405PreparatorConfig extends PreparatorConfig
 {
     /**
      * @var string[]

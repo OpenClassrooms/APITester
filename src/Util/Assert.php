@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace APITester\Util;
 
+use APITester\Definition\Example\ResponseExample;
 use APITester\Util\Normalizer\PsrRequestNormalizer;
 use APITester\Util\Normalizer\PsrResponseNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
 use PHPUnit\Framework\ExpectationFailedException;
-use Psr\Http\Message\ResponseInterface;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -97,8 +97,8 @@ final class Assert
      * @param array<string> $excludedFields
      */
     public static function response(
-        ResponseInterface $expected,
-        ResponseInterface $actual,
+        ResponseExample $expected,
+        ResponseExample $actual,
         array $excludedFields = []
     ): void {
         $serialize = self::getJsonSerializer();

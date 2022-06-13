@@ -8,13 +8,13 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
-use APITester\Preparator\Config\Error405Config;
+use APITester\Preparator\Config\Error405PreparatorConfig;
 use APITester\Test\TestCase;
 use APITester\Util\Json;
 use Illuminate\Support\Collection;
 
 /**
- * @property Error405Config $config
+ * @property Error405PreparatorConfig $config
  */
 final class Error405Preparator extends TestCasesPreparator
 {
@@ -47,7 +47,7 @@ final class Error405Preparator extends TestCasesPreparator
                 ->setMethod($method)
                 ->setResponse(
                     ResponseExample::create()
-                        ->setStatusCode($this->config->response->statusCode ?? 405)
+                        ->setStatusCode($this->config->response->statusCode ?? '405')
                         ->setContent(
                             null !== $this->config->response ?
                                 Json::encode($this->config->response) : null

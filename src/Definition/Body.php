@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace APITester\Definition;
 
 use APITester\Util\Json;
+use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\spec\Schema;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
@@ -19,15 +20,25 @@ final class Body
 
     private bool $required = true;
 
-    public function __construct(string $mediaType, Schema $schema)
+    /**
+     * @param Schema|array<mixed> $schema
+     *
+     * @throws TypeErrorException
+     */
+    public function __construct($schema, string $mediaType = 'application/json')
     {
-        $this->schema = $schema;
+        $this->schema = $schema instanceof Schema ? $schema : new Schema($schema);
         $this->mediaType = $mediaType;
     }
 
-    public static function create(string $mediaType, Schema $body): self
+    /**
+     * @param Schema|array<mixed> $schema
+     *
+     * @throws TypeErrorException
+     */
+    public static function create($schema, string $mediaType = 'application/json'): self
     {
-        return new self($mediaType, $body);
+        return new self($schema, $mediaType);
     }
 
     public function isRequired(): bool

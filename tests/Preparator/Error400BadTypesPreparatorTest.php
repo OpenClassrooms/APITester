@@ -2,21 +2,19 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Body;
 use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Preparator\Error400BadTypesPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
-use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -30,7 +28,8 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
         $preparator = new Error400BadTypesPreparator();
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -42,10 +41,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'For string query param' => [
             Api::create()
                 ->addOperation(
-                    Operation::create(
-                        'test',
-                        '/test'
-                    )
+                    Operation::create('test', '/test')
                         ->setMethod('GET')
                         ->addQueryParameter(
                             (new Parameter(
@@ -63,10 +59,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'For int query param' => [
             Api::create()
                 ->addOperation(
-                    Operation::create(
-                        'test',
-                        '/test'
-                    )
+                    Operation::create('test', '/test')
                         ->setMethod('GET')
                         ->addQueryParameter(
                             (new Parameter(
@@ -81,23 +74,31 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_string_type',
-                    new Request('GET', '/test?foo_query=foo'),
-                    new Response(400)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo_query', 'foo')
+                        ->setResponse(ResponseExample::create('400'))
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_number_type',
-                    new Request('GET', '/test?foo_query=1.234'),
-                    new Response(400)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo_query', '1.234')
+                        ->setResponse(ResponseExample::create('400'))
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_boolean_type',
-                    new Request('GET', '/test?foo_query=true'),
-                    new Response(400)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo_query', 'true')
+                        ->setResponse(ResponseExample::create('400'))
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_query_param_bad_array_type',
-                    new Request('GET', '/test?foo_query=foo%2Cbar'),
-                    new Response(400)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo_query', 'foo,bar')
+                        ->setResponse(ResponseExample::create('400'))
                 ),
             ],
         ];
@@ -105,14 +106,10 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
         yield 'For int body field' => [
             Api::create()
                 ->addOperation(
-                    Operation::create(
-                        'test',
-                        '/test'
-                    )
+                    Operation::create('test', '/test')
                         ->setMethod('GET')
                         ->addRequestBody(
                             new Body(
-                                'application/json',
                                 new Schema([
                                     'type' => 'object',
                                     'properties' => [
@@ -121,7 +118,8 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                                         ],
                                     ],
                                     'required' => ['foo'],
-                                ])
+                                ]),
+                                'application/json'
                             )
                         )->addExample(
                             OperationExample::create('foo')
@@ -135,75 +133,50 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_string',
-                    new Request(
-                        'GET',
-                        '/test',
-                        [
-                            'content-type' => ['application/json'],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
                             'foo' => 'foo',
                         ])
-                    ),
-                    new Response(400)
+                        ->setResponse(ResponseExample::create('400'))
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_number',
-                    new Request(
-                        'GET',
-                        '/test',
-                        [
-                            'content-type' => ['application/json'],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
                             'foo' => 1.234,
                         ])
-                    ),
-                    new Response(400)
+                        ->setResponse(ResponseExample::create('400'))
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_boolean',
-                    new Request(
-                        'GET',
-                        '/test',
-                        [
-                            'content-type' => ['application/json'],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
                             'foo' => true,
                         ])
-                    ),
-                    new Response(400)
+                        ->setResponse(ResponseExample::create('400')),
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_array',
-                    new Request(
-                        'GET',
-                        '/test',
-                        [
-                            'content-type' => ['application/json'],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
                             'foo' => ['foo', 'bar'],
                         ])
-                    ),
-                    new Response(400)
+                        ->setResponse(ResponseExample::create('400')),
                 ),
                 new TestCase(
                     Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_object',
-                    new Request(
-                        'GET',
-                        '/test',
-                        [
-                            'content-type' => ['application/json'],
-                        ],
-                        Json::encode([
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
                             'foo' => [
                                 'foo' => 'bar',
                             ],
                         ])
-                    ),
-                    new Response(400)
+                        ->setResponse(ResponseExample::create('400')),
                 ),
             ],
         ];

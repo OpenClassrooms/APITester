@@ -163,13 +163,12 @@ final class Operation implements Filterable
         return $this;
     }
 
-    public function addQueryParameter(Parameter $parameter): self
+    public function withRequestBody(Body $request): self
     {
-        $parameter->setIn(Parameter::TYPE_QUERY);
-        $parameter->setParent($this);
-        $this->queryParameters->add($parameter);
+        $self = clone $this;
+        $self->addRequestBody($request);
 
-        return $this;
+        return $self;
     }
 
     public function addRequestBody(Body $request): self
@@ -266,18 +265,10 @@ final class Operation implements Filterable
      */
     public function getPath(array $params = [], array $query = []): string
     {
-        $params = $this->substituteParams($params, 'path');
-        $query = $this->substituteParams($query, 'query');
-        $path = str_replace(
-            array_map(
-                static fn (string $name) => "{{$name}}",
-                array_keys($params),
-            ),
-            array_values($params),
-            $this->path
-        );
+        $params = self::substituteParams($this->pathParameters, $params);
+        $query = self::substituteParams($this->queryParameters, $query);
 
-        return rtrim($path . '?' . http_build_query($query), '?');
+        return self::formatPath($this->path, $params, $query);
     }
 
     public function getExamples(): OperationExamples
@@ -293,6 +284,42 @@ final class Operation implements Filterable
         $this->examples = $examples;
 
         return $this;
+    }
+
+    /**
+     * @param array<int|string, string|int> $params
+     *
+     * @return array<string, string|int>
+     */
+    public static function substituteParams(Parameters $definitionParams, array $params): array
+    {
+        foreach ($params as $index => $value) {
+            if (!\is_string($index) && isset($definitionParams[$index])) {
+                unset($params[$index]);
+                $params[$definitionParams[$index]->getName()] = $value;
+            }
+        }
+
+        /** @var array<string, string|int> */
+        return $params;
+    }
+
+    /**
+     * @param array<string, string|int> $params
+     * @param array<string, string|int> $query
+     */
+    public static function formatPath(string $path, array $params, array $query): string
+    {
+        $path = str_replace(
+            array_map(
+                static fn (string $name) => "{{$name}}",
+                array_keys($params),
+            ),
+            array_values($params),
+            $path
+        );
+
+        return rtrim($path . '?' . http_build_query($query), '?');
     }
 
     public function getId(): string
@@ -464,33 +491,20 @@ final class Operation implements Filterable
         );
     }
 
-    /**
-     * @param array<int|string, string|int> $params
-     *
-     * @return array<string, string|int>
-     */
-    private function substituteParams(array $params, string $in): array
+    public function withQueryParameter(Parameter $parameter): self
     {
-        $prop = "{$in}Parameters";
-        if (!isset($this->{$prop})) {
-            throw new \RuntimeException("Parameters in {$in} not handled.");
-        }
-        /** @var Parameters $parameters */
-        $parameters = $this->{$prop};
-        $result = [];
-        foreach ($params as $name => $value) {
-            if (\is_string($name)) {
-                $result[$name] = $value;
-            } else {
-                if (!isset($parameters[$name])) {
-                    continue;
-                }
-                /** @var Parameter $parameter */
-                $parameter = $parameters[$name];
-                $result[$parameter->getName()] = $value;
-            }
-        }
+        $self = clone $this;
+        $self->addQueryParameter($parameter);
 
-        return $result;
+        return $self;
+    }
+
+    public function addQueryParameter(Parameter $parameter): self
+    {
+        $parameter->setIn(Parameter::TYPE_QUERY);
+        $parameter->setParent($this);
+        $this->queryParameters->add($parameter);
+
+        return $this;
     }
 }

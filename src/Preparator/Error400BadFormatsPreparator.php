@@ -7,7 +7,6 @@ namespace APITester\Preparator;
 use APITester\Definition\Body;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
-use APITester\Preparator\Foundation\Error400Preparator;
 use cebe\openapi\spec\Schema;
 
 final class Error400BadFormatsPreparator extends Error400Preparator
@@ -77,7 +76,7 @@ final class Error400BadFormatsPreparator extends Error400Preparator
                             $in
                         )
                         ->setName("{$param->getName()}_param_bad_{$param->getFormat()}_format")
-                        ->setStatusCode(400)
+                        ->setStatusCode('400')
                 );
             }
         }

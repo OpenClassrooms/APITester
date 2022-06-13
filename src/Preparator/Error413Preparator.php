@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Preparator;
 
-use APITester\Preparator\Foundation\PaginationErrorPreparator;
-
 final class Error413Preparator extends PaginationErrorPreparator
 {
     public const TOO_LARGE_VALUES = [
@@ -14,9 +12,9 @@ final class Error413Preparator extends PaginationErrorPreparator
         'upper' => '1000000000',
     ];
 
-    protected function getStatusCode(): int
+    protected function getStatusCode(): string
     {
-        return 413;
+        return '413';
     }
 
     /**

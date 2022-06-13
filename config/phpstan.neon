@@ -52,3 +52,4 @@ parameters:
             - LogicException
             - JsonException
             - PHPUnit\Framework\Exception
+            - cebe\openapi\exceptions\TypeErrorException

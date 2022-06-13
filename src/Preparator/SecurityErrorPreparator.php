@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace APITester\Preparator\Foundation;
+namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Security;
-use APITester\Preparator\TestCasesPreparator;
 use APITester\Test\TestCase;
 use Illuminate\Support\Collection;
 
@@ -22,7 +21,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
     {
         /** @var TestCase[] */
         return $operations
-            ->where('responses.*.statusCode', 'contains', $this->getStatusCode())
+            ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
             ->select('securities.*')
             ->flatten()
             ->map(function ($security) {
@@ -33,7 +32,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
         ;
     }
 
-    abstract protected function getStatusCode(): int;
+    abstract protected function getStatusCode(): string;
 
     abstract protected function getTestTokens(Security $security): Tokens;
 
@@ -56,8 +55,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
                 $testCases->add(
                     $this->buildTestCase(
                         OperationExample::create($this->getTestCaseName(), $operation)
-                            ->setHeaders($this->getAuthenticationParams($security, $token)['headers'] ?? [])
-                            ->setQueryParameters($this->getAuthenticationParams($security, $token)['query'] ?? [])
+                            ->authenticate(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,
                     ),
@@ -67,8 +65,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
                 $testCases->add(
                     $this->buildTestCase(
                         OperationExample::create($this->getTestCaseName(), $operation)
-                            ->setHeaders($this->getAuthenticationParams($security, $token)['headers'] ?? [])
-                            ->setQueryParameters($this->getAuthenticationParams($security, $token)['query'] ?? [])
+                            ->authenticate(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,
                     ),

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace APITester\Test;
 
 use APITester\Definition\Body;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Requester\Requester;
 use APITester\Requester\SymfonyKernelRequester;
 use APITester\Util\Assert;
@@ -47,13 +49,8 @@ final class TestCase implements \JsonSerializable, Filterable
      * @var array<int, string>
      */
     private array $excludedFields = [
-        'headers',
-        'reasonPhrase',
-        'headerNames',
-        'protocol',
+        'parent',
     ];
-
-    private ResponseInterface $expectedResponse;
 
     private string $id;
 
@@ -71,24 +68,25 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private ?string $preparator;
 
+    private OperationExample $operationExample;
+
     /**
      * @param array<int, string> $excludedFields
      */
     public function __construct(
         string $name,
-        RequestInterface $request,
-        ResponseInterface $expectedResponse,
+        OperationExample $operationExample,
         array $excludedFields = []
     ) {
-        $this->request = $request;
-        $this->expectedResponse = $expectedResponse;
+        $this->operationExample = $operationExample;
         $this->logger = new NullLogger();
-        $this->id = uniqid('testcase_', false);
+        $this->id = uniqid('testcase_');
         $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
         $this->name = $name;
         $nameParts = explode(' - ', $name);
         $this->preparator = $nameParts[0] ?? null;
         $this->operation = $nameParts[1] ?? null;
+        $this->request = $operationExample->getPsrRequest();
     }
 
     /**
@@ -133,8 +131,8 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->response = $this->requester->getResponse($this->id);
         try {
             Assert::response(
-                $this->expectedResponse,
-                $this->response,
+                $this->operationExample->getResponse(),
+                ResponseExample::fromPsrResponse($this->response),
                 $this->excludedFields
             );
         } catch (ExpectationFailedException $e) {
@@ -206,35 +204,6 @@ final class TestCase implements \JsonSerializable, Filterable
         return $self;
     }
 
-    public function getRequest(): RequestInterface
-    {
-        return $this->request;
-    }
-
-    public function setRequest(RequestInterface $request): self
-    {
-        $this->request = $request;
-
-        return $this;
-    }
-
-    public function getExpectedResponse(): ResponseInterface
-    {
-        return $this->expectedResponse;
-    }
-
-    /**
-     * @return array{'name': string, 'request': RequestInterface, 'response': ResponseInterface}
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'name' => $this->getName(),
-            'request' => $this->request,
-            'response' => $this->expectedResponse,
-        ];
-    }
-
     public function getOperation(): ?string
     {
         return $this->operation;
@@ -255,6 +224,23 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->preparator = $preparator;
     }
 
+    public function getHash(): string
+    {
+        return hash('sha3-256', Json::encode($this->jsonSerialize()));
+    }
+
+    /**
+     * @return array{'name': string, 'request': RequestInterface, 'response': ResponseExample}
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'name' => $this->getName(),
+            'request' => $this->request,
+            'response' => $this->operationExample->getResponse(),
+        ];
+    }
+
     private function log(string $logLevel): void
     {
         $message = Json::encode([
@@ -263,7 +249,7 @@ final class TestCase implements \JsonSerializable, Filterable
             'finishedAt' => $this->getFinishedAt(),
             'request' => Serializer::normalize($this->request),
             'response' => Serializer::normalize($this->response),
-            'expected' => Serializer::normalize($this->expectedResponse),
+            'expected' => Serializer::normalize($this->operationExample->getResponse()),
         ], JSON_PRETTY_PRINT);
         $this->logger->log($logLevel, $message);
     }

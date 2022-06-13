@@ -26,8 +26,14 @@ final class Parameter
 
     private ?Schema $schema;
 
-    public function __construct(string $name, bool $required = true, ?Schema $schema = null)
+    /**
+     * @param Schema|array<string, string|int>|null $schema
+     */
+    public function __construct(string $name, bool $required = true, $schema = null)
     {
+        if (\is_array($schema)) {
+            $schema = new Schema($schema);
+        }
         $this->name = $name;
         $this->required = $required;
         $this->schema = $schema;

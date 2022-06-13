@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
@@ -12,8 +14,6 @@ use APITester\Definition\Token;
 use APITester\Preparator\Error403Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -61,7 +61,8 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -87,25 +88,21 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error403Preparator::getName() . ' - test1 - DeniedToken',
-                    new Request(
-                        'GET',
-                        '/test/oauth2',
-                        [
+                    OperationExample::create('test1')
+                        ->setPath('/test/oauth2')
+                        ->setHeaders([
                             'Authorization' => 'Bearer 2222',
-                        ]
-                    ),
-                    new Response(403)
+                        ])
+                        ->setResponse(ResponseExample::create('403')),
                 ),
                 new TestCase(
                     Error403Preparator::getName() . ' - test1 - DeniedToken',
-                    new Request(
-                        'GET',
-                        '/test/oauth2',
-                        [
+                    OperationExample::create('test1')
+                        ->setPath('/test/oauth2')
+                        ->setHeaders([
                             'Authorization' => 'Bearer 3333',
-                        ]
-                    ),
-                    new Response(403)
+                        ])
+                        ->setResponse(ResponseExample::create('403')),
                 ),
             ],
         ];

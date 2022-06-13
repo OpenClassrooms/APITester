@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace APITester\Preparator\Foundation;
+namespace APITester\Preparator;
 
 use APITester\Definition\Body;
 use APITester\Definition\Collection\Operations;
@@ -12,7 +12,6 @@ use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
-use APITester\Preparator\TestCasesPreparator;
 use APITester\Test\TestCase;
 
 abstract class Error400Preparator extends TestCasesPreparator
@@ -111,9 +110,9 @@ abstract class Error400Preparator extends TestCasesPreparator
         );
     }
 
-    protected function getStatusCode(): int
+    protected function getStatusCode(): string
     {
-        return 400;
+        return '400';
     }
 
     /**

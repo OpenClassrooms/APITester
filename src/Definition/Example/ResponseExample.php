@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace APITester\Definition\Example;
 
 use APITester\Util\Json;
+use Psr\Http\Message\ResponseInterface;
 
 final class ResponseExample
 {
@@ -12,10 +13,10 @@ final class ResponseExample
 
     private string $mediaType = 'application/json';
 
-    private int $statusCode = 200;
+    private string $statusCode = '200';
 
     /**
-     * @var array<string, string|int>
+     * @var array<string, string|int|int[]|string[]>
      */
     private array $headers = [];
 
@@ -27,7 +28,7 @@ final class ResponseExample
     /**
      * @param mixed $content
      */
-    public function __construct($content = null, ?int $statusCode = null)
+    public function __construct(?string $statusCode = null, $content = null)
     {
         $this->content = $content;
         $this->statusCode = $statusCode ?? $this->statusCode;
@@ -36,9 +37,65 @@ final class ResponseExample
     /**
      * @param mixed $content
      */
-    public static function create($content = null, ?int $statusCode = null): self
+    public static function create(?string $statusCode = null, $content = null): self
     {
-        return new self($content, $statusCode);
+        return new self($statusCode, $content);
+    }
+
+    public static function fromPsrResponse(ResponseInterface $response): self
+    {
+        $example = new self();
+        $example->setStatusCode((string) $response->getStatusCode());
+        $example->setHeaders($response->getHeaders());
+        $example->setContent($response->getBody()->getContents());
+
+        return $example;
+    }
+
+    public function getStatusCode(): string
+    {
+        return $this->statusCode;
+    }
+
+    public function setStatusCode(string $statusCode): self
+    {
+        $this->statusCode = $statusCode;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string|int|int[]|string[]>
+     */
+    public function getHeaders(): array
+    {
+        if (null !== $this->content && !isset($this->headers['content-type'])) {
+            $this->headers['content-type'] = $this->getMediaType();
+        }
+
+        return $this->headers;
+    }
+
+    /**
+     * @param array<string, string|int|int[]|string[]> $headers
+     */
+    public function setHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function getMediaType(): string
+    {
+        return $this->mediaType;
+    }
+
+    public function setMediaType(string $mediaType): self
+    {
+        $this->mediaType = $mediaType;
+
+        return $this;
     }
 
     /**
@@ -82,52 +139,6 @@ final class ResponseExample
     public function setParent(OperationExample $parent): self
     {
         $this->parent = $parent;
-
-        return $this;
-    }
-
-    public function getStatusCode(): int
-    {
-        return $this->statusCode;
-    }
-
-    public function setStatusCode(int $statusCode): self
-    {
-        $this->statusCode = $statusCode;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string, int|string>
-     */
-    public function getHeaders(): array
-    {
-        if (null !== $this->content && !isset($this->headers['content-type'])) {
-            $this->headers['content-type'] = $this->getMediaType();
-        }
-
-        return $this->headers;
-    }
-
-    /**
-     * @param array<string, int|string> $headers
-     */
-    public function setHeaders(array $headers): self
-    {
-        $this->headers = $headers;
-
-        return $this;
-    }
-
-    public function getMediaType(): string
-    {
-        return $this->mediaType;
-    }
-
-    public function setMediaType(string $mediaType): self
-    {
-        $this->mediaType = $mediaType;
 
         return $this;
     }

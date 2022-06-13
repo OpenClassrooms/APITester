@@ -7,7 +7,6 @@ namespace APITester\Preparator;
 use APITester\Definition\Body;
 use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Operation;
-use APITester\Preparator\Foundation\Error400Preparator;
 use cebe\openapi\spec\Schema;
 
 final class Error400BadTypesPreparator extends Error400Preparator
@@ -61,7 +60,7 @@ final class Error400BadTypesPreparator extends Error400Preparator
                                 $in
                             )
                             ->setName("{$param->getName()}_param_bad_{$type}_type")
-                            ->setStatusCode(400)
+                            ->setStatusCode('400')
                     );
                 }
             }
@@ -90,7 +89,7 @@ final class Error400BadTypesPreparator extends Error400Preparator
                     $example
                         ->withBody(BodyExample::create($content))
                         ->setName("{$property}_body_field_type_{$type}")
-                        ->setStatusCode(400)
+                        ->setStatusCode('400')
                 );
             }
         }

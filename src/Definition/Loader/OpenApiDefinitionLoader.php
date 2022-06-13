@@ -213,8 +213,8 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
             $schema = $mediaType->schema;
             $request = Body::create(
-                $type,
                 $schema,
+                $type,
             );
             $collection->add($request);
         }
@@ -402,26 +402,28 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                  */
                 foreach ($mediaType->examples ?? [] as $name => $example) {
                     $operationExample = $this->getExample($name, $examples);
-                    $operationExample->setResponse(ResponseExample::create((array) $example->value, (int) $statusCode));
+                    $operationExample->setResponse(
+                        ResponseExample::create((string) $statusCode, (array) $example->value)
+                    );
                 }
                 /** @var Example|null $example */
                 $example = $mediaType->example;
                 if (null !== $example) {
                     $operationExample = $this->getExample('default', $examples);
-                    $operationExample->setResponse(new ResponseExample((array) $example->value, (int) $statusCode));
+                    $operationExample->setResponse(new ResponseExample((string) $statusCode, (array) $example->value));
                 }
                 if ($mediaType->schema instanceof Schema) {
                     if (null !== $mediaType->schema->example) {
                         $operationExample = $this->getExample('default', $examples);
                         $operationExample->setResponse(
-                            new ResponseExample((array) $mediaType->schema->example, (int) $statusCode)
+                            new ResponseExample((string) $statusCode, (array) $mediaType->schema->example)
                         );
                     }
                     try {
                         $example = $this->extractDeepExamples($mediaType->schema);
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setResponse(
-                            new ResponseExample($example, (int) $statusCode)
+                            new ResponseExample((string) $statusCode, $example)
                         );
                     } catch (ExampleNotExtractableException $e) {
                         // @ignoreException

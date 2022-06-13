@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Preparator\Error416Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -28,7 +28,8 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -42,7 +43,7 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                 'range' => [
                     [
                         'in' => 'query',
-                        'names' => ['offset', 'limit'],
+                        'names' => ['from', 'to'],
                     ],
                 ],
             ],
@@ -52,24 +53,33 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                         'test',
                         '/test'
                     )
-                        ->addQueryParameter(new Parameter('offset'))
-                        ->addQueryParameter(new Parameter('limit'))
+                        ->addQueryParameter(new Parameter('from'))
+                        ->addQueryParameter(new Parameter('to'))
                 ),
             [
                 new TestCase(
                     Error416Preparator::getName() . ' - test - NonNumericRange',
-                    new Request('GET', '/test?offset=foo&limit=bar'),
-                    new Response(416)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('from', 'foo')
+                        ->setQueryParameter('to', 'bar')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test - InversedRange',
-                    new Request('GET', '/test?offset=20&limit=5'),
-                    new Response(416)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('from', '20')
+                        ->setQueryParameter('to', '5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test - NegativeRange',
-                    new Request('GET', '/test?offset=-5&limit=5'),
-                    new Response(416)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setQueryParameter('from', '-5')
+                        ->setQueryParameter('to', '5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
             ],
         ];
@@ -95,17 +105,17 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error416Preparator::getName() . ' - test - NonNumericRange',
-                    new Request('GET', '/test', [
-                        'RangeConfig' => 'items=foo-bar',
-                    ]),
-                    new Response(416)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeader('RangeConfig', 'items=foo-bar')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test - InversedRange',
-                    new Request('GET', '/test', [
-                        'RangeConfig' => 'items=20-5',
-                    ]),
-                    new Response(416)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeader('RangeConfig', 'items=20-5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
             ],
         ];
@@ -115,7 +125,7 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                 'range' => [
                     [
                         'in' => 'query',
-                        'names' => ['offset', 'limit'],
+                        'names' => ['from', 'to'],
                     ],
                     [
                         'in' => 'header',
@@ -137,38 +147,47 @@ final class Error416PreparatorTest extends \PHPUnit\Framework\TestCase
                         'test2',
                         '/test2'
                     )
-                        ->addQueryParameter(new Parameter('offset'))
-                        ->addQueryParameter(new Parameter('limit'))
+                        ->addQueryParameter(new Parameter('from'))
+                        ->addQueryParameter(new Parameter('to'))
                 ),
             [
                 new TestCase(
                     Error416Preparator::getName() . ' - test1 - NonNumericRange',
-                    new Request('GET', '/test1', [
-                        'RangeConfig' => 'items=foo-bar',
-                    ]),
-                    new Response(416)
+                    OperationExample::create('test1')
+                        ->setPath('/test1')
+                        ->setHeader('RangeConfig', 'items=foo-bar')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test1 - InversedRange',
-                    new Request('GET', '/test1', [
-                        'RangeConfig' => 'items=20-5',
-                    ]),
-                    new Response(416)
+                    OperationExample::create('test1')
+                        ->setPath('/test1')
+                        ->setHeader('RangeConfig', 'items=20-5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test2 - NonNumericRange',
-                    new Request('GET', '/test2?offset=foo&limit=bar'),
-                    new Response(416)
+                    OperationExample::create('test2')
+                        ->setPath('/test2')
+                        ->setQueryParameter('from', 'foo')
+                        ->setQueryParameter('to', 'bar')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test2 - InversedRange',
-                    new Request('GET', '/test2?offset=20&limit=5'),
-                    new Response(416)
+                    OperationExample::create('test2')
+                        ->setPath('/test2')
+                        ->setQueryParameter('from', '20')
+                        ->setQueryParameter('to', '5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
                 new TestCase(
                     Error416Preparator::getName() . ' - test2 - NegativeRange',
-                    new Request('GET', '/test2?offset=-5&limit=5'),
-                    new Response(416)
+                    OperationExample::create('test2')
+                        ->setPath('/test2')
+                        ->setQueryParameter('from', '-5')
+                        ->setQueryParameter('to', '5')
+                        ->setResponse(ResponseExample::create('416')),
                 ),
             ],
         ];

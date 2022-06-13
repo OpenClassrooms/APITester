@@ -99,6 +99,12 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_NONE,
                 'update baseline with new errors to ignore'
             )
+            ->addOption(
+                'filter',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Filter which tests to run'
+            )
         ;
     }
 }

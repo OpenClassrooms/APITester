@@ -10,16 +10,15 @@ use APITester\Definition\Security\ApiKeySecurity;
 use APITester\Definition\Security\HttpSecurity;
 use APITester\Definition\Security\OAuth2\OAuth2Security;
 use APITester\Definition\Token;
-use APITester\Preparator\Foundation\SecurityErrorPreparator;
 use Firebase\JWT\JWT;
 
 final class Error401Preparator extends SecurityErrorPreparator
 {
     public const FAKE_API_KEY = 'b85a985d-0114-4a23-8419-49f64a4c12f8';
 
-    protected function getStatusCode(): int
+    protected function getStatusCode(): string
     {
-        return 401;
+        return '401';
     }
 
     protected function getTestTokens(Security $security): Tokens

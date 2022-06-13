@@ -8,11 +8,11 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
-use APITester\Preparator\Config\Error406Config;
+use APITester\Preparator\Config\Error406PreparatorConfig;
 use APITester\Test\TestCase;
 
 /**
- * @property Error406Config $config
+ * @property Error406PreparatorConfig $config
  */
 final class Error406Preparator extends TestCasesPreparator
 {
@@ -46,7 +46,7 @@ final class Error406Preparator extends TestCasesPreparator
                     'Accept' => $type,
                 ])->setResponse(
                     ResponseExample::create()
-                        ->setStatusCode(406)
+                        ->setStatusCode('406')
                 ),
         );
     }

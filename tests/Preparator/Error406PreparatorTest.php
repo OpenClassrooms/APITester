@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Preparator\Error406Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -36,7 +36,8 @@ final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -69,17 +70,17 @@ final class Error406PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error406Preparator::getName() . ' - test - InvalidMediaType',
-                    new Request('GET', '/test', [
-                        'Accept' => 'application/javascript',
-                    ]),
-                    new Response(406)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeader('Accept', 'application/javascript')
+                        ->setResponse(ResponseExample::create('406')),
                 ),
                 new TestCase(
                     Error406Preparator::getName() . ' - test - InvalidMediaType',
-                    new Request('GET', '/test', [
-                        'Accept' => 'application/vnd.koan',
-                    ]),
-                    new Response(406)
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setHeader('Accept', 'application/vnd.koan')
+                        ->setResponse(ResponseExample::create('406')),
                 ),
             ],
         ];

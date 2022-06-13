@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Body;
+use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Preparator\Error404Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
-use APITester\Util\Json;
 use cebe\openapi\spec\Schema;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -31,7 +30,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
         Assert::objectsEqual(
             $expected,
             $preparator->doPrepare($api->getOperations()),
-            ['body']
+            ['parent', 'body']
         );
     }
 
@@ -62,14 +61,10 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error404Preparator::getName() . ' - getTest - RandomPath',
-                    new Request('GET', '/test/1'),
-                    new Response(
-                        404,
-                        [
-                            'content-type' => 'application/json',
-                        ],
-                        'description test'
-                    )
+                    OperationExample::create('test1')
+                        ->setPath('/test/{id}')
+                        ->setPathParameter('id', '1')
+                        ->setResponse(ResponseExample::create('404', 'description test')),
                 ),
             ],
         ];
@@ -80,7 +75,6 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                     Operation::create('postTest', '/test', 'POST')
                         ->addRequestBody(
                             Body::create(
-                                'application/json',
                                 new Schema([
                                     'type' => 'object',
                                     'required' => ['name'],
@@ -89,7 +83,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                                             'type' => 'string',
                                         ],
                                     ],
-                                ])
+                                ]),
                             )
                         )
                         ->addResponse(DefinitionResponse::create(200))
@@ -101,23 +95,17 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error404Preparator::getName() . ' - postTest - RandomPath',
-                    new Request(
-                        'POST',
-                        '/test',
-                        [
-                            'content-type' => 'application/json',
-                        ],
-                        Json::encode([
-                            'name' => 'aaa',
-                        ])
-                    ),
-                    new Response(
-                        404,
-                        [
-                            'content-type' => 'application/json',
-                        ],
-                        'description test',
-                    )
+                    OperationExample::create('test1')
+                        ->setPath('/test')
+                        ->setMethod('POST')
+                        ->setBodyContent(
+                            [
+                                'name' => 'toto',
+                            ]
+                        )
+                        ->setResponse(
+                            ResponseExample::create('404', 'description test')
+                        ),
                 ),
             ],
         ];

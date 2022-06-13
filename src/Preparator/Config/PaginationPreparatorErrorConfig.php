@@ -6,7 +6,7 @@ namespace APITester\Preparator\Config;
 
 use APITester\Preparator\Config\PaginationError\RangeConfig;
 
-final class PaginationErrorConfig extends PreparatorConfig
+final class PaginationPreparatorErrorConfig extends PreparatorConfig
 {
     /**
      * @var RangeConfig[]

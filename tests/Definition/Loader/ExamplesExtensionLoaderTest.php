@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Definition\Loader;
+namespace APITester\Tests\Definition\Loader;
 
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\BodyExample;
@@ -68,10 +68,10 @@ final class ExamplesExtensionLoaderTest extends TestCase
                                 ])
                             )
                             ->setResponse(
-                                ResponseExample::create([
+                                ResponseExample::create(null, [
                                     'message' => 'Bad request',
                                 ])
-                                    ->setStatusCode(400)
+                                    ->setStatusCode('400')
                                     ->setHeaders([
                                         'id' => 123,
                                     ])

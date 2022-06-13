@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace APITester\Tests\Test\Preparator;
+namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
@@ -16,8 +17,6 @@ use APITester\Preparator\Error401Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use Firebase\JWT\JWT;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
 
 final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -32,7 +31,8 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
 
         Assert::objectsEqual(
             $expected,
-            $preparator->doPrepare($api->getOperations())
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
@@ -118,70 +118,58 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
             [
                 new TestCase(
                     Error401Preparator::getName() . ' - test1 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/oauth2/toto',
-                        [
+                    OperationExample::create('test1')
+                        ->setPath('/test/oauth2/toto')
+                        ->setHeaders([
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,
                             ], 'abcd'),
-                        ]
-                    ),
-                    new Response(401)
+                        ])
+                        ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
                     Error401Preparator::getName() . ' - test2 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/api/key/header',
-                        [
+                    OperationExample::create('test1')
+                        ->setPath('/test/api/key/header')
+                        ->setHeaders([
                             'api_key' => Error401Preparator::FAKE_API_KEY,
-                        ]
-                    ),
-                    new Response(401)
+                        ])
+                        ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
                     Error401Preparator::getName() . ' - test3 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/api/key/cookie',
-                        [
+                    OperationExample::create('test3')
+                        ->setPath('/test/api/key/cookie')
+                        ->setHeaders([
                             'Cookie' => 'api_key=' . Error401Preparator::FAKE_API_KEY,
-                        ]
-                    ),
-                    new Response(401)
+                        ])
+                        ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
                     Error401Preparator::getName() . ' - test4 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/api/key/query?api_key=' . Error401Preparator::FAKE_API_KEY
-                    ),
-                    new Response(401)
+                    OperationExample::create('test4')
+                        ->setPath('/test/api/key/query?api_key=' . Error401Preparator::FAKE_API_KEY)
+                        ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
                     Error401Preparator::getName() . ' - test5 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/basic',
-                        [
+                    OperationExample::create('test5')
+                        ->setPath('/test/basic')
+                        ->setHeaders([
                             'Authorization' => 'Basic ' . base64_encode('aaaa:bbbbb'),
-                        ]
-                    ),
-                    new Response(401)
+                        ])
+                        ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
                     Error401Preparator::getName() . ' - test6 - InvalidToken',
-                    new Request(
-                        'GET',
-                        '/test/bearer',
-                        [
+                    OperationExample::create('test5')
+                        ->setPath('/test/bearer')
+                        ->setHeaders([
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,
                             ], 'abcd'),
-                        ]
-                    ),
-                    new Response(401)
+                        ])
+                        ->setResponse(ResponseExample::create('401'))
                 ),
             ],
         ];

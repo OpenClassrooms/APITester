@@ -2,21 +2,19 @@
 
 declare(strict_types=1);
 
-namespace APITester\Preparator\Foundation;
+namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
-use APITester\Preparator\Config;
 use APITester\Preparator\Config\PaginationError\RangeConfig;
-use APITester\Preparator\Config\PaginationErrorConfig;
+use APITester\Preparator\Config\PaginationPreparatorErrorConfig;
 use APITester\Preparator\Exception\PreparatorLoadingException;
-use APITester\Preparator\TestCasesPreparator;
 use APITester\Test\TestCase;
 
 /**
- * @property PaginationErrorConfig $config
+ * @property PaginationPreparatorErrorConfig $config
  */
 abstract class PaginationErrorPreparator extends TestCasesPreparator
 {
@@ -34,7 +32,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
 
     protected static function getConfigClassName(): string
     {
-        return 'PaginationErrorConfig';
+        return 'PaginationPreparatorErrorConfig';
     }
 
     /**
@@ -42,7 +40,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
      */
     abstract protected function getQueryValues(): array;
 
-    abstract protected function getStatusCode(): int;
+    abstract protected function getStatusCode(): string;
 
     /**
      * @return string[][]
