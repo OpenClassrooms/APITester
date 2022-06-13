@@ -46,7 +46,7 @@ final class Error404Preparator extends TestCasesPreparator
                     ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->statusCode ?? '404')
+                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
                             ->setHeaders($this->config->response->headers ?? [])
                             ->setContent($this->config->response->body ?? $response->getDescription())
                     )
@@ -59,7 +59,7 @@ final class Error404Preparator extends TestCasesPreparator
                     ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->statusCode ?? '404')
+                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
                             ->setHeaders($this->config->response->headers ?? [])
                             ->setContent($this->config->response->body ?? $response->getDescription())
                     )

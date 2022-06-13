@@ -6,6 +6,7 @@
       <fqn value="\JsonException" />
       <fqn value="\LogicException" />
       <fqn value="\RuntimeException" />
+      <fqn value="\Symfony\Component\Serializer\Exception\ExceptionInterface" />
       <fqn value="\cebe\openapi\exceptions\TypeErrorException" />
     </unchecked_exceptions>
   </component>

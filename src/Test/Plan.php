@@ -350,7 +350,9 @@ final class Plan
     private function getPhpUnitOptions(array $options): array
     {
         $options['colors'] = 'always';
-        $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+        if (!isset($options['verbose']) || false === $options['verbose']) {
+            $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+        }
         $options = array_filter(
             $options,
             static fn ($key) => !\in_array($key, [

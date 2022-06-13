@@ -18,7 +18,7 @@ final class ExamplesExtensionLoader
     public static function load(string $path, Operations $operations): Operations
     {
         $data = self::loadYaml($path);
-        $examples = Serializer::denormalize($data, OperationExamples::class);
+        $examples = Serializer::denormalize($data, OperationExamples::class, ['operations']);
 
         return self::addExamplesToOperations(
             $data['operations'],

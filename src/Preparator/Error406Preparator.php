@@ -47,6 +47,7 @@ final class Error406Preparator extends TestCasesPreparator
                 ])->setResponse(
                     ResponseExample::create()
                         ->setStatusCode('406')
+                        ->setContent($this->config->response->body ?? null)
                 ),
         );
     }

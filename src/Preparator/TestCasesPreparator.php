@@ -16,6 +16,7 @@ use APITester\Test\TestCase;
 use APITester\Util\Json;
 use APITester\Util\Object_;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Yaml\Tag\TaggedValue;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
@@ -87,6 +88,7 @@ abstract class TestCasesPreparator
     public function configure(array $config): void
     {
         try {
+            $config = $this->normalizeTaggedValues($config);
             $this->config = Object_::fromArray($config, static::getConfigFQCN());
         } catch (ExceptionInterface $e) {
             throw new InvalidPreparatorConfigException(static::class, 0, $e);
@@ -159,5 +161,26 @@ abstract class TestCasesPreparator
     private function newConfigInstance(string $class)
     {
         return new $class();
+    }
+
+    /**
+     * @param array<mixed> $config
+     *
+     * @return array<mixed>
+     */
+    private function normalizeTaggedValues(array $config): array
+    {
+        if (\array_key_exists('response', $config)
+            && \array_key_exists('statusCode', $config['response'])
+            && $config['response']['statusCode'] instanceof TaggedValue) {
+            if ('NOT' === $config['response']['statusCode']->getTag()) {
+                $statusCode = "#^(?!{$config['response']['statusCode']->getValue()})\\d+#";
+            } else {
+                $statusCode = $config['response']['statusCode']->getValue();
+            }
+            $config['response']['statusCode'] = $statusCode;
+        }
+
+        return $config;
     }
 }

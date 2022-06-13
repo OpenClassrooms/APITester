@@ -11,5 +11,10 @@ class PreparatorConfig
      */
     public array $excludedFields = [];
 
-    public ?ResponseConfig $response = null;
+    public ResponseConfig $response;
+
+    public function __construct()
+    {
+        $this->response = new ResponseConfig();
+    }
 }

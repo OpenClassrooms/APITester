@@ -31,15 +31,10 @@ final class RandomPreparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): iterable
     {
-        $statusCode = '#^(?!500)\d+#';
-        $response = $this->config->response;
-        if (null !== $response && null !== $response->statusCode) {
-            $statusCode = $response->statusCode;
-        }
         $testCases = [];
         foreach (range(1, $this->config->casesCount) as $ignored) {
             $random = $operation->getRandomExample();
-            $random->setStatusCode($statusCode);
+            $random->setStatusCode($this->config->response->getStatusCode() ?? '#^(?!500)\d+#');
             $testcase = $this->buildTestCase($random);
             $testCases[$testcase->getHash()] = $testcase;
         }

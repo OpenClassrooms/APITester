@@ -13,7 +13,6 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -102,14 +101,14 @@ final class Assert
         array $excludedFields = []
     ): void {
         $serialize = self::getJsonSerializer();
-        try {
-            /** @var array<string, mixed> $expected */
-            $expected = $serialize->normalize($expected);
-            /** @var array<string, mixed> $actual */
-            $actual = $serialize->normalize($actual);
-        } catch (ExceptionInterface $e) {
-            throw new \RuntimeException('Failed to normalize response', 0, $e);
-        }
+        /** @var array<string, mixed> $expected */
+        $expected = $serialize->normalize($expected, null, [
+            AbstractNormalizer::IGNORED_ATTRIBUTES => $excludedFields,
+        ]);
+        /** @var array<string, mixed> $actual */
+        $actual = $serialize->normalize($actual, null, [
+            AbstractNormalizer::IGNORED_ATTRIBUTES => $excludedFields,
+        ]);
 
         self::initAccessor();
         $paths = self::getPaths($expected, $excludedFields);

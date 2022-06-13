@@ -247,9 +247,9 @@ final class TestCase implements \JsonSerializable, Filterable
             'name' => $this->getName(),
             'startedAt' => $this->getStartedAt(),
             'finishedAt' => $this->getFinishedAt(),
-            'request' => Serializer::normalize($this->request),
-            'response' => Serializer::normalize($this->response),
-            'expected' => Serializer::normalize($this->operationExample->getResponse()),
+            'request' => Serializer::normalize($this->request, $this->excludedFields),
+            'response' => Serializer::normalize($this->response, $this->excludedFields),
+            'expected' => Serializer::normalize($this->operationExample->getResponse(), $this->excludedFields),
         ], JSON_PRETTY_PRINT);
         $this->logger->log($logLevel, $message);
     }

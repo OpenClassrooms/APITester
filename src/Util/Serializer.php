@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -31,15 +32,18 @@ final class Serializer
      *
      * @param mixed[]         $data
      * @param class-string<T> $type
+     * @param string[]        $ignoredAttributes
      *
      * @throws ExceptionInterface
      *
      * @return T
      */
-    public static function denormalize(array $data, string $type)
+    public static function denormalize(array $data, string $type, array $ignoredAttributes = [])
     {
         return self::create()
-            ->denormalize($data, $type)
+            ->denormalize($data, $type, null, [
+                AbstractNormalizer::IGNORED_ATTRIBUTES => $ignoredAttributes,
+            ])
         ;
     }
 
@@ -90,14 +94,16 @@ final class Serializer
     }
 
     /**
+     * @param string[] $ignoredAttributes
+     *
      * @return mixed
-     * @noinspection PhpDocMissingThrowsInspection
-     * @noinspection PhpUnhandledExceptionInspection
      */
-    public static function normalize(object $object)
+    public static function normalize(object $object, array $ignoredAttributes = [])
     {
         return self::create()
-            ->normalize($object)
+            ->normalize($object, null, [
+                AbstractNormalizer::IGNORED_ATTRIBUTES => $ignoredAttributes,
+            ])
         ;
     }
 }
