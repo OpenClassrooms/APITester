@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 final class Suite
 {
+    private ?string $phpunitConfig = null;
+
     /**
      * @var \Closure[]
      */
@@ -93,7 +95,7 @@ final class Suite
     /**
      * @return Auth[]
      */
-    public function getAuthentifications(): array
+    public function getAuthentications(): array
     {
         return $this->auth;
     }
@@ -194,5 +196,15 @@ final class Suite
     public function setTestCaseClass(string $testCaseClass): void
     {
         $this->testCaseClass = $testCaseClass;
+    }
+
+    public function getPhpunitConfig(): ?string
+    {
+        return $this->phpunitConfig;
+    }
+
+    public function setPhpunitConfig(?string $phpunitConfig): void
+    {
+        $this->phpunitConfig = $phpunitConfig;
     }
 }

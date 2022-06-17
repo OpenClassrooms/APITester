@@ -85,7 +85,31 @@ final class ExecutePlanCommand extends Command
                 'coverage-php',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'coverage export to php'
+                'coverage export to php format'
+            )
+            ->addOption(
+                'coverage-clover',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'coverage export to clover format'
+            )
+            ->addOption(
+                'coverage-html',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'coverage export to html format'
+            )
+            ->addOption(
+                'coverage-text',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'coverage export to html format'
+            )
+            ->addOption(
+                'coverage-cobertura',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'coverage export to html format'
             )
             ->addOption(
                 'set-baseline',

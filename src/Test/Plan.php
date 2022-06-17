@@ -25,6 +25,7 @@ use PHPUnit\Framework\TestResult;
 use PHPUnit\TextUI\CliArguments\Builder;
 use PHPUnit\TextUI\CliArguments\Mapper;
 use PHPUnit\TextUI\TestRunner;
+use PHPUnit\TextUI\XmlConfiguration\Loader;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -212,12 +213,7 @@ final class Plan
     {
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
-            (new Mapper())->mapToLegacyArray(
-                (new Builder())->fromParameters(
-                    $this->getPhpUnitOptions($options),
-                    []
-                )
-            ),
+            $this->getPhpUnitArguments($options, $suiteConfig),
             [],
             false
         );
@@ -240,6 +236,17 @@ final class Plan
             ->getFilters()
             ->writeBaseline($exclude)
         ;
+    }
+
+    private function isSuccessful(): bool
+    {
+        foreach ($this->results as $suiteResult) {
+            if ($suiteResult->failureCount() > 0 || $suiteResult->errorCount() > 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -306,7 +313,7 @@ final class Plan
     private function authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
     {
         $tokens = new Tokens();
-        foreach ($config->getAuthentifications() as $authConf) {
+        foreach ($config->getAuthentications() as $authConf) {
             $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
         }
 
@@ -345,46 +352,20 @@ final class Plan
     /**
      * @param array<string, mixed> $options
      *
-     * @return array<array-key, string>
+     * @return string[]
      */
-    private function getPhpUnitOptions(array $options): array
+    private function getPhpUnitArguments(array $options, Config\Suite $suiteConfig): array
     {
-        $options['colors'] = 'always';
-        if (!isset($options['verbose']) || false === $options['verbose']) {
-            $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+        $options = $this->getPhpUnitOptions($options);
+        $arguments = (new Builder())->fromParameters($options, []);
+        $arguments = (new Mapper())->mapToLegacyArray($arguments);
+
+        $phpunitConfig = $suiteConfig->getPhpunitConfig();
+        if (null !== $phpunitConfig) {
+            $arguments['configurationObject'] = (new Loader())->load($phpunitConfig);
         }
-        $options = array_filter(
-            $options,
-            static fn ($key) => !\in_array($key, [
-                'config',
-                'quiet',
-                'ansi',
-                'no-ansi',
-                'no-interaction',
-                'suite',
-                'set-baseline',
-                'update-baseline',
-            ], true),
-            ARRAY_FILTER_USE_KEY
-        );
 
-        return array_filter(
-            array_map(
-                static function (string $key, $value) {
-                    if (null === $value) {
-                        return null;
-                    }
-                    if (true === $value) {
-                        return "--{$key}";
-                    }
-
-                    /** @var string|bool|int $value */
-                    return false !== $value ? "--{$key}={$value}" : null;
-                },
-                array_keys($options),
-                array_values($options),
-            )
-        );
+        return $arguments;
     }
 
     /**
@@ -442,14 +423,48 @@ final class Plan
         throw new DefinitionLoaderNotFoundException($format);
     }
 
-    private function isSuccessful(): bool
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<array-key, string>
+     */
+    private function getPhpUnitOptions(array $options): array
     {
-        foreach ($this->results as $suiteResult) {
-            if ($suiteResult->failureCount() > 0 || $suiteResult->errorCount() > 0) {
-                return false;
-            }
+        $options['colors'] = 'always';
+        if (!isset($options['verbose']) || false === $options['verbose']) {
+            $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
         }
+        $options = array_filter(
+            $options,
+            static fn ($key) => !\in_array($key, [
+                'config',
+                'quiet',
+                'ansi',
+                'no-ansi',
+                'no-interaction',
+                'suite',
+                'set-baseline',
+                'update-baseline',
+            ], true),
+            ARRAY_FILTER_USE_KEY
+        );
 
-        return true;
+        return array_filter(
+            array_map(
+                static function (string $key, $value) {
+                    if (null === $value) {
+                        return null;
+                    }
+                    if (true === $value) {
+                        return "--{$key}";
+                    }
+
+                    /** @var string|bool|int $value */
+                    return false !== $value ? "--{$key}={$value}" : null;
+                },
+                array_keys($options),
+                array_values($options),
+            )
+        );
     }
 }
