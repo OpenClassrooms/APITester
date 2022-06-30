@@ -48,6 +48,9 @@ final class ExecutePlanCommand extends Command
         if (false !== $input->getOption('update-baseline')) {
             $output->writeln('Updating baseline after tests run.');
         }
+        if (false !== $input->getOption('ignore-baseline')) {
+            $output->writeln('Ignoring baseline.');
+        }
 
         return (int) !$testPlan->execute($config, $suiteName, $input->getOptions());
     }
@@ -67,13 +70,6 @@ final class ExecutePlanCommand extends Command
                 's',
                 InputOption::VALUE_OPTIONAL,
                 'suite name to run',
-            )
-            ->addOption(
-                'log-junit',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'report file to create',
-                false
             )
             ->addOption(
                 'testdox',
@@ -124,10 +120,46 @@ final class ExecutePlanCommand extends Command
                 'update baseline with new errors to ignore'
             )
             ->addOption(
+                'ignore-baseline',
+                null,
+                InputOption::VALUE_NONE,
+                'ignore baseline file'
+            )
+            ->addOption(
                 'filter',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Filter which tests to run'
+            )
+            ->addOption(
+                'log-junit',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Log test execution in JUnit XML format to file'
+            )
+            ->addOption(
+                'log-teamcity',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Log test execution in JUnit XML format to file'
+            )
+            ->addOption(
+                'testdox-html',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Write agile documentation in HTML format to file'
+            )
+            ->addOption(
+                'testdox-text',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Write agile documentation in Text format to file'
+            )
+            ->addOption(
+                'testdox-xml',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Write agile documentation in XML format to file'
             )
         ;
     }

@@ -59,6 +59,8 @@ final class Suite extends TestSuite
      */
     private string $testCaseClass;
 
+    private bool $ignoreBaseLine = false;
+
     /**
      * @param array<TestCasesPreparator> $preparators
      * @param class-string<T>            $testCaseClass
@@ -183,6 +185,11 @@ final class Suite extends TestSuite
         $this->afterTestCaseCallbacks = $callbacks;
     }
 
+    public function setIgnoreBaseLine(bool $ignoreBaseLine): void
+    {
+        $this->ignoreBaseLine = $ignoreBaseLine;
+    }
+
     private function prepareTestCases(): void
     {
         foreach ($this->preparators as $preparator) {
@@ -194,7 +201,9 @@ final class Suite extends TestSuite
             try {
                 $operations = $this->filterOperation($operations);
                 $tests = $preparator->doPrepare($operations);
-                $tests = $this->filterTestCases($tests);
+                if (!$this->ignoreBaseLine) {
+                    $tests = $this->filterTestCases($tests);
+                }
                 foreach ($tests as $testCase) {
                     $testCase->setRequester($this->requester);
                     $testCase->setLogger($this->logger);

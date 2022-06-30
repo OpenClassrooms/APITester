@@ -33,6 +33,18 @@ use Symfony\Component\HttpKernel\Kernel;
 
 final class Plan
 {
+    private const NON_PHPUNIT_OPTIONS = [
+        'config',
+        'quiet',
+        'ansi',
+        'no-ansi',
+        'no-interaction',
+        'suite',
+        'set-baseline',
+        'update-baseline',
+        'ignore-baseline',
+    ];
+
     private Authenticator $authenticator;
 
     /**
@@ -109,6 +121,9 @@ final class Plan
                 $this->resetBaseLine($suiteConfig);
             }
             $testSuite = $this->prepareSuite($suiteConfig);
+            if (!empty($options['ignore-baseline'])) {
+                $testSuite->setIgnoreBaseLine(true);
+            }
             $this->runSuite($suiteConfig, $testSuite, $options);
             if (!empty($options['update-baseline']) || !empty($options['set-baseline'])) {
                 $this->updateBaseLine($suiteConfig);
@@ -436,16 +451,7 @@ final class Plan
         }
         $options = array_filter(
             $options,
-            static fn ($key) => !\in_array($key, [
-                'config',
-                'quiet',
-                'ansi',
-                'no-ansi',
-                'no-interaction',
-                'suite',
-                'set-baseline',
-                'update-baseline',
-            ], true),
+            static fn ($key) => !\in_array($key, self::NON_PHPUNIT_OPTIONS, true),
             ARRAY_FILTER_USE_KEY
         );
 
