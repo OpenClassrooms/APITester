@@ -101,6 +101,11 @@ final class Assert
         array $excludedFields = []
     ): void {
         $serialize = self::getJsonSerializer();
+
+        foreach ($excludedFields as &$excludedField) {
+            $excludedField = str_replace('body', 'content', $excludedField);
+        }
+
         /** @var array<string, mixed> $expected */
         $expected = $serialize->normalize($expected, null, [
             AbstractNormalizer::IGNORED_ATTRIBUTES => $excludedFields,
@@ -112,16 +117,14 @@ final class Assert
 
         self::initAccessor();
         $paths = self::getPaths($expected, $excludedFields);
+
+        $expected = Json::decodeAsObject(Json::encode($expected));
+        $actual = Json::decodeAsObject(Json::encode($actual));
+
         foreach ($paths as $path) {
             $path = (string) preg_replace('/\.(\d)/', '[$1]', $path);
-            $expectedValue = self::$accessor->getValue(
-                Json::decodeAsObject(Json::encode($expected)),
-                $path
-            );
-            $actualValue = self::$accessor->getValue(
-                Json::decodeAsObject(Json::encode($actual)),
-                $path
-            );
+            $expectedValue = self::$accessor->getValue($expected, $path);
+            $actualValue = self::$accessor->getValue($actual, $path);
             $message = "Checking {$path}";
             if (str_starts_with((string) $expectedValue, '#') && str_ends_with((string) $expectedValue, '#')) {
                 BaseAssert::assertMatchesRegularExpression(
