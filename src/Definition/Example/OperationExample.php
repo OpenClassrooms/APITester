@@ -12,6 +12,9 @@ use APITester\Definition\Security\ApiKeySecurity;
 use APITester\Definition\Security\HttpSecurity;
 use APITester\Definition\Security\OAuth2\OAuth2Security;
 use APITester\Definition\Token;
+use DeepCopy\DeepCopy;
+use DeepCopy\TypeFilter\ShallowCopyFilter;
+use DeepCopy\TypeMatcher\TypeMatcher;
 use Nyholm\Psr7\Request;
 
 final class OperationExample
@@ -47,6 +50,8 @@ final class OperationExample
 
     private ?string $path = null;
 
+    private DeepCopy $deepCopy;
+
     public function __construct(string $name, Operation $parent = null)
     {
         $this->name = $name;
@@ -54,6 +59,11 @@ final class OperationExample
             $this->parent = $parent;
         }
         $this->response = new ResponseExample();
+        $this->deepCopy = new DeepCopy();
+        $this->deepCopy->addTypeFilter(
+            new ShallowCopyFilter(),
+            new TypeMatcher(Operation::class)
+        );
     }
 
     public function setPathParameter(string $name, string $value): self
@@ -65,7 +75,9 @@ final class OperationExample
 
     public function withParameter(string $name, string $value, string $in): self
     {
-        $clone = clone $this;
+        /** @var self $clone */
+        $clone = $this->deepCopy->copy($this);
+
         $clone->setParameter($name, $value, $in);
 
         return $clone;
@@ -118,7 +130,8 @@ final class OperationExample
 
     public function withBody(BodyExample $body): self
     {
-        $clone = clone $this;
+        /** @var self $clone */
+        $clone = $this->deepCopy->copy($this);
         $clone->setBody($body);
 
         return $clone;

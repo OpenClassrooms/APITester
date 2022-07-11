@@ -395,6 +395,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         foreach ($operation->responses ?? [] as $statusCode => $response) {
+            if (0 === \count($response->content)) {
+                $operationExample = $this->getExample('properties', $examples);
+                $operationExample->setResponse(new ResponseExample((string) $statusCode));
+                break;
+            }
             foreach ($response->content as $mediaType) {
                 /**
                  * @var string  $name
