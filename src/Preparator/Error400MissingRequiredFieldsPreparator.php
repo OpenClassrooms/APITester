@@ -60,13 +60,17 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
     {
         $testCases = [];
 
-        $body = $body->getExample();
-        foreach ($body as $name => $value) {
+        $requiredFields = $body->getSchema()->required;
+        $bodyExample = $body->getExample();
+        foreach ($bodyExample as $name => $value) {
+            if ( !in_array($name,$requiredFields)) {
+                continue;
+            }
             $testCases[] = $this->createTestCase(
                 "required_{$name}_body_field_missing",
                 $operation,
                 $parameters,
-                $this->excludeFieldFromBody($name, $body)
+                $this->excludeFieldFromBody($name, $bodyExample)
             );
         }
 

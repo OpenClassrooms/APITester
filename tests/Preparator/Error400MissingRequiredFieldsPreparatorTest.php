@@ -269,6 +269,9 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                                         'foo' => [
                                             'type' => 'string',
                                         ],
+                                        'bar' => [
+                                            'type' => 'string',
+                                        ],
                                     ],
                                     'required' => ['foo'],
                                 ]),
@@ -279,6 +282,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                             OperationExample::create('foo')
                                 ->setBodyContent([
                                     'foo' => 'foo_body1',
+                                    'bar' => 'bar_body1'
                                 ])
                                 ->setQueryParameter('foo_query', 'foo1')
                         )
@@ -292,6 +296,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                         ->setMethod('POST')
                         ->setBodyContent([
                             'foo' => 'foo_body1',
+                            'bar' => 'bar_body1',
                         ])
                         ->setResponse(ResponseExample::create('400')),
                 ),
@@ -301,7 +306,9 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                     OperationExample::create('test')
                         ->setPath('/test')
                         ->setMethod('POST')
-                        ->setBody(BodyExample::create())
+                        ->setBodyContent([
+                            'bar' => 'bar_body1',
+                        ])
                         ->setHeader('content-type', 'application/json')
                         ->setQueryParameter('foo_query', 'foo1')
                         ->setResponse(ResponseExample::create('400'))
