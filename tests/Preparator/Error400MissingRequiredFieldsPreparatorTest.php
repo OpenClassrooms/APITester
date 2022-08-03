@@ -282,7 +282,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                             OperationExample::create('foo')
                                 ->setBodyContent([
                                     'foo' => 'foo_body1',
-                                    'bar' => 'bar_body1'
+                                    'bar' => 'bar_body1',
                                 ])
                                 ->setQueryParameter('foo_query', 'foo1')
                         )
