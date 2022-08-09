@@ -191,7 +191,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             if ($parameter->in !== $in) {
                 continue;
             }
-            $defParam = Parameter::create($parameter->name ?? $name)
+            $defParam = Parameter::create($parameter->name ?? $name, $parameter->required)
                 ->setSchema($schema)
             ;
             $collection->add($defParam);
