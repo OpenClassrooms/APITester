@@ -79,7 +79,7 @@ final class Error400BadTypesPreparator extends Error400Preparator
         /** @var Schema $schema */
         foreach ($body->getSchema()->properties as $property => $schema) {
             foreach (self::SCHEMA_TYPES as $type) {
-                if ($type === $schema->type) {
+                if ($this->isAllowedType($schema->type, $type)) {
                     continue;
                 }
 
@@ -127,5 +127,10 @@ final class Error400BadTypesPreparator extends Error400Preparator
         ];
 
         return $examples[$type];
+    }
+
+    private function isAllowedType(string $passedType, string $testedType): bool
+    {
+        return $passedType === $testedType || (self::NUMBER_TYPE === $passedType && self::INTEGER_TYPE === $testedType);
     }
 }
