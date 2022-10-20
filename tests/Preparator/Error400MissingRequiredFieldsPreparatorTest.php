@@ -277,6 +277,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                                 ]),
                                 'application/json'
                             ))
+                                ->setRequired()
                         )
                         ->addExample(
                             OperationExample::create('foo')
@@ -351,7 +352,6 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                                 ]),
                                 'application/json'
                             ))
-                                ->setRequired(false)
                         )
                         ->addExample(
                             OperationExample::create('foo')
@@ -374,7 +374,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                         ])
                         ->setHeader('content-type', 'application/json')
                         ->setResponse(ResponseExample::create('400'))
-                )
+                ),
             ],
         ];
     }
