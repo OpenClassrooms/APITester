@@ -46,7 +46,7 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
     {
         $testCases = parent::prepareForBodies($requiredParams, $operation);
 
-        if ($operation->getRequestBodies()->count() > 0) {
+        if ($operation->getRequestBodies()->count() > 0 && $this->isBodyAlwaysRequired($operation)) {
             $testCases[] = $this->prepareForEmptyBody($operation);
         }
 
@@ -110,5 +110,16 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
         unset($body[$name]);
 
         return $body;
+    }
+
+    private function isBodyAlwaysRequired(Operation $operation): bool
+    {
+        foreach ($operation->getRequestBodies() as $requestBody) {
+            if (!$requestBody->isRequired()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

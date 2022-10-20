@@ -326,5 +326,56 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                 ),
             ],
         ];
+
+        yield 'Unrequired body' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test',
+                        'POST'
+                    )
+                        ->addRequestBody(
+                            (new Body(
+                                new Schema([
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'foo' => [
+                                            'type' => 'string',
+                                        ],
+                                        'bar' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => ['foo'],
+                                ]),
+                                'application/json'
+                            ))
+                                ->setRequired(false)
+                        )
+                        ->addExample(
+                            OperationExample::create('foo')
+                                ->setBodyContent([
+                                    'foo' => 'foo_body1',
+                                    'bar' => 'bar_body1',
+                                ])
+                                ->setQueryParameter('foo_query', 'foo1')
+                        )
+                ),
+            [
+                new TestCase(
+                    Error400MissingRequiredFieldsPreparator::getName()
+                    . ' - test - required_foo_body_field_missing',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setMethod('POST')
+                        ->setBodyContent([
+                            'bar' => 'bar_body1',
+                        ])
+                        ->setHeader('content-type', 'application/json')
+                        ->setResponse(ResponseExample::create('400'))
+                )
+            ],
+        ];
     }
 }
