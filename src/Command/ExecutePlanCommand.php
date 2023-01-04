@@ -24,6 +24,17 @@ final class ExecutePlanCommand extends Command
 {
     protected static $defaultName = 'launch';
 
+    private InputInterface $input;
+
+    private OutputInterface $output;
+
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        parent::initialize($input, $output);
+        $this->input = $input;
+        $this->output = $output;
+    }
+
     /**
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
@@ -36,23 +47,16 @@ final class ExecutePlanCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $configFilePath = $input->getOption('config');
-        $testPlan = new Plan();
-        $testPlan->setLogger(new ConsoleLogger($output));
-        $config = Config\Loader\PlanConfigLoader::load((string) $configFilePath);
-        /** @var string|null $suiteName */
-        $suiteName = $input->getOption('suite');
-        if (false !== $input->getOption('set-baseline')) {
-            $output->writeln('Creating baseline after tests run.');
-        }
-        if (false !== $input->getOption('update-baseline')) {
-            $output->writeln('Updating baseline after tests run.');
-        }
-        if (false !== $input->getOption('ignore-baseline')) {
-            $output->writeln('Ignoring baseline.');
-        }
+        $this->printInfo();
+        $this->validateOptions();
 
-        return (int) !$testPlan->execute($config, $suiteName, $input->getOptions());
+        $testPlan = $this->initPlan();
+
+        return (int) !$testPlan->execute(
+            Config\Loader\PlanConfigLoader::load((string) $this->input->getOption('config')),
+            (string) $this->input->getOption('suite'),
+            $input->getOptions()
+        );
     }
 
     protected function configure(): void
@@ -161,6 +165,46 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Write agile documentation in XML format to file'
             )
+            ->addOption(
+                'part',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Partition tests into groups and run only one of them, ex: --part=1/3'
+            )
         ;
+    }
+
+    private function initPlan(): Plan
+    {
+        $testPlan = new Plan();
+        $testPlan->setLogger(new ConsoleLogger($this->output));
+
+        return $testPlan;
+    }
+
+    private function printInfo(): void
+    {
+        if (false !== $this->input->getOption('set-baseline')) {
+            $this->output->writeln('Creating baseline after tests run.');
+        }
+        if (false !== $this->input->getOption('update-baseline')) {
+            $this->output->writeln('Updating baseline after tests run.');
+        }
+        if (false !== $this->input->getOption('ignore-baseline')) {
+            $this->output->writeln('Ignoring baseline.');
+        }
+    }
+
+    private function validateOptions(): void
+    {
+        if ($this->input->hasOption('part')) {
+            $part = explode('/', (string) $this->input->getOption('part'));
+            if (2 !== count($part)) {
+                throw new \InvalidArgumentException('The part option must be in the format x/y where y > 0 and x <= y');
+            }
+            if ($part[0] > $part[1] || $part[1] <= 0) {
+                throw new \InvalidArgumentException('The part option must be in the format x/y where y > 0 and x <= y');
+            }
+        }
     }
 }

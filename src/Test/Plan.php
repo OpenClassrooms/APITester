@@ -72,9 +72,9 @@ final class Plan
     private TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[] $preparators
+     * @param TestCasesPreparator[]     $preparators
      * @param class-string<Requester>[] $requesters
-     * @param DefinitionLoader[] $definitionLoaders
+     * @param DefinitionLoader[]        $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,
@@ -107,7 +107,7 @@ final class Plan
      */
     public function execute(
         Config\Plan $testPlanConfig,
-        ?string $suiteName = null,
+        string $suiteName = '',
         array $options = []
     ): bool {
         $bootstrap = $testPlanConfig->getBootstrap();
@@ -153,9 +153,9 @@ final class Plan
      *
      * @return iterable<Config\Suite>
      */
-    private function selectSuite(?string $suiteName, array $suites): iterable
+    private function selectSuite(string $suiteName, array $suites): iterable
     {
-        if (null !== $suiteName) {
+        if ('' !== $suiteName) {
             $indexSuites = collect($suites)
                 ->keyBy('name')
             ;
