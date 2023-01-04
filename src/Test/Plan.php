@@ -72,9 +72,9 @@ final class Plan
     private TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[]     $preparators
+     * @param TestCasesPreparator[] $preparators
      * @param class-string<Requester>[] $requesters
-     * @param DefinitionLoader[]        $definitionLoaders
+     * @param DefinitionLoader[] $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,

@@ -12,6 +12,7 @@ use APITester\Requester\SymfonyKernelRequester;
 use APITester\Util\Assert;
 use APITester\Util\Filterable;
 use APITester\Util\Json;
+use APITester\Util\Random;
 use APITester\Util\Serializer;
 use APITester\Util\Traits\FilterableTrait;
 use APITester\Util\Traits\TimeBoundTrait;
@@ -80,7 +81,7 @@ final class TestCase implements \JsonSerializable, Filterable
     ) {
         $this->operationExample = $operationExample;
         $this->logger = new NullLogger();
-        $this->id = uniqid('testcase_');
+        $this->id = Random::id('testcase_');
         $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
         $this->name = $name;
         $nameParts = explode(' - ', $name);

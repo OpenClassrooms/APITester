@@ -16,6 +16,7 @@ use APITester\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use APITester\Definition\Token;
 use APITester\Requester\Requester;
 use APITester\Util\Json;
+use APITester\Util\Random;
 use Nyholm\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 
@@ -95,7 +96,7 @@ final class Authenticator
      */
     private function request(Requester $requester, Request $request, Auth $config): ResponseInterface
     {
-        $id = uniqid('auth_', false);
+        $id = Random::id('auth_');
         try {
             $requester->request($request, $id);
         } catch (\Throwable $e) {

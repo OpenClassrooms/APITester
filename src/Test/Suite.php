@@ -96,82 +96,6 @@ final class Suite extends TestSuite
         return $this->title;
     }
 
-    private function prepareTestCases(?string $part = null): void
-    {
-        foreach ($this->preparators as $preparator) {
-            $operations = $this->api->getOperations()
-                ->map(
-                    fn (Operation $op) => $op->setPreparator($preparator::getName())
-                )
-            ;
-            try {
-                $operations = $this->filterOperation($operations);
-                $tests = $preparator->doPrepare($operations);
-                if (!$this->ignoreBaseLine) {
-                    $tests = $this->filterTestCases($tests);
-                }
-                $testsCount = 0;
-                foreach ($tests as $testCase) {
-                    $testCase->setRequester($this->requester);
-                    $testCase->setLogger($this->logger);
-                    $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
-                    $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
-                    $testsCount++;
-                }
-            } catch (PreparatorLoadingException $e) {
-                $this->logger->error($e->getMessage());
-                $tests = [];
-                $testsCount = 0;
-            }
-
-            collect($tests)
-                ->sortBy('operation.name')
-                ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
-                    $part,
-                    $index,
-                    $testsCount
-                ))
-                ->each(
-                    fn (TestCase $testCase) => $this->addTest(
-                        $testCase->toPhpUnitTestCase(
-                            $this->testCaseClass,
-                        )
-                    )
-                )
-            ;
-        }
-    }
-
-    private function filterOperation(Operations $operations): Operations
-    {
-        return $operations->filter(
-            fn (Operation $operation) => $this->includes(
-                $operation,
-                $this->filters->getInclude(),
-                $this->filters->getExclude(),
-            )
-        );
-    }
-
-    /**
-     * @param iterable<array-key, TestCase> $tests
-     *
-     * @return iterable<array-key, TestCase>
-     */
-    private function filterTestCases(iterable $tests): iterable
-    {
-        $excludedTests = array_column(
-            $this->toTestCaseFilter($this->filters->getBaseLineExclude()),
-            'name'
-        );
-
-        return collect($tests)->filter(fn (TestCase $test) => !\in_array(
-            $test->getName(),
-            $excludedTests,
-            true
-        ));
-    }
-
     public function setRequester(Requester $requester): void
     {
         $this->requester = $requester;
@@ -180,28 +104,6 @@ final class Suite extends TestSuite
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
-    }
-
-    private function indexInPart(?string $part, int $index, int $total): bool
-    {
-        if (null === $part) {
-            return true;
-        }
-
-        [$partIndex, $partsCount] = explode('/', $part);
-
-        $partIndex = (int) $partIndex;
-        $partsCount = (int) $partsCount;
-
-        if ($partsCount > 0 && $index <= $total) {
-            $span = (int) ceil($total / $partsCount);
-            $from = $span * ($partIndex - 1);
-            $to = $span * $partIndex;
-
-            return $from <= $index && $index < $to;
-        }
-
-        return false;
     }
 
     /**
@@ -268,24 +170,6 @@ final class Suite extends TestSuite
     }
 
     /**
-     * @param string|int|TaggedValue $value
-     *
-     * @return array{0: string, 1: string|int}
-     */
-    private function handleTags($value): array
-    {
-        $operator = '=';
-        if ($value instanceof TaggedValue) {
-            if ('NOT' === $value->getTag()) {
-                $operator = '!=';
-            }
-            $value = $value->getValue();
-        }
-
-        return [$operator, $value];
-    }
-
-    /**
      * @param \Closure[] $callbacks
      */
     public function setBeforeTestCaseCallbacks(array $callbacks): void
@@ -304,5 +188,121 @@ final class Suite extends TestSuite
     public function setIgnoreBaseLine(bool $ignoreBaseLine): void
     {
         $this->ignoreBaseLine = $ignoreBaseLine;
+    }
+
+    private function prepareTestCases(?string $part = null): void
+    {
+        foreach ($this->preparators as $preparator) {
+            $operations = $this->api->getOperations()
+                ->map(
+                    fn (Operation $op) => $op->setPreparator($preparator::getName())
+                )
+            ;
+            try {
+                $operations = $this->filterOperation($operations);
+                $tests = $preparator->doPrepare($operations);
+                if (!$this->ignoreBaseLine) {
+                    $tests = $this->filterTestCases($tests);
+                }
+                $testsCount = 0;
+                foreach ($tests as $testCase) {
+                    $testCase->setRequester($this->requester);
+                    $testCase->setLogger($this->logger);
+                    $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
+                    $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
+                    ++$testsCount;
+                }
+            } catch (PreparatorLoadingException $e) {
+                $this->logger->error($e->getMessage());
+                $tests = [];
+                $testsCount = 0;
+            }
+
+            collect($tests)
+                ->sortBy('operation.name')
+                ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
+                    $part,
+                    $index,
+                    $testsCount
+                ))
+                ->each(
+                    fn (TestCase $testCase) => $this->addTest(
+                        $testCase->toPhpUnitTestCase(
+                            $this->testCaseClass,
+                        )
+                    )
+                )
+            ;
+        }
+    }
+
+    private function filterOperation(Operations $operations): Operations
+    {
+        return $operations->filter(
+            fn (Operation $operation) => $this->includes(
+                $operation,
+                $this->filters->getInclude(),
+                $this->filters->getExclude(),
+            )
+        );
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterTestCases(iterable $tests): iterable
+    {
+        $excludedTests = array_column(
+            $this->toTestCaseFilter($this->filters->getBaseLineExclude()),
+            'name'
+        );
+
+        return collect($tests)->filter(fn (TestCase $test) => !\in_array(
+            $test->getName(),
+            $excludedTests,
+            true
+        ));
+    }
+
+    private function indexInPart(?string $part, int $index, int $total): bool
+    {
+        if (null === $part) {
+            return true;
+        }
+
+        [$partIndex, $partsCount] = explode('/', $part);
+
+        $partIndex = (int) $partIndex;
+        $partsCount = (int) $partsCount;
+
+        if ($partsCount > 0 && $index <= $total) {
+            $span = (int) ceil($total / $partsCount);
+            $from = $span * ($partIndex - 1);
+            $to = $span * $partIndex;
+
+            return $from <= $index && $index < $to;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string|int|TaggedValue $value
+     *
+     * @return array{0: string, 1: string|int}
+     */
+    private function handleTags($value): array
+    {
+        $operator = '=';
+        if ($value instanceof TaggedValue) {
+            if ('NOT' === $value->getTag()) {
+                $operator = '!=';
+            }
+            $value = $value->getValue();
+        }
+
+        return [$operator, $value];
     }
 }

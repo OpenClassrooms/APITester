@@ -199,7 +199,7 @@ final class ExecutePlanCommand extends Command
     {
         if ($this->input->hasOption('part')) {
             $part = explode('/', (string) $this->input->getOption('part'));
-            if (2 !== count($part)) {
+            if (2 !== \count($part)) {
                 throw new \InvalidArgumentException('The part option must be in the format x/y where y > 0 and x <= y');
             }
             if ($part[0] > $part[1] || $part[1] <= 0) {
