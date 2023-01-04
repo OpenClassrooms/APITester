@@ -43,6 +43,7 @@ final class Plan
         'set-baseline',
         'update-baseline',
         'ignore-baseline',
+        'part',
     ];
 
     private Authenticator $authenticator;
@@ -72,9 +73,9 @@ final class Plan
     private TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[] $preparators
+     * @param TestCasesPreparator[]     $preparators
      * @param class-string<Requester>[] $requesters
-     * @param DefinitionLoader[] $definitionLoaders
+     * @param DefinitionLoader[]        $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,
@@ -213,6 +214,7 @@ final class Plan
             $suiteConfig->getFilters(),
             $this->logger,
             $testCaseClass,
+
         );
         $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
         $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
@@ -226,6 +228,7 @@ final class Plan
      */
     private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
+        $testSuite->setPart($options['part'] ?? null);
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
             $this->getPhpUnitArguments($options, $suiteConfig),

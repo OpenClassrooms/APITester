@@ -13,6 +13,7 @@ use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Requester;
 use APITester\Util\Filterable;
 use APITester\Util\Traits\TimeBoundTrait;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
 use Psr\Log\LoggerInterface;
@@ -60,6 +61,8 @@ final class Suite extends TestSuite
     private string $testCaseClass;
 
     private bool $ignoreBaseLine = false;
+
+    private ?string $part = null;
 
     /**
      * @param array<TestCasesPreparator> $preparators
@@ -190,8 +193,10 @@ final class Suite extends TestSuite
         $this->ignoreBaseLine = $ignoreBaseLine;
     }
 
-    private function prepareTestCases(?string $part = null): void
+    private function prepareTestCases(): void
     {
+        /** @var Collection<int, TestCase> $allTests */
+        $allTests = collect();
         foreach ($this->preparators as $preparator) {
             $operations = $this->api->getOperations()
                 ->map(
@@ -204,36 +209,34 @@ final class Suite extends TestSuite
                 if (!$this->ignoreBaseLine) {
                     $tests = $this->filterTestCases($tests);
                 }
-                $testsCount = 0;
                 foreach ($tests as $testCase) {
                     $testCase->setRequester($this->requester);
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
                     $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
-                    ++$testsCount;
+                    $allTests->add($testCase);
                 }
             } catch (PreparatorLoadingException $e) {
                 $this->logger->error($e->getMessage());
-                $tests = [];
-                $testsCount = 0;
             }
+        }
 
-            collect($tests)
-                ->sortBy('operation.name')
-                ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
-                    $part,
-                    $index,
-                    $testsCount
-                ))
-                ->each(
-                    fn (TestCase $testCase) => $this->addTest(
-                        $testCase->toPhpUnitTestCase(
-                            $this->testCaseClass,
-                        )
+        $allTests
+            ->sortBy('operation')
+            ->values()
+            ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
+                $this->part,
+                $index,
+                $allTests->count(),
+            ))
+            ->each(
+                fn (TestCase $testCase) => $this->addTest(
+                    $testCase->toPhpUnitTestCase(
+                        $this->testCaseClass,
                     )
                 )
-            ;
-        }
+            )
+        ;
     }
 
     private function filterOperation(Operations $operations): Operations
@@ -304,5 +307,10 @@ final class Suite extends TestSuite
         }
 
         return [$operator, $value];
+    }
+
+    public function setPart(?string $part): void
+    {
+        $this->part = $part;
     }
 }
