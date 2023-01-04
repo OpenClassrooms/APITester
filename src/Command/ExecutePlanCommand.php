@@ -197,7 +197,7 @@ final class ExecutePlanCommand extends Command
 
     private function validateOptions(): void
     {
-        if ($this->input->hasOption('part')) {
+        if (null !== $this->input->getOption('part')) {
             $part = explode('/', (string) $this->input->getOption('part'));
             if (2 !== \count($part)) {
                 throw new \InvalidArgumentException('The part option must be in the format x/y where y > 0 and x <= y');
