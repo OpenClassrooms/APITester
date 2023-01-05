@@ -18,7 +18,7 @@ final class Body
 
     private Schema $schema;
 
-    private bool $required = true;
+    private bool $required = false;
 
     /**
      * @param Schema|array<mixed> $schema

@@ -269,16 +269,21 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                                         'foo' => [
                                             'type' => 'string',
                                         ],
+                                        'bar' => [
+                                            'type' => 'string',
+                                        ],
                                     ],
                                     'required' => ['foo'],
                                 ]),
                                 'application/json'
                             ))
+                                ->setRequired()
                         )
                         ->addExample(
                             OperationExample::create('foo')
                                 ->setBodyContent([
                                     'foo' => 'foo_body1',
+                                    'bar' => 'bar_body1',
                                 ])
                                 ->setQueryParameter('foo_query', 'foo1')
                         )
@@ -292,6 +297,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                         ->setMethod('POST')
                         ->setBodyContent([
                             'foo' => 'foo_body1',
+                            'bar' => 'bar_body1',
                         ])
                         ->setResponse(ResponseExample::create('400')),
                 ),
@@ -301,7 +307,9 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                     OperationExample::create('test')
                         ->setPath('/test')
                         ->setMethod('POST')
-                        ->setBody(BodyExample::create())
+                        ->setBodyContent([
+                            'bar' => 'bar_body1',
+                        ])
                         ->setHeader('content-type', 'application/json')
                         ->setQueryParameter('foo_query', 'foo1')
                         ->setResponse(ResponseExample::create('400'))
@@ -315,6 +323,56 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                         ->setBody(BodyExample::create())
                         ->setHeader('content-type', 'application/json')
                         ->setQueryParameter('foo_query', 'foo1')
+                        ->setResponse(ResponseExample::create('400'))
+                ),
+            ],
+        ];
+
+        yield 'Unrequired body' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create(
+                        'test',
+                        '/test',
+                        'POST'
+                    )
+                        ->addRequestBody(
+                            (new Body(
+                                new Schema([
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'foo' => [
+                                            'type' => 'string',
+                                        ],
+                                        'bar' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => ['foo'],
+                                ]),
+                                'application/json'
+                            ))
+                        )
+                        ->addExample(
+                            OperationExample::create('foo')
+                                ->setBodyContent([
+                                    'foo' => 'foo_body1',
+                                    'bar' => 'bar_body1',
+                                ])
+                                ->setQueryParameter('foo_query', 'foo1')
+                        )
+                ),
+            [
+                new TestCase(
+                    Error400MissingRequiredFieldsPreparator::getName()
+                    . ' - test - required_foo_body_field_missing',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setMethod('POST')
+                        ->setBodyContent([
+                            'bar' => 'bar_body1',
+                        ])
+                        ->setHeader('content-type', 'application/json')
                         ->setResponse(ResponseExample::create('400'))
                 ),
             ],
