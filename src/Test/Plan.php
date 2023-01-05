@@ -73,9 +73,9 @@ final class Plan
     private TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[]     $preparators
+     * @param TestCasesPreparator[] $preparators
      * @param class-string<Requester>[] $requesters
-     * @param DefinitionLoader[]        $definitionLoaders
+     * @param DefinitionLoader[] $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,
@@ -228,7 +228,7 @@ final class Plan
     private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
         $part = $options['part'] ?? null;
-        $testSuite->setPart($part !== null ? (string) $part : null);
+        $testSuite->setPart(null !== $part ? (string) $part : null);
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
             $this->getPhpUnitArguments($options, $suiteConfig),
