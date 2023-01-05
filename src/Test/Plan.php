@@ -214,7 +214,6 @@ final class Plan
             $suiteConfig->getFilters(),
             $this->logger,
             $testCaseClass,
-
         );
         $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
         $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
@@ -228,7 +227,8 @@ final class Plan
      */
     private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
-        $testSuite->setPart($options['part'] ?? null);
+        $part = $options['part'] ?? null;
+        $testSuite->setPart($part !== null ? (string) $part : null);
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
             $this->getPhpUnitArguments($options, $suiteConfig),

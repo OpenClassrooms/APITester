@@ -193,6 +193,11 @@ final class Suite extends TestSuite
         $this->ignoreBaseLine = $ignoreBaseLine;
     }
 
+    public function setPart(?string $part): void
+    {
+        $this->part = $part;
+    }
+
     private function prepareTestCases(): void
     {
         /** @var Collection<int, TestCase> $allTests */
@@ -307,10 +312,5 @@ final class Suite extends TestSuite
         }
 
         return [$operator, $value];
-    }
-
-    public function setPart(?string $part): void
-    {
-        $this->part = $part;
     }
 }
