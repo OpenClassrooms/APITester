@@ -20,7 +20,6 @@ use cebe\openapi\spec\Schema;
 
 /**
  * @internal
- * @coversDefaultClass
  */
 final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
 {

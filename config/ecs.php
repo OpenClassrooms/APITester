@@ -82,5 +82,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         PhpUnitTestClassRequiresCoversFixer::class,
         PhpUnitInternalClassFixer::class,
         PhpCsFixer\Fixer\Phpdoc\PhpdocToCommentFixer::class,
+        PhpCsFixer\Fixer\FunctionNotation\FunctionTypehintSpaceFixer::class,
     ]);
 };

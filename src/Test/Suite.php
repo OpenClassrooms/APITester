@@ -13,6 +13,7 @@ use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Requester;
 use APITester\Util\Filterable;
 use APITester\Util\Traits\TimeBoundTrait;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
 use Psr\Log\LoggerInterface;
@@ -60,6 +61,8 @@ final class Suite extends TestSuite
     private string $testCaseClass;
 
     private bool $ignoreBaseLine = false;
+
+    private ?string $part = null;
 
     /**
      * @param array<TestCasesPreparator> $preparators
@@ -190,8 +193,15 @@ final class Suite extends TestSuite
         $this->ignoreBaseLine = $ignoreBaseLine;
     }
 
+    public function setPart(?string $part): void
+    {
+        $this->part = $part;
+    }
+
     private function prepareTestCases(): void
     {
+        /** @var Collection<int, TestCase> $allTests */
+        $allTests = collect();
         foreach ($this->preparators as $preparator) {
             $operations = $this->api->getOperations()
                 ->map(
@@ -209,16 +219,29 @@ final class Suite extends TestSuite
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
                     $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
-                    $this->addTest(
-                        $testCase->toPhpUnitTestCase(
-                            $this->testCaseClass,
-                        )
-                    );
+                    $allTests->add($testCase);
                 }
             } catch (PreparatorLoadingException $e) {
                 $this->logger->error($e->getMessage());
             }
         }
+
+        $allTests
+            ->sortBy('operation')
+            ->values()
+            ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
+                $this->part,
+                $index,
+                $allTests->count(),
+            ))
+            ->each(
+                fn (TestCase $testCase) => $this->addTest(
+                    $testCase->toPhpUnitTestCase(
+                        $this->testCaseClass,
+                    )
+                )
+            )
+        ;
     }
 
     private function filterOperation(Operations $operations): Operations
@@ -249,6 +272,28 @@ final class Suite extends TestSuite
             $excludedTests,
             true
         ));
+    }
+
+    private function indexInPart(?string $part, int $index, int $total): bool
+    {
+        if (null === $part) {
+            return true;
+        }
+
+        [$partIndex, $partsCount] = explode('/', $part);
+
+        $partIndex = (int) $partIndex;
+        $partsCount = (int) $partsCount;
+
+        if ($partsCount > 0 && $index <= $total) {
+            $span = (int) ceil($total / $partsCount);
+            $from = $span * ($partIndex - 1);
+            $to = $span * $partIndex;
+
+            return $from <= $index && $index < $to;
+        }
+
+        return false;
     }
 
     /**

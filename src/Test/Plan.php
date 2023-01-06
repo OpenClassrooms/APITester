@@ -43,6 +43,7 @@ final class Plan
         'set-baseline',
         'update-baseline',
         'ignore-baseline',
+        'part',
     ];
 
     private Authenticator $authenticator;
@@ -107,7 +108,7 @@ final class Plan
      */
     public function execute(
         Config\Plan $testPlanConfig,
-        ?string $suiteName = null,
+        string $suiteName = '',
         array $options = []
     ): bool {
         $bootstrap = $testPlanConfig->getBootstrap();
@@ -153,9 +154,9 @@ final class Plan
      *
      * @return iterable<Config\Suite>
      */
-    private function selectSuite(?string $suiteName, array $suites): iterable
+    private function selectSuite(string $suiteName, array $suites): iterable
     {
-        if (null !== $suiteName) {
+        if ('' !== $suiteName) {
             $indexSuites = collect($suites)
                 ->keyBy('name')
             ;
@@ -226,6 +227,8 @@ final class Plan
      */
     private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
+        $part = $options['part'] ?? null;
+        $testSuite->setPart(null !== $part ? (string) $part : null);
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
             $this->getPhpUnitArguments($options, $suiteConfig),

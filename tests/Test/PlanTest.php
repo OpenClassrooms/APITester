@@ -16,7 +16,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @internal
  * @group integration
- * @coversDefaultClass
  */
 final class PlanTest extends TestCase
 {
