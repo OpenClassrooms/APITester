@@ -48,7 +48,7 @@
     "canvural/php-openapi-faker": "^1.0",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.9",
-    "firebase/php-jwt": "^5.3.0",
+    "firebase/php-jwt": "~6.0.0",
     "guzzlehttp/promises": "~1.4.0",
     "hanneskod/classtools": "^1.2",
     "illuminate/collections": "^8.99",

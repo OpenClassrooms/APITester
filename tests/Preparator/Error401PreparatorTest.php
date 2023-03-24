@@ -123,7 +123,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setHeaders([
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,
-                            ], 'abcd'),
+                            ], 'abcd', Error401Preparator::ALG),
                         ])
                         ->setResponse(ResponseExample::create('401'))
                 ),
@@ -167,7 +167,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setHeaders([
                             'Authorization' => 'Bearer ' . JWT::encode([
                                 'test' => 1234,
-                            ], 'abcd'),
+                            ], 'abcd', Error401Preparator::ALG),
                         ])
                         ->setResponse(ResponseExample::create('401'))
                 ),
