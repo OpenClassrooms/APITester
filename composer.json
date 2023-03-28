@@ -22,7 +22,8 @@
       "composer/package-versions-deprecated": true,
       "sllh/composer-versions-check": true,
       "ergebnis/composer-normalize": true,
-      "pyrech/composer-changelogs": true
+      "pyrech/composer-changelogs": true,
+      "symfony/flex": true
     }
   },
   "autoload": {

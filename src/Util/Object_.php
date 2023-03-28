@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace APITester\Util;
 
 use hanneskod\classtools\Iterator\ClassIterator;
-use PhpCsFixer\Finder;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 final class Object_
@@ -53,8 +53,7 @@ final class Object_
     public static function getImplementations(string $interface): array
     {
         $objects = [];
-        $implementations = self::getSubTypesOf($interface)->where('isInstantiable')
-        ;
+        $implementations = self::getSubTypesOf($interface)->where('isInstantiable');
 
         /** @var \ReflectionClass<T> $class */
         foreach ($implementations as $class) {
