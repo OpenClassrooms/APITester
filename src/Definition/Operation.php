@@ -23,13 +23,7 @@ final class Operation implements Filterable
 
     private Parameters $headers;
 
-    private string $id;
-
-    private string $method;
-
     private Api $parent;
-
-    private string $path;
 
     private Parameters $pathParameters;
 
@@ -50,13 +44,10 @@ final class Operation implements Filterable
     private OperationExamples $examples;
 
     public function __construct(
-        string $id,
-        string $path,
-        string $method
+        private readonly string $id,
+        private readonly string $path,
+        private string $method
     ) {
-        $this->id = $id;
-        $this->path = $path;
-        $this->method = $method;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
         $this->headers = new Parameters();

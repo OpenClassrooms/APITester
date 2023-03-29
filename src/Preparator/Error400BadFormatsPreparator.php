@@ -42,9 +42,9 @@ final class Error400BadFormatsPreparator extends Error400Preparator
         ],
         self::INTEGER_TYPE => [
             // int over 32 bits
-            self::INT32_FORMAT => 50000 * 1000000000,
+            self::INT32_FORMAT => 50000 * 1_000_000_000,
             // int over 64 bits
-            self::INT64_FORMAT => 50000000000000 * 1000000000,
+            self::INT64_FORMAT => 50_000_000_000_000 * 1_000_000_000,
         ],
     ];
 

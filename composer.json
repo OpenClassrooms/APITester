@@ -23,7 +23,8 @@
       "sllh/composer-versions-check": true,
       "ergebnis/composer-normalize": true,
       "pyrech/composer-changelogs": true,
-      "symfony/flex": true
+      "symfony/flex": true,
+      "dereuromark/composer-versions-check": true
     }
   },
   "autoload": {
@@ -41,7 +42,7 @@
     }
   },
   "require": {
-    "php": ">=7.4",
+    "php": ">=8.1",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
@@ -88,8 +89,9 @@
     "phpstan/phpstan-strict-rules": "^1.1",
     "phpstan/phpstan-symfony": "^1.0",
     "pyrech/composer-changelogs": "^1.8",
+    "rector/rector": "^0.15.23",
     "roave/security-advisories": "dev-latest",
-    "sllh/composer-versions-check": "^2.0",
+    "dereuromark/composer-versions-check": "^0.1",
     "spaze/phpstan-disallowed-calls": "^2.1",
     "symfony/var-dumper": "^4.4 || ^5.0",
     "symplify/easy-coding-standard": "^9.4",
@@ -127,6 +129,9 @@
     ],
     "test": [
       "@unit"
+    ],
+    "rector": [
+      "vendor/bin/rector process src --ansi --config config/rector.php"
     ],
     "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",

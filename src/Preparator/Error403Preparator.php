@@ -45,7 +45,7 @@ final class Error403Preparator extends SecurityErrorPreparator
             return $tokens;
         }
 
-        throw new \LogicException('Unhandled security instance of type ' . \get_class($security));
+        throw new \LogicException('Unhandled security instance of type ' . $security::class);
     }
 
     protected function getTestCaseName(): string

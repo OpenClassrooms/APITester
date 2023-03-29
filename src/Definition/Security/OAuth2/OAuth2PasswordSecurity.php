@@ -8,12 +8,9 @@ use APITester\Definition\Collection\Scopes;
 
 final class OAuth2PasswordSecurity extends OAuth2Security
 {
-    protected string $tokenUrl;
-
-    public function __construct(string $name, string $tokenUrl, Scopes $scopes)
+    public function __construct(string $name, protected string $tokenUrl, Scopes $scopes)
     {
         parent::__construct($name, $scopes);
-        $this->tokenUrl = $tokenUrl;
     }
 
     public static function create(string $name, string $tokenUrl, Scopes $scopes): self

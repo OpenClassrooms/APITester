@@ -12,7 +12,7 @@ final class Json
             self::decode($string);
 
             return true;
-        } catch (\JsonException $e) {
+        } catch (\JsonException) {
             return false;
         }
     }
@@ -76,7 +76,7 @@ final class Json
     /**
      * @return array<mixed>|object
      */
-    public static function deserialize(string $data, string $type)
+    public static function deserialize(string $data, string $type): array|object
     {
         return Serializer::create()
             ->deserialize($data, $type, 'json')

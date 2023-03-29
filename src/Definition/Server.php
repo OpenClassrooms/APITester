@@ -6,11 +6,8 @@ namespace APITester\Definition;
 
 final class Server
 {
-    private string $url;
-
-    public function __construct(string $url)
+    public function __construct(private readonly string $url)
     {
-        $this->url = $url;
     }
 
     public function getUrl(): string

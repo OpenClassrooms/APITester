@@ -13,16 +13,10 @@ final class BodyExample
     private string $mediaType = 'application/json';
 
     /**
-     * @var mixed[]
-     */
-    private array $content;
-
-    /**
      * @param mixed[] $content
      */
-    public function __construct(array $content = [])
+    public function __construct(private readonly array $content = [])
     {
-        $this->content = $content;
     }
 
     /**

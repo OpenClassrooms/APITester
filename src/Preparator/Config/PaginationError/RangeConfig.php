@@ -9,24 +9,11 @@ final class RangeConfig
     public const HEADER_RANGE = 'header';
     public const QUERY_PARAM_RANGE = 'query';
 
-    private string $in;
-
-    /**
-     * @var string[]
-     */
-    private array $names;
-
-    private ?string $unit;
-
     /**
      * @param string[] $names
      */
-    public function __construct(string $in, array $names, string $unit = null)
+    public function __construct(private string $in, private array $names, private ?string $unit = null)
     {
-        $this->in = $in;
-        $this->names = $names;
-        $this->unit = $unit;
-
         if (!$this->validate()) {
             throw new \InvalidArgumentException('Invalid RangeConfig Error Config');
         }

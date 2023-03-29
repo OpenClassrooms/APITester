@@ -8,19 +8,13 @@ use APITester\Definition\Collection\Scopes;
 
 final class OAuth2AuthorizationCodeSecurity extends OAuth2Security
 {
-    private string $tokenUrl;
-
-    private string $authorizationUrl;
-
     public function __construct(
         string $name,
-        string $authorizationUrl,
-        string $tokenUrl,
+        private readonly string $authorizationUrl,
+        private readonly string $tokenUrl,
         Scopes $scopes
     ) {
         parent::__construct($name, $scopes);
-        $this->tokenUrl = $tokenUrl;
-        $this->authorizationUrl = $authorizationUrl;
         $this->scopes = $scopes;
     }
 

@@ -24,10 +24,8 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
             ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
             ->select('securities.*')
             ->flatten()
-            ->map(function ($security) {
-                /** @var Security $security */
-                return $this->prepareTestCases($security);
-            })
+            ->map(fn($security) => /** @var Security $security */
+$this->prepareTestCases($security))
             ->flatten()
         ;
     }

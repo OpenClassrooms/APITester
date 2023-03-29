@@ -14,9 +14,7 @@ final class Body
 {
     private Operation $parent;
 
-    private string $mediaType;
-
-    private Schema $schema;
+    private readonly Schema $schema;
 
     private bool $required = false;
 
@@ -25,10 +23,9 @@ final class Body
      *
      * @throws TypeErrorException
      */
-    public function __construct($schema, string $mediaType = 'application/json')
+    public function __construct($schema, private readonly string $mediaType = 'application/json')
     {
         $this->schema = $schema instanceof Schema ? $schema : new Schema($schema);
-        $this->mediaType = $mediaType;
     }
 
     /**
@@ -36,7 +33,7 @@ final class Body
      *
      * @throws TypeErrorException
      */
-    public static function create($schema, string $mediaType = 'application/json'): self
+    public static function create(\cebe\openapi\spec\Schema|array $schema, string $mediaType = 'application/json'): self
     {
         return new self($schema, $mediaType);
     }

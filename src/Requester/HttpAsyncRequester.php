@@ -75,7 +75,7 @@ final class HttpAsyncRequester extends Requester
                         function (ResponseInterface $response) use ($id) {
                             $this->responses[$id] = $response;
                         },
-                        function (\Throwable $exception) {
+                        function (\Throwable $exception): never {
                             echo "Error: {$exception->getMessage()}\n";
                             throw $exception;
                         }

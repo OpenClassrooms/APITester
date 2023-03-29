@@ -30,10 +30,8 @@ final class Error405Preparator extends TestCasesPreparator
             ->compare($this->config->methods)
             ->crossJoin($pathOperations->take(1))
             ->map(
-                function (array $data) {
-                    /** @var array{0: string, 1: Operation} $data */
-                    return $this->prepareTestCase($data[1], $data[0]);
-                }
+                fn(array $data) => /** @var array{0: string, 1: Operation} $data */
+$this->prepareTestCase($data[1], $data[0])
             ))
             ->flatten()
         ;

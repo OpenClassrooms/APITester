@@ -20,24 +20,12 @@ final class ResponseExample
      */
     private array $headers = [];
 
-    /**
-     * @var mixed
-     */
-    private $content;
-
-    /**
-     * @param mixed $content
-     */
-    public function __construct(?string $statusCode = null, $content = null)
+    public function __construct(?string $statusCode = null, private mixed $content = null)
     {
-        $this->content = $content;
         $this->statusCode = $statusCode ?? $this->statusCode;
     }
 
-    /**
-     * @param mixed $content
-     */
-    public static function create(?string $statusCode = null, $content = null): self
+    public static function create(?string $statusCode = null, mixed $content = null): self
     {
         return new self($statusCode, $content);
     }
@@ -106,10 +94,7 @@ final class ResponseExample
         return $this->content;
     }
 
-    /**
-     * @param mixed $content
-     */
-    public function setContent($content): self
+    public function setContent(mixed $content): self
     {
         $this->content = $content;
 

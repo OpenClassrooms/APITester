@@ -11,16 +11,10 @@ final class Plan
     private ?string $bootstrap = null;
 
     /**
-     * @var Suite[]
-     */
-    private array $suites;
-
-    /**
      * @param Suite[] $suites
      */
-    public function __construct(array $suites)
+    public function __construct(private readonly array $suites)
     {
-        $this->suites = $suites;
     }
 
     /**

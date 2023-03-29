@@ -8,11 +8,9 @@ use APITester\Util\Path;
 
 final class Definition
 {
-    private string $format;
+    private readonly string $path;
 
-    private string $path;
-
-    public function __construct(string $path, string $format)
+    public function __construct(string $path, private readonly string $format)
     {
         $path = trim($path, '/');
         $fullPath = $path;
@@ -20,7 +18,6 @@ final class Definition
             $fullPath = Path::getBasePath() . '/' . $path;
         }
         $this->path = $fullPath;
-        $this->format = $format;
     }
 
     public function getFormat(): string

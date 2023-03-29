@@ -23,10 +23,8 @@ final class Error404Preparator extends TestCasesPreparator
             ->flatten()
             ->where('statusCode', 404)
             ->values()
-            ->map(function ($response) {
-                /** @var DefinitionResponse $response */
-                return $this->prepareTestCase($response);
-            })
+            ->map(fn($response) => /** @var DefinitionResponse $response */
+$this->prepareTestCase($response))
             ->flatten()
         ;
     }

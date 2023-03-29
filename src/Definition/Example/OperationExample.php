@@ -19,8 +19,6 @@ use Nyholm\Psr7\Request;
 
 final class OperationExample
 {
-    private string $name;
-
     private ?Operation $parent = null;
 
     /**
@@ -50,11 +48,10 @@ final class OperationExample
 
     private ?string $path = null;
 
-    private DeepCopy $deepCopy;
+    private readonly DeepCopy $deepCopy;
 
-    public function __construct(string $name, Operation $parent = null)
+    public function __construct(private string $name, Operation $parent = null)
     {
-        $this->name = $name;
         if (null !== $parent) {
             $this->parent = $parent;
         }

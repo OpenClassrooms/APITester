@@ -9,15 +9,9 @@ use APITester\Definition\Security;
 
 final class ApiKeySecurity extends Security
 {
-    private string $in;
-
-    private string $keyName;
-
-    public function __construct(string $name, string $keyName, string $in, ?Scopes $scopes = null)
+    public function __construct(string $name, private readonly string $keyName, private readonly string $in, ?Scopes $scopes = null)
     {
         parent::__construct($name, $scopes);
-        $this->in = $in;
-        $this->keyName = $keyName;
     }
 
     public static function create(string $name, string $key, string $in, ?Scopes $scopes = null): self

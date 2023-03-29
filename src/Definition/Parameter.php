@@ -18,24 +18,18 @@ final class Parameter
 
     private Operation $parent;
 
-    private string $name;
-
     private string $in;
-
-    private bool $required;
 
     private ?Schema $schema;
 
     /**
      * @param Schema|array<string, string|int>|null $schema
      */
-    public function __construct(string $name, bool $required = true, $schema = null)
+    public function __construct(private readonly string $name, private bool $required = true, $schema = null)
     {
         if (\is_array($schema)) {
             $schema = new Schema($schema);
         }
-        $this->name = $name;
-        $this->required = $required;
         $this->schema = $schema;
     }
 
@@ -95,10 +89,7 @@ final class Parameter
         return null;
     }
 
-    /**
-     * @return string|int|null
-     */
-    public function getExample(?string $name = null)
+    public function getExample(?string $name = null): string|int|null
     {
         $example = $this
             ->getParent()

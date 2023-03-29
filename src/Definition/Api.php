@@ -11,11 +11,11 @@ use Illuminate\Support\Collection;
 
 final class Api
 {
-    private ?string $title;
+    private ?string $title = null;
 
-    private ?string $description;
+    private ?string $description = null;
 
-    private ?string $version;
+    private ?string $version = null;
 
     private Operations $operations;
 

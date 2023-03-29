@@ -387,7 +387,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $example = $this->extractDeepExamples($mediaType->schema);
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setBody(BodyExample::create($example));
-                    } catch (ExampleNotExtractableException $e) {
+                    } catch (ExampleNotExtractableException) {
                         // @ignoreException
                     }
                 }
@@ -430,7 +430,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, $example)
                         );
-                    } catch (ExampleNotExtractableException $e) {
+                    } catch (ExampleNotExtractableException) {
                         // @ignoreException
                     }
                 }

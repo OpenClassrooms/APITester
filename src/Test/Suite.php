@@ -30,20 +30,7 @@ final class Suite extends TestSuite
 {
     use TimeBoundTrait;
 
-    private Api $api;
-
-    /**
-     * @var array<TestCasesPreparator>
-     */
-    private array $preparators;
-
-    private string $title;
-
-    private Filters $filters;
-
-    private Requester $requester;
-
-    private LoggerInterface $logger;
+    private readonly string $title;
 
     /**
      * @var \Closure[]
@@ -55,11 +42,6 @@ final class Suite extends TestSuite
      */
     private array $afterTestCaseCallbacks = [];
 
-    /**
-     * @var class-string<T>
-     */
-    private string $testCaseClass;
-
     private bool $ignoreBaseLine = false;
 
     private ?string $part = null;
@@ -70,21 +52,15 @@ final class Suite extends TestSuite
      */
     public function __construct(
         string $title,
-        Api $api,
-        array $preparators,
-        Requester $requester,
-        ?Filters $filters = null,
-        ?LoggerInterface $logger = null,
-        string $testCaseClass = \PHPUnit\Framework\TestCase::class
+        private readonly Api $api,
+        private readonly array $preparators,
+        private Requester $requester,
+        private readonly Filters $filters = new Filters([], []),
+        private LoggerInterface $logger = new NullLogger(),
+        private readonly string $testCaseClass = \PHPUnit\Framework\TestCase::class
     ) {
         parent::__construct('', $title);
         $this->title = $title;
-        $this->api = $api;
-        $this->preparators = $preparators;
-        $this->requester = $requester;
-        $this->logger = $logger ?? new NullLogger();
-        $this->filters = $filters ?? new Filters([], []);
-        $this->testCaseClass = $testCaseClass;
     }
 
     public function run(TestResult $result = null): TestResult
@@ -297,11 +273,9 @@ final class Suite extends TestSuite
     }
 
     /**
-     * @param string|int|TaggedValue $value
-     *
      * @return array{0: string, 1: string|int}
      */
-    private function handleTags($value): array
+    private function handleTags(string|int|\Symfony\Component\Yaml\Tag\TaggedValue $value): array
     {
         $operator = '=';
         if ($value instanceof TaggedValue) {

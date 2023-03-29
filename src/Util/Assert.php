@@ -83,11 +83,9 @@ final class Assert
     }
 
     /**
-     * @param mixed $actual
-     *
      * @throws ExpectationFailedException
      */
-    public static function true($actual, string $message = ''): void
+    public static function true(mixed $actual, string $message = ''): void
     {
         BaseAssert::assertTrue($actual, $message);
     }

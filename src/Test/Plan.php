@@ -46,31 +46,29 @@ final class Plan
         'part',
     ];
 
-    private Authenticator $authenticator;
+    private readonly Authenticator $authenticator;
 
     /**
      * @var DefinitionLoader[]
      */
-    private array $definitionLoaders;
-
-    private LoggerInterface $logger;
+    private readonly array $definitionLoaders;
 
     /**
      * @var TestCasesPreparator[]
      */
-    private array $preparators;
+    private readonly array $preparators;
 
     /**
      * @var class-string<Requester>[]
      */
-    private array $requesters;
+    private readonly array $requesters;
 
     /**
      * @var array<string, TestResult>
      */
     private array $results = [];
 
-    private TestRunner $runner;
+    private readonly TestRunner $runner;
 
     /**
      * @param TestCasesPreparator[] $preparators
@@ -82,7 +80,7 @@ final class Plan
         ?array $requesters = null,
         ?array $definitionLoaders = null,
         Authenticator $authenticator = null,
-        ?LoggerInterface $logger = null
+        private LoggerInterface $logger = new NullLogger()
     ) {
         if (!\defined('PROJECT_DIR')) {
             \define('PROJECT_DIR', \dirname(__DIR__, 2));
@@ -91,7 +89,6 @@ final class Plan
         $this->requesters = $requesters ?? Object_::getImplementationsClasses(Requester::class);
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
         $this->authenticator = $authenticator ?? new Authenticator();
-        $this->logger = $logger ?? new NullLogger();
         $this->runner = new TestRunner();
     }
 

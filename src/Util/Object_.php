@@ -66,7 +66,7 @@ final class Object_
                     continue;
                 }
                 $objects[] = $class->newInstance();
-            } catch (\ReflectionException $e) {
+            } catch (\ReflectionException) {
                 continue;
             }
         }

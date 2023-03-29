@@ -75,9 +75,7 @@ abstract class Error400Preparator extends TestCasesPreparator
         }
 
         return array_map(
-            static function (TestCase $t) use ($requiredBody) {
-                return $t->withRequestBody($requiredBody);
-            },
+            static fn(TestCase $t) => $t->withRequestBody($requiredBody),
             $testCases
         );
     }

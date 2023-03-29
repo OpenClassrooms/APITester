@@ -22,10 +22,7 @@ final class ResponseConfig
         return $this->statusCode;
     }
 
-    /**
-     * @param string|TaggedValue|null $statusCode
-     */
-    public function setStatusCode($statusCode): void
+    public function setStatusCode(string|\Symfony\Component\Yaml\Tag\TaggedValue|null $statusCode): void
     {
         if ($statusCode instanceof TaggedValue) {
             if ('NOT' === $statusCode->getTag()) {

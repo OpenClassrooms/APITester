@@ -6,42 +6,24 @@ namespace APITester\Definition;
 
 final class Token
 {
-    private string $type;
+    private readonly string $type;
 
-    private string $authType;
-
-    private int $expiresIn;
-
-    private string $accessToken;
-
-    private ?string $refreshToken;
-
-    /**
-     * @var string[]
-     */
-    private array $scopes;
-
-    private string $name;
+    private readonly int $expiresIn;
 
     /**
      * @param string[] $scopes
      */
     public function __construct(
-        string $name,
-        string $authType,
-        string $accessToken,
-        array $scopes = [],
-        ?string $refreshToken = null,
+        private readonly string $name,
+        private readonly string $authType,
+        private readonly string $accessToken,
+        private readonly array $scopes = [],
+        private readonly ?string $refreshToken = null,
         ?string $type = null,
         ?int $expiresIn = null
     ) {
-        $this->accessToken = $accessToken;
-        $this->refreshToken = $refreshToken;
         $this->type = $type ?? 'Bearer';
         $this->expiresIn = $expiresIn ?? 3600;
-        $this->scopes = $scopes;
-        $this->authType = $authType;
-        $this->name = $name;
     }
 
     public function getAccessToken(): string

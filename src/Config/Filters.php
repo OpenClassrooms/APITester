@@ -98,7 +98,7 @@ final class Filters
             ->toArray()
         ;
         if (file_exists($this->baseline)) {
-            $exclude = array_merge($exclude, $this->getBaseLineExclude());
+            $exclude = [...$exclude, ...$this->getBaseLineExclude()];
         }
         file_put_contents(
             $this->baseline,
