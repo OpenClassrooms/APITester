@@ -1,6 +1,6 @@
 ![Coverage](../coverage/coverage.svg?raw=true)
 ![PHPStan](https://img.shields.io/badge/PHPStan-level%207-brightgreen.svg?style=flat)
-![PHP](https://img.shields.io/badge/PHP-%3E=%207.4-brightgreen.svg?style=flat)
+![PHP](https://img.shields.io/badge/PHP-%3E=%208.1-brightgreen.svg?style=flat)
 
 # API Tester
 
