@@ -126,6 +126,7 @@ final class Plan
             if (!empty($options['update-baseline']) || !empty($options['set-baseline'])) {
                 $this->updateBaseLine($suiteConfig);
             }
+            break;
         }
 
         return $this->isSuccessful();
