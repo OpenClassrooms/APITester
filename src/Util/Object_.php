@@ -77,9 +77,9 @@ final class Object_
      *
      * @param class-string<T> $interface
      *
-     * @return iterable<\ReflectionClass<T>>
+     * @return array<\ReflectionClass<T>>
      */
-    public static function getSubTypesOf(string $interface): iterable
+    public static function getSubTypesOf(string $interface): array
     {
         $finder = new Finder();
         $finder->in(PROJECT_DIR . '/src')
