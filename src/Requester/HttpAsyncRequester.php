@@ -46,7 +46,7 @@ final class HttpAsyncRequester extends Requester
 
     public function getResponse(string $id): ResponseInterface
     {
-        if (false === $this->launched) {
+        if ($this->launched === false) {
             $this->call();
             unset($this->requests[$id]);
         }
@@ -75,7 +75,7 @@ final class HttpAsyncRequester extends Requester
                         function (ResponseInterface $response) use ($id) {
                             $this->responses[$id] = $response;
                         },
-                        function (\Throwable $exception) {
+                        static function (\Throwable $exception): never {
                             echo "Error: {$exception->getMessage()}\n";
                             throw $exception;
                         }

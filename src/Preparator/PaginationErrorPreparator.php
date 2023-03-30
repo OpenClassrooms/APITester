@@ -23,7 +23,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
             ->flatten()
@@ -56,7 +56,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
     {
         $configItem = $this->getRangeConfig($operation);
 
-        if (null === $configItem) {
+        if ($configItem === null) {
             return [];
         }
 
@@ -76,7 +76,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
      */
     private function getRangeConfig(Operation $operation): ?RangeConfig
     {
-        if (null === $this->config) {
+        if ($this->config === null) {
             throw new PreparatorLoadingException(self::getName());
         }
         foreach ($this->config->range as $configItem) {
@@ -90,7 +90,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
                     ->first()
                 ;
 
-                if (null === $lower || null === $upper) {
+                if ($lower === null || $upper === null) {
                     continue;
                 }
 
@@ -102,7 +102,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
                     ->where('name', $configItem->getNames()[0])->first()
                 ;
 
-                if (null === $header) {
+                if ($header === null) {
                     continue;
                 }
 

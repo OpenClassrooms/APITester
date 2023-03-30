@@ -13,9 +13,9 @@ trait FilterableTrait
             $operator = 'contains';
         }
 
-        return null !== $self
+        return $self
             ->where($prop, $operator, $value)
-            ->first()
+            ->first() !== null
         ;
     }
 }

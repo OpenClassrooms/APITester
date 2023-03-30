@@ -23,7 +23,8 @@
       "sllh/composer-versions-check": true,
       "ergebnis/composer-normalize": true,
       "pyrech/composer-changelogs": true,
-      "symfony/flex": true
+      "symfony/flex": true,
+      "dereuromark/composer-versions-check": true
     }
   },
   "autoload": {
@@ -41,7 +42,7 @@
     }
   },
   "require": {
-    "php": ">=7.4",
+    "php": ">=8.1",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
@@ -49,11 +50,11 @@
     "canvural/php-openapi-faker": "^1.0",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.9",
-    "firebase/php-jwt": "~6.0.0",
-    "guzzlehttp/promises": "~1.4.0",
+    "firebase/php-jwt": "^6.0.0",
+    "guzzlehttp/promises": "^1.4.0",
     "hanneskod/classtools": "^1.2",
     "illuminate/collections": "^8.99",
-    "monolog/monolog": "^1.25.1 || ^2.8.0",
+    "monolog/monolog": "^1.25.1 || ^2.8.0 || ^3.0.0",
     "myclabs/deep-copy": "^1.11",
     "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.48",
@@ -88,11 +89,12 @@
     "phpstan/phpstan-strict-rules": "^1.1",
     "phpstan/phpstan-symfony": "^1.0",
     "pyrech/composer-changelogs": "^1.8",
+    "rector/rector": "^0.15.23",
     "roave/security-advisories": "dev-latest",
-    "sllh/composer-versions-check": "^2.0",
+    "dereuromark/composer-versions-check": "^0.1",
     "spaze/phpstan-disallowed-calls": "^2.1",
     "symfony/var-dumper": "^4.4 || ^5.0",
-    "symplify/easy-coding-standard": "^9.4",
+    "symplify/easy-coding-standard": "^11.3.0",
     "thecodingmachine/phpstan-strict-rules": "^1.0",
     "veewee/composer-run-parallel": "^1.1"
   },
@@ -115,18 +117,19 @@
       "@parallel test"
     ],
     "check-cs": [
-      "vendor/bin/ecs check --ansi -c config/ecs.php",
-      "vendor/bin/ecs check-markdown README.md --ansi -c config/ecs.php"
+      "vendor/bin/ecs check --ansi -c config/ecs.php"
     ],
     "fix-cs": [
-      "vendor/bin/ecs check --fix --ansi -c config/ecs.php ",
-      "vendor/bin/ecs check-markdown README.md --fix --ansi -c config/ecs.php"
+      "vendor/bin/ecs check --fix --ansi -c config/ecs.php"
     ],
     "check-static": [
       "@phpstan"
     ],
     "test": [
       "@unit"
+    ],
+    "rector": [
+      "vendor/bin/rector process src --ansi --config config/rector.php"
     ],
     "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",

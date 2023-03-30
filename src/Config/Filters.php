@@ -98,7 +98,7 @@ final class Filters
             ->toArray()
         ;
         if (file_exists($this->baseline)) {
-            $exclude = array_merge($exclude, $this->getBaseLineExclude());
+            $exclude = [...$exclude, ...$this->getBaseLineExclude()];
         }
         file_put_contents(
             $this->baseline,
@@ -109,11 +109,11 @@ final class Filters
     }
 
     /**
-     * @return array{'exclude': ?array<string, string>}
+     * @return array{'exclude': ?array<int, array<string, string>>}
      */
     private function getBaseLineData(): array
     {
-        /** @var array{'exclude': ?array<string, string>} */
+        /** @var array{'exclude': ?array<int, array<string, string>>} */
         return Yaml::parseFile($this->getBaseline());
     }
 }

@@ -184,22 +184,22 @@ final class ExecutePlanCommand extends Command
 
     private function printInfo(): void
     {
-        if (false !== $this->input->getOption('set-baseline')) {
+        if ($this->input->getOption('set-baseline') !== false) {
             $this->output->writeln('Creating baseline after tests run.');
         }
-        if (false !== $this->input->getOption('update-baseline')) {
+        if ($this->input->getOption('update-baseline') !== false) {
             $this->output->writeln('Updating baseline after tests run.');
         }
-        if (false !== $this->input->getOption('ignore-baseline')) {
+        if ($this->input->getOption('ignore-baseline') !== false) {
             $this->output->writeln('Ignoring baseline.');
         }
     }
 
     private function validateOptions(): void
     {
-        if (null !== $this->input->getOption('part')) {
+        if ($this->input->getOption('part') !== null) {
             $part = explode('/', (string) $this->input->getOption('part'));
-            if (2 !== \count($part)) {
+            if (\count($part) !== 2) {
                 throw new \InvalidArgumentException('The part option must be in the format x/y where y > 0 and x <= y');
             }
             if ($part[0] > $part[1] || $part[1] <= 0) {

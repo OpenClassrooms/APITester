@@ -19,7 +19,7 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
     {
         $testCases = [];
         foreach ($definitionParams as $in => $params) {
-            if (Parameter::TYPE_PATH === $in) { // Path parameters are mandatory to match the route
+            if ($in === Parameter::TYPE_PATH) { // Path parameters are mandatory to match the route
                 continue;
             }
 
@@ -59,13 +59,11 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
     protected function prepareForBodyFields(Body $body, array $parameters, Operation $operation): array
     {
         $testCases = [];
-
-        /** @var string[]|null $requiredFields */
         $requiredFields = $body->getSchema()
-            ->required;
+->required;
         $bodyExample = $body->getExample();
         foreach ($bodyExample as $name => $value) {
-            if (null === $requiredFields || !\in_array($name, $requiredFields, true)) {
+            if (!\in_array($name, $requiredFields, true)) {
                 continue;
             }
             $testCases[] = $this->createTestCase(

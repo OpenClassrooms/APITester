@@ -13,17 +13,15 @@ final class Response
 
     private ?string $mediaType = null;
 
-    private int $statusCode;
-
     private Parameters $headers;
 
     private ?Schema $body = null;
 
     private string $description = '';
 
-    public function __construct(int $statusCode)
-    {
-        $this->statusCode = $statusCode;
+    public function __construct(
+        private int $statusCode
+    ) {
         $this->headers = new Parameters();
     }
 

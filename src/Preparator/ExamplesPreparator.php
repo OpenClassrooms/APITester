@@ -37,7 +37,7 @@ final class ExamplesPreparator extends TestCasesPreparator
      */
     private function handleExtension(Operations $operations): Operations
     {
-        if (null !== $this->config->extensionPath) {
+        if ($this->config->extensionPath !== null) {
             try {
                 $operations = ExamplesExtensionLoader::load(
                     $this->config->extensionPath,

@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace APITester\Test;
 
-final class Result implements \JsonSerializable
+final class Result implements \JsonSerializable, \Stringable
 {
     public const STATUS_FAILED = 'failed';
 
     public const STATUS_SUCCESS = 'success';
 
-    private ?string $code;
-
-    private string $message;
-
-    private string $status;
-
-    private function __construct(string $status, string $message, string $code = null)
-    {
-        $this->status = $status;
-        $this->message = $message;
-        $this->code = $code;
+    private function __construct(
+        private readonly string $status,
+        private readonly string $message,
+        private readonly ?string $code = null
+    ) {
     }
 
     public function __toString(): string
     {
-        return null !== $this->code ? $this->code . ': ' . $this->message : $this->message;
+        return $this->code !== null ? $this->code . ': ' . $this->message : $this->message;
     }
 
     public static function success(string $message = null, string $code = null): self
@@ -40,7 +34,7 @@ final class Result implements \JsonSerializable
 
     public function hasSucceeded(): bool
     {
-        return self::STATUS_SUCCESS === $this->status;
+        return $this->status === self::STATUS_SUCCESS;
     }
 
     /**

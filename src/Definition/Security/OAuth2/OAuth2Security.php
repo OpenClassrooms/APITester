@@ -10,12 +10,12 @@ abstract class OAuth2Security extends Security
 {
     protected ?string $refreshUrl = null;
 
-    public function getRefreshUrl(): ?string
+    final public function getRefreshUrl(): ?string
     {
         return $this->refreshUrl;
     }
 
-    public function setRefreshUrl(?string $refreshUrl): void
+    final public function setRefreshUrl(?string $refreshUrl): void
     {
         $this->refreshUrl = $refreshUrl;
     }

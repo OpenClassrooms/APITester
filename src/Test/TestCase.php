@@ -26,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @internal
@@ -53,7 +54,7 @@ final class TestCase implements \JsonSerializable, Filterable
         'parent',
     ];
 
-    private string $id;
+    private readonly string $id;
 
     private LoggerInterface $logger;
 
@@ -61,29 +62,23 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private Requester $requester;
 
-    private string $name;
-
     private ResponseInterface $response;
 
     private ?string $operation;
 
     private ?string $preparator;
 
-    private OperationExample $operationExample;
-
     /**
      * @param array<int, string> $excludedFields
      */
     public function __construct(
-        string $name,
-        OperationExample $operationExample,
+        private readonly string $name,
+        private readonly OperationExample $operationExample,
         array $excludedFields = []
     ) {
-        $this->operationExample = $operationExample;
         $this->logger = new NullLogger();
         $this->id = Random::id('testcase_');
         $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
-        $this->name = $name;
         $nameParts = explode(' - ', $name);
         $this->preparator = $nameParts[0] ?? null;
         $this->operation = $nameParts[1] ?? null;
@@ -101,10 +96,11 @@ final class TestCase implements \JsonSerializable, Filterable
 
     /**
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     public function test(?HttpKernelInterface $kernel = null): void
     {
-        if (null !== $kernel && $this->requester instanceof SymfonyKernelRequester) {
+        if ($kernel !== null && $this->requester instanceof SymfonyKernelRequester) {
             $this->requester->setKernel($kernel);
         }
         $this->prepare();
@@ -127,6 +123,9 @@ final class TestCase implements \JsonSerializable, Filterable
         }
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     public function assert(): void
     {
         $this->response = $this->requester->getResponse($this->id);
@@ -242,6 +241,9 @@ final class TestCase implements \JsonSerializable, Filterable
         ];
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     private function log(string $logLevel): void
     {
         $message = Json::encode([

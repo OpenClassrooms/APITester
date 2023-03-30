@@ -26,11 +26,7 @@ final class Suite
      */
     private array $beforeTestCaseCallbacks = [];
 
-    private Definition $definition;
-
     private Filters $filters;
-
-    private string $name;
 
     /**
      * @var array<string, array<string, mixed>>
@@ -43,10 +39,10 @@ final class Suite
 
     private string $testCaseClass = TestCase::class;
 
-    public function __construct(string $name, Definition $definition)
-    {
-        $this->name = $name;
-        $this->definition = $definition;
+    public function __construct(
+        private readonly string $name,
+        private readonly Definition $definition
+    ) {
         $this->filters = new Filters();
         $this->requester = HttpAsyncRequester::getName();
     }

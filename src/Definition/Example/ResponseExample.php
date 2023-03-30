@@ -20,24 +20,14 @@ final class ResponseExample
      */
     private array $headers = [];
 
-    /**
-     * @var mixed
-     */
-    private $content;
-
-    /**
-     * @param mixed $content
-     */
-    public function __construct(?string $statusCode = null, $content = null)
-    {
-        $this->content = $content;
+    public function __construct(
+        ?string $statusCode = null,
+        private mixed $content = null
+    ) {
         $this->statusCode = $statusCode ?? $this->statusCode;
     }
 
-    /**
-     * @param mixed $content
-     */
-    public static function create(?string $statusCode = null, $content = null): self
+    public static function create(?string $statusCode = null, mixed $content = null): self
     {
         return new self($statusCode, $content);
     }
@@ -69,7 +59,7 @@ final class ResponseExample
      */
     public function getHeaders(): array
     {
-        if (null !== $this->content && !isset($this->headers['content-type'])) {
+        if ($this->content !== null && !isset($this->headers['content-type'])) {
             $this->headers['content-type'] = $this->getMediaType();
         }
 
@@ -106,10 +96,7 @@ final class ResponseExample
         return $this->content;
     }
 
-    /**
-     * @param mixed $content
-     */
-    public function setContent($content): self
+    public function setContent(mixed $content): self
     {
         $this->content = $content;
 
@@ -118,7 +105,7 @@ final class ResponseExample
 
     public function getStringContent(): string
     {
-        if (null === $this->content) {
+        if ($this->content === null) {
             return '';
         }
         if (is_scalar($this->content)) {

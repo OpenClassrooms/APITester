@@ -67,7 +67,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         /** @var array<string, SecurityScheme> $securitySchemes */
-        $securitySchemes = null !== $openApi->components ? $openApi->components->securitySchemes : [];
+        $securitySchemes = $openApi->components !== null ? $openApi->components->securitySchemes : [];
 
         return $api
             ->setOperations($this->getOperations($openApi->paths->getPaths(), $securitySchemes))
@@ -96,7 +96,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
-                /** @var \cebe\openapi\spec\Response[]|null $responses */
                 $responses = $operation->responses;
                 $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
 
@@ -203,7 +202,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     private function getRequests(?RequestBody $requestBody): Bodies
     {
         $collection = new Bodies();
-        if (null === $requestBody) {
+        if ($requestBody === null) {
             return $collection;
         }
 
@@ -228,7 +227,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     private function getResponses(?iterable $responses): Responses
     {
         $collection = new Responses();
-        if (null === $responses) {
+        if ($responses === null) {
             return $collection;
         }
         /** @var string $status */
@@ -236,7 +235,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             /** @var Header[] $headers */
             $headers = $response->headers;
 
-            if (0 === \count($response->content)) {
+            if (\count($response->content) === 0) {
                 $defResponse = Response::create((int) $status)
                     ->setHeaders($this->getHeaders($headers))
                     ->setDescription((string) $response->description)
@@ -275,13 +274,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     {
         $collection = [];
         foreach ($securitySchemes as $name => $scheme) {
-            if ('apiKey' === $scheme->type) {
+            if ($scheme->type === 'apiKey') {
                 $collection[] = new ApiKeySecurity($name, $scheme->name, $scheme->in);
             }
-            if ('http' === $scheme->type) {
+            if ($scheme->type === 'http') {
                 $collection[] = new HttpSecurity($name, $scheme->scheme, $scheme->bearerFormat);
             }
-            if ('oauth2' === $scheme->type && null !== $scheme->flows) {
+            if ($scheme->type === 'oauth2' && $scheme->flows !== null) {
                 $notFoundRequirements = [];
                 /**
                  * @var string    $type
@@ -289,9 +288,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                  */
                 foreach ((array) $scheme->flows->getSerializableData() as $type => $flow) {
                     $scopes = $requirements[$name] ?? [];
-                    /** @var object $flowScopes */
-                    $flowScopes = $flow->scopes;
-                    $diff = array_diff($scopes, array_keys((array) $flowScopes));
+                    $diff = array_diff($scopes, $flow->scopes);
                     if (\count($diff) > 0) {
                         $notFoundRequirements = $diff;
                         continue;
@@ -299,28 +296,28 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $notFoundRequirements = [];
                     $scopes = Scopes::fromNames($scopes);
                     $name .= '_' . $type;
-                    if ('implicit' === $type) {
+                    if ($type === 'implicit') {
                         $collection[] = new OAuth2ImplicitSecurity(
                             $name,
                             $flow->authorizationUrl,
                             $scopes
                         );
                     }
-                    if ('password' === $type) {
+                    if ($type === 'password') {
                         $collection[] = new OAuth2PasswordSecurity(
                             $name,
                             $flow->tokenUrl,
                             $scopes
                         );
                     }
-                    if ('clientCredentials' === $type) {
+                    if ($type === 'clientCredentials') {
                         $collection[] = new OAuth2ClientCredentialsSecurity(
                             $name,
                             $flow->tokenUrl,
                             $scopes
                         );
                     }
-                    if ('authorizationCode' === $type) {
+                    if ($type === 'authorizationCode') {
                         $collection[] = new OAuth2AuthorizationCodeSecurity(
                             $name,
                             $flow->authorizationUrl,
@@ -353,11 +350,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $operationExample = $this->getExample((string) $name, $examples);
                 $operationExample->setParameter($parameter->name, (string) $example->value, $parameter->in);
             }
-            if (null !== $parameter->example) {
+            if ($parameter->example !== null) {
                 $operationExample = $this->getExample('default', $examples);
                 $operationExample->setParameter($parameter->name, (string) $parameter->example, $parameter->in);
             }
-            if ($parameter->schema instanceof Schema && null !== $parameter->schema->example) {
+            if ($parameter->schema instanceof Schema && $parameter->schema->example !== null) {
                 $example = $parameter->schema->example;
                 if (\is_array($example)) {
                     $example = implode(',', $example);
@@ -374,12 +371,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $operationExample = $this->getExample($name, $examples);
                     $operationExample->setBody(BodyExample::create((array) $example->value));
                 }
-                if (null !== $mediaType->example) {
+                if ($mediaType->example !== null) {
                     $operationExample = $this->getExample('default', $examples);
                     $operationExample->setBody(BodyExample::create((array) $mediaType->example));
                 }
                 if ($mediaType->schema instanceof Schema) {
-                    if (null !== $mediaType->schema->example) {
+                    if ($mediaType->schema->example !== null) {
                         $operationExample = $this->getExample('default', $examples);
                         $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example));
                     }
@@ -387,7 +384,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $example = $this->extractDeepExamples($mediaType->schema);
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setBody(BodyExample::create($example));
-                    } catch (ExampleNotExtractableException $e) {
+                    } catch (ExampleNotExtractableException) {
                         // @ignoreException
                     }
                 }
@@ -395,7 +392,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         foreach ($operation->responses ?? [] as $statusCode => $response) {
-            if (0 === \count($response->content)) {
+            if (\count($response->content) === 0) {
                 $operationExample = $this->getExample('properties', $examples);
                 $operationExample->setResponse(new ResponseExample((string) $statusCode));
                 break;
@@ -413,12 +410,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 }
                 /** @var Example|null $example */
                 $example = $mediaType->example;
-                if (null !== $example) {
+                if ($example !== null) {
                     $operationExample = $this->getExample('default', $examples);
                     $operationExample->setResponse(new ResponseExample((string) $statusCode, (array) $example->value));
                 }
                 if ($mediaType->schema instanceof Schema) {
-                    if (null !== $mediaType->schema->example) {
+                    if ($mediaType->schema->example !== null) {
                         $operationExample = $this->getExample('default', $examples);
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, (array) $mediaType->schema->example)
@@ -430,7 +427,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, $example)
                         );
-                    } catch (ExampleNotExtractableException $e) {
+                    } catch (ExampleNotExtractableException) {
                         // @ignoreException
                     }
                 }
@@ -481,18 +478,18 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     private function extractDeepExamples(Schema $schema, bool $optional = false): array
     {
         $parent = [];
-        if ('object' === $schema->type) {
+        if ($schema->type === 'object') {
             foreach ($schema->properties as $name => $property) {
                 if (!$property instanceof Schema) {
                     continue;
                 }
-                if (isset($property->type) && 'object' === $property->type && !isset($property->example)) {
+                if (isset($property->type) && $property->type === 'object' && !isset($property->example)) {
                     $isRequired = \in_array($name, $property->required ?? [], true);
                     $return = $this->extractDeepExamples(
                         $property,
                         !$isRequired
                     );
-                    if ([] !== $return || $isRequired) {
+                    if ($return !== [] || $isRequired) {
                         $parent[$name] = $return;
                     }
                 } else {

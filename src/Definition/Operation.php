@@ -23,13 +23,7 @@ final class Operation implements Filterable
 
     private Parameters $headers;
 
-    private string $id;
-
-    private string $method;
-
     private Api $parent;
-
-    private string $path;
 
     private Parameters $pathParameters;
 
@@ -50,13 +44,10 @@ final class Operation implements Filterable
     private OperationExamples $examples;
 
     public function __construct(
-        string $id,
-        string $path,
-        string $method
+        private readonly string $id,
+        private readonly string $path,
+        private string $method
     ) {
-        $this->id = $id;
-        $this->path = $path;
-        $this->method = $method;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
         $this->headers = new Parameters();
@@ -246,10 +237,10 @@ final class Operation implements Filterable
         Parameters $pathParameters = null,
         Parameters $queryParameters = null
     ): string {
-        if (null === $pathParameters) {
+        if ($pathParameters === null) {
             $pathParameters = $this->getPathParameters();
         }
-        if (null === $queryParameters) {
+        if ($queryParameters === null) {
             $queryParameters = $this->getQueryParameters();
         }
 
@@ -417,11 +408,11 @@ final class Operation implements Filterable
         foreach ($parameters as $parameter) {
             $parameter->setIn($in);
         }
-        if (Parameter::TYPE_PATH === $in) {
+        if ($in === Parameter::TYPE_PATH) {
             $this->pathParameters = $parameters;
-        } elseif (Parameter::TYPE_QUERY === $in) {
+        } elseif ($in === Parameter::TYPE_QUERY) {
             $this->queryParameters = $parameters;
-        } elseif (Parameter::TYPE_HEADER === $in) {
+        } elseif ($in === Parameter::TYPE_HEADER) {
             $this->headers = $parameters;
         }
 
@@ -431,7 +422,7 @@ final class Operation implements Filterable
     public function getExample(?string $name = null): OperationExample
     {
         $examples = $this->getExamples();
-        if (null !== $name) {
+        if ($name !== null) {
             return $examples
                 ->get($name)
             ;
@@ -456,7 +447,7 @@ final class Operation implements Filterable
     {
         $body = $this->getBody();
         $bodyExample = null;
-        if (null !== $body) {
+        if ($body !== null) {
             $bodyExample = BodyExample::create($body->getRandomContent());
         }
 

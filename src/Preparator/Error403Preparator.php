@@ -22,7 +22,7 @@ final class Error403Preparator extends SecurityErrorPreparator
 
     protected function getTestTokens(Security $security): Tokens
     {
-        if (0 === $security->getScopes()->count()) {
+        if ($security->getScopes()->count() === 0) {
             return new Tokens();
         }
 
@@ -30,22 +30,22 @@ final class Error403Preparator extends SecurityErrorPreparator
             $tokens = $this->tokens
                 ->filter(
                     fn (Token $x) => !\in_array($x->getName(), $this->config->excludedTokens, true)
-                        && 0 === $security
+                        && $security
                             ->getScopes()
                             ->select('name')
                             ->intersect($x->getScopes())
-                            ->count()
+                            ->count() === 0
                 )
             ;
 
-            if (0 === $tokens->count()) {
+            if ($tokens->count() === 0) {
                 throw new \LogicException('No token with invalid scope for 403 found.');
             }
 
             return $tokens;
         }
 
-        throw new \LogicException('Unhandled security instance of type ' . \get_class($security));
+        throw new \LogicException('Unhandled security instance of type ' . $security::class);
     }
 
     protected function getTestCaseName(): string

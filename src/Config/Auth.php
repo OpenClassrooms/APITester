@@ -6,8 +6,6 @@ namespace APITester\Config;
 
 final class Auth
 {
-    private string $name;
-
     /**
      * @var string[]
      */
@@ -18,9 +16,9 @@ final class Auth
      */
     private array $body = [];
 
-    public function __construct(string $name)
-    {
-        $this->name = $name;
+    public function __construct(
+        private readonly string $name
+    ) {
     }
 
     public function getName(): string

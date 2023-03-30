@@ -17,7 +17,7 @@ final class Error404Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations
             ->select('responses.*')
             ->flatten()
@@ -40,7 +40,7 @@ final class Error404Preparator extends TestCasesPreparator
 
         $testcases = [];
 
-        if (0 === $operation->getRequestBodies()->count()) {
+        if ($operation->getRequestBodies()->count() === 0) {
             $testcases[] = $this->buildTestCase(
                 OperationExample::create('RandomPath', $operation)
                     ->setForceRandom()
