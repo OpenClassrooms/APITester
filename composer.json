@@ -52,7 +52,6 @@
     "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^6.0.0",
     "guzzlehttp/promises": "^1.4.0",
-    "hanneskod/classtools": "^1.2",
     "illuminate/collections": "^8.99",
     "monolog/monolog": "^1.25.1 || ^2.8.0 || ^3.0.0",
     "myclabs/deep-copy": "^1.11",

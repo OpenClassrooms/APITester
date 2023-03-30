@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Util;
 
-use hanneskod\classtools\Iterator\ClassIterator;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
@@ -44,7 +43,7 @@ final class Object_
     }
 
     /**
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $interface
      *
@@ -53,9 +52,8 @@ final class Object_
     public static function getImplementations(string $interface): array
     {
         $objects = [];
-        $implementations = self::getSubTypesOf($interface)->where('isInstantiable');
+        $implementations = self::getSubTypesOf($interface);
 
-        /** @var \ReflectionClass<T> $class */
         foreach ($implementations as $class) {
             try {
                 if (!$class->isFinal()) {
@@ -75,20 +73,31 @@ final class Object_
     }
 
     /**
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $interface
      *
-     * @return ClassIterator<\ReflectionClass<T>>
+     * @return iterable<\ReflectionClass<T>>
      */
-    public static function getSubTypesOf(string $interface): ClassIterator
+    public static function getSubTypesOf(string $interface): iterable
     {
         $finder = new Finder();
-        $iter = new ClassIterator($finder->in(PROJECT_DIR . '/src'));
-        $iter->enableAutoloading();
-
-        /** @var ClassIterator<\ReflectionClass<T>> $iter */
-        return $iter->type($interface);
+        $finder->in(PROJECT_DIR . '/src')
+            ->files()
+            ->name('*.php')
+        ;
+        foreach ($finder as $file) {
+            $content = $file->getContents();
+            /** @var class-string<T>|null $className */
+            $className = self::extractClassNameFromCode($content);
+            if ($className === null) {
+                continue;
+            }
+            $class = new \ReflectionClass($className);
+            if ($class->isInstantiable() && $class->isSubclassOf($interface)) {
+                yield $class;
+            }
+        }
     }
 
     /**
@@ -109,7 +118,7 @@ final class Object_
     }
 
     /**
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $interface
      *
@@ -118,11 +127,8 @@ final class Object_
     public static function getImplementationsClasses(string $interface): array
     {
         $classes = [];
-        $implementations = self::getSubTypesOf($interface)
-            ->where('isInstantiable')
-        ;
+        $implementations = self::getSubTypesOf($interface);
 
-        /** @var \ReflectionClass<T> $class */
         foreach ($implementations as $class) {
             if (!$class->isFinal()) {
                 continue;
@@ -131,5 +137,25 @@ final class Object_
         }
 
         return $classes;
+    }
+
+    /**
+     * @return class-string|null
+     */
+    private static function extractClassNameFromCode(string $content): ?string
+    {
+        preg_match('/(final )?class\s+(.*)\s+/im', $content, $matches);
+
+        if (!isset($matches[2])) {
+            return null;
+        }
+
+        $className = $matches[2];
+
+        if (!class_exists($className)) {
+            return null;
+        }
+
+        return $className;
     }
 }
