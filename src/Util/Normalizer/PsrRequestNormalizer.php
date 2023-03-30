@@ -7,9 +7,9 @@ namespace APITester\Util\Normalizer;
 use APITester\Util\Json;
 use Nyholm\Psr7\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-final class PsrRequestNormalizer implements ContextAwareNormalizerInterface
+final class PsrRequestNormalizer implements NormalizerInterface
 {
     /**
      * @inerhitDoc
@@ -17,7 +17,7 @@ final class PsrRequestNormalizer implements ContextAwareNormalizerInterface
      * @param mixed      $data
      * @param mixed|null $format
      */
-    public function supportsNormalization($data, $format = null, array $context = []): bool
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof Request;
     }

@@ -77,15 +77,16 @@ final class Object_
      *
      * @param class-string<T> $interface
      *
-     * @return iterable<\ReflectionClass<T>>
+     * @return array<\ReflectionClass<T>>
      */
-    public static function getSubTypesOf(string $interface): iterable
+    public static function getSubTypesOf(string $interface): array
     {
         $finder = new Finder();
         $finder->in(PROJECT_DIR . '/src')
             ->files()
             ->name('*.php')
         ;
+        $classes = [];
         foreach ($finder as $file) {
             $content = $file->getContents();
             /** @var class-string<T>|null $className */
@@ -95,9 +96,11 @@ final class Object_
             }
             $class = new \ReflectionClass($className);
             if ($class->isInstantiable() && $class->isSubclassOf($interface)) {
-                yield $class;
+                $classes[] = $class;
             }
         }
+
+        return array_unique($classes);
     }
 
     /**
@@ -144,13 +147,19 @@ final class Object_
      */
     private static function extractClassNameFromCode(string $content): ?string
     {
-        preg_match('/(final )?class\s+(.*)\s+/im', $content, $matches);
-
-        if (!isset($matches[2])) {
+        preg_match('/(?:final )?class\s+(\S+)(?:\s+(?:extends|implements))?/i', $content, $matches);
+        if (!isset($matches[1])) {
             return null;
         }
+        $classShortName = $matches[1];
 
-        $className = $matches[2];
+        preg_match('/namespace\s+(.+);/i', $content, $matches);
+        if (!isset($matches[1])) {
+            return null;
+        }
+        $namespace = $matches[1];
+
+        $className = $namespace . '\\' . $classShortName;
 
         if (!class_exists($className)) {
             return null;

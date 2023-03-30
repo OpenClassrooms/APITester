@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace APITester\Util;
 
-use APITester\Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use APITester\Util\Normalizer\PsrRequestNormalizer;
 use APITester\Util\Normalizer\PsrResponseNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
