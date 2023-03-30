@@ -17,7 +17,7 @@ final class PlanConfigLoader
     public static function load(string $path): Plan
     {
         $content = file_get_contents($path);
-        if (false === $content) {
+        if ($content === false) {
             throw new ConfigurationException("Could not load file '{$path}'");
         }
         $content = self::process($content);
@@ -37,7 +37,7 @@ final class PlanConfigLoader
         if (preg_match_all('/%env\((.+?)\)%/i', $content, $matches) > 0) {
             foreach ($matches[1] as $var) {
                 $env = $_ENV[$var] ?? null;
-                if (null === $env) {
+                if ($env === null) {
                     throw new ConfigurationException("Environment variable '{$var}' is not defined.");
                 }
                 $patterns[] = "/%env\\({$var}\\)%/i";

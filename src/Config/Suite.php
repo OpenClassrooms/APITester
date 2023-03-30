@@ -39,8 +39,10 @@ final class Suite
 
     private string $testCaseClass = TestCase::class;
 
-    public function __construct(private readonly string $name, private readonly Definition $definition)
-    {
+    public function __construct(
+        private readonly string $name,
+        private readonly Definition $definition
+    ) {
         $this->filters = new Filters();
         $this->requester = HttpAsyncRequester::getName();
     }

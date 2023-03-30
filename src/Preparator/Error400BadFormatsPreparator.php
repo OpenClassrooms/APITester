@@ -12,18 +12,29 @@ use cebe\openapi\spec\Schema;
 final class Error400BadFormatsPreparator extends Error400Preparator
 {
     public const STRING_TYPE = 'string';
+
     public const NUMBER_TYPE = 'number';
+
     public const INTEGER_TYPE = 'integer';
 
     public const FLOAT_FORMAT = 'float';
+
     public const DOUBLE_FORMAT = 'double';
+
     public const INT32_FORMAT = 'int32';
+
     public const INT64_FORMAT = 'int64';
+
     public const UUID_FORMAT = 'uuid';
+
     public const DATE_FORMAT = 'date';
+
     public const DATETIME_FORMAT = 'date-time';
+
     public const DATE_INTERVAL_FORMAT = 'date-interval';
+
     public const EMAIL_FORMAT = 'email';
+
     public const BYTE_FORMAT = 'byte';
 
     public const BAD_FORMAT_EXAMPLES = [
@@ -61,7 +72,7 @@ final class Error400BadFormatsPreparator extends Error400Preparator
                     continue;
                 }
 
-                if (null === $param->getType() || null === $param->getFormat()) {
+                if ($param->getType() === null || $param->getFormat() === null) {
                     continue;
                 }
 
@@ -113,9 +124,8 @@ final class Error400BadFormatsPreparator extends Error400Preparator
         $type = $parameter->getType();
         $format = $parameter->getFormat();
 
-        return
-            null !== $type
-            && null !== $format
+        return $type !== null
+            && $format !== null
             && \in_array($type, $this->getSupportedTypes(), true)
             && \in_array($format, $this->getSupportedFormats($type), true);
     }
@@ -146,9 +156,8 @@ final class Error400BadFormatsPreparator extends Error400Preparator
 
     private function isSchemaSupported(Schema $schema): bool
     {
-        return
-            null !== $schema->type
-            && null !== $schema->format
+        return $schema->type !== null
+            && $schema->format !== null
             && \in_array($schema->type, $this->getSupportedTypes(), true)
             && \in_array($schema->format, $this->getSupportedFormats($schema->type), true);
     }

@@ -8,8 +8,11 @@ use APITester\Definition\Collection\Scopes;
 
 final class OAuth2ClientCredentialsSecurity extends OAuth2Security
 {
-    public function __construct(string $name, protected string $tokenUrl, Scopes $scopes)
-    {
+    public function __construct(
+        string $name,
+        protected string $tokenUrl,
+        Scopes $scopes
+    ) {
         parent::__construct($name, $scopes);
         $this->scopes = $scopes;
     }

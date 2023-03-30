@@ -26,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @internal
@@ -95,10 +96,11 @@ final class TestCase implements \JsonSerializable, Filterable
 
     /**
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     public function test(?HttpKernelInterface $kernel = null): void
     {
-        if (null !== $kernel && $this->requester instanceof SymfonyKernelRequester) {
+        if ($kernel !== null && $this->requester instanceof SymfonyKernelRequester) {
             $this->requester->setKernel($kernel);
         }
         $this->prepare();
@@ -121,6 +123,9 @@ final class TestCase implements \JsonSerializable, Filterable
         }
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     public function assert(): void
     {
         $this->response = $this->requester->getResponse($this->id);
@@ -236,6 +241,9 @@ final class TestCase implements \JsonSerializable, Filterable
         ];
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     private function log(string $logLevel): void
     {
         $message = Json::encode([

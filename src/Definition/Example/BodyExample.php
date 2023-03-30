@@ -15,8 +15,9 @@ final class BodyExample
     /**
      * @param mixed[] $content
      */
-    public function __construct(private readonly array $content = [])
-    {
+    public function __construct(
+        private array $content = []
+    ) {
     }
 
     /**
@@ -29,7 +30,7 @@ final class BodyExample
 
     public function getStringContent(): string
     {
-        if ('application/json' !== $this->mediaType) {
+        if ($this->mediaType !== 'application/json') {
             throw new \RuntimeException('Unsupported get string content for mediaType: ' . $this->mediaType);
         }
 
@@ -64,5 +65,13 @@ final class BodyExample
     public function setMediaType(string $mediaType): void
     {
         $this->mediaType = $mediaType;
+    }
+
+    /**
+     * @param mixed[] $content
+     */
+    public function setContent(array $content): void
+    {
+        $this->content = $content;
     }
 }

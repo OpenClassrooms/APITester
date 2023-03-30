@@ -30,8 +30,8 @@ abstract class Requester
 
     protected function fillRequestVars(RequestInterface $request): void
     {
-        /** @var string $header */
         foreach ($request->getHeaders() as $name => $header) {
+            $header = implode(', ', $header);
             $header = $this->fillVars($header);
             $request->withHeader($name, $header);
         }

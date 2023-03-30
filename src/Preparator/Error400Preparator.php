@@ -21,7 +21,7 @@ abstract class Error400Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(fn (Operation $op) => $this->prepareTestCases($op))
             ->flatten()
@@ -70,12 +70,12 @@ abstract class Error400Preparator extends TestCasesPreparator
             ->first()
         ;
 
-        if (null === $requiredBody) {
+        if ($requiredBody === null) {
             return $testCases;
         }
 
         return array_map(
-            static fn(TestCase $t) => $t->withRequestBody($requiredBody),
+            static fn (TestCase $t) => $t->withRequestBody($requiredBody),
             $testCases
         );
     }

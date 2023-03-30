@@ -57,7 +57,7 @@ final class ExamplesExtensionLoader
                     ->where('name', $exampleName)
                     ->first()
                 ;
-                if (null !== $example) {
+                if ($example !== null) {
                     $operation->addExample($example);
                 }
             }

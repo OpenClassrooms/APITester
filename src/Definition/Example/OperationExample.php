@@ -48,11 +48,13 @@ final class OperationExample
 
     private ?string $path = null;
 
-    private readonly DeepCopy $deepCopy;
+    private DeepCopy $deepCopy;
 
-    public function __construct(private string $name, Operation $parent = null)
-    {
-        if (null !== $parent) {
+    public function __construct(
+        private string $name,
+        Operation $parent = null
+    ) {
+        if ($parent !== null) {
             $this->parent = $parent;
         }
         $this->response = new ResponseExample();
@@ -151,13 +153,13 @@ final class OperationExample
      */
     public function getParametersFrom(string $from): array
     {
-        if (Parameter::TYPE_PATH === $from) {
+        if ($from === Parameter::TYPE_PATH) {
             return $this->getPathParameters();
         }
-        if (Parameter::TYPE_QUERY === $from) {
+        if ($from === Parameter::TYPE_QUERY) {
             return $this->getQueryParameters();
         }
-        if (Parameter::TYPE_HEADER === $from) {
+        if ($from === Parameter::TYPE_HEADER) {
             return $this->getHeaders();
         }
 
@@ -169,7 +171,7 @@ final class OperationExample
      */
     public function getPathParameters(): array
     {
-        if (null !== $this->parent) {
+        if ($this->parent !== null) {
             $definitionParamsCount = $this->parent
                 ->getPathParameters()
                 ->count()
@@ -200,7 +202,7 @@ final class OperationExample
      */
     public function getQueryParameters(): array
     {
-        if (null !== $this->parent) {
+        if ($this->parent !== null) {
             $definitionParamsCount = $this->parent
                 ->getQueryParameters()
                 ->count()
@@ -233,7 +235,7 @@ final class OperationExample
      */
     public function getHeaders(): array
     {
-        if (null !== $this->getBody() && !isset($this->headers['content-type'])) {
+        if ($this->getBody() !== null && !isset($this->headers['content-type'])) {
             $this->headers['content-type'] = $this
                 ->getBody()
                 ->getMediaType()
@@ -255,16 +257,16 @@ final class OperationExample
 
     public function getBody(): ?BodyExample
     {
-        if (null === $this->parent) {
+        if ($this->parent === null) {
             return $this->body;
         }
 
-        if (0 === $this->parent->getRequestBodies()->count()) {
+        if ($this->parent->getRequestBodies()->count() === 0) {
             return null;
         }
 
         $requestBody = $this->parent->getBody();
-        if (null === $this->body && null !== $requestBody) {
+        if ($this->body === null && $requestBody !== null) {
             return BodyExample::create($requestBody->getRandomContent());
         }
 
@@ -273,7 +275,7 @@ final class OperationExample
 
     public function setBody(?BodyExample $body): self
     {
-        if (null !== $body) {
+        if ($body !== null) {
             $body->setParent($this);
         }
         $this->body = $body;
@@ -298,7 +300,7 @@ final class OperationExample
     public function authenticate(Tokens $tokens, bool $ignoreScope = false): self
     {
         $operation = $this->getParent();
-        if (null === $operation) {
+        if ($operation === null) {
             return $this;
         }
         foreach ($operation->getSecurities() as $security) {
@@ -317,11 +319,10 @@ final class OperationExample
                     'scopes',
                     'includes',
                     $scopes
-                )->first()
-                ;
+                )->first();
             }
 
-            if (null !== $token) {
+            if ($token !== null) {
                 $headers = $this->getAuthenticationParams($security, $token);
                 foreach ($headers['headers'] ?? [] as $header => $value) {
                     $this->setHeader($header, $value);
@@ -374,10 +375,10 @@ final class OperationExample
 
     public function getMethod(): string
     {
-        if (null !== $this->method) {
+        if ($this->method !== null) {
             return $this->method;
         }
-        if (null !== $this->parent) {
+        if ($this->parent !== null) {
             return $this->parent->getMethod();
         }
 
@@ -397,32 +398,32 @@ final class OperationExample
         $queryParameters = $this->queryParameters;
 
         $example = null;
-        if (null !== $this->parent && $this->forceRandom) {
+        if ($this->parent !== null && $this->forceRandom) {
             $example = $this->parent
                 ->getRandomExample()
             ;
-        } elseif (null !== $this->parent && $this->autoComplete) {
+        } elseif ($this->parent !== null && $this->autoComplete) {
             $example = $this->parent
                 ->getExample()
             ;
         }
 
-        if (null !== $example && (0 === \count($pathParameters) || $this->forceRandom)) {
+        if ($example !== null && (\count($pathParameters) === 0 || $this->forceRandom)) {
             $pathParameters = $example->getPathParameters();
         }
 
-        if (null !== $example && (0 === \count($this->queryParameters) || $this->forceRandom)) {
+        if ($example !== null && (\count($this->queryParameters) === 0 || $this->forceRandom)) {
             $queryParameters = $example->getQueryParameters();
         }
 
-        if (null !== $this->path) {
+        if ($this->path !== null) {
             return Operation::formatPath(
                 $this->path,
                 $pathParameters,
                 $queryParameters
             );
         }
-        if (null !== $this->parent) {
+        if ($this->parent !== null) {
             return $this->parent->getPath(
                 $pathParameters,
                 $queryParameters
@@ -441,7 +442,7 @@ final class OperationExample
 
     public function getStringBody(): ?string
     {
-        if (null === $this->getBody()) {
+        if ($this->getBody() === null) {
             return null;
         }
 
@@ -452,11 +453,11 @@ final class OperationExample
 
     private function getParametersProp(string $type): string
     {
-        if ('path' === $type) {
+        if ($type === 'path') {
             $paramProp = 'pathParameters';
-        } elseif ('header' === $type) {
+        } elseif ($type === 'header') {
             $paramProp = 'headers';
-        } elseif ('query' === $type) {
+        } elseif ($type === 'query') {
             $paramProp = 'queryParameters';
         } else {
             throw new \InvalidArgumentException("Invalid parameter type: {$type}");
@@ -492,21 +493,21 @@ final class OperationExample
             ];
         }
         if ($security instanceof ApiKeySecurity) {
-            if ('header' === $security->getIn()) {
+            if ($security->getIn() === 'header') {
                 return [
                     'headers' => [
                         $security->getKeyName() => $token->getAccessToken(),
                     ],
                 ];
             }
-            if ('cookie' === $security->getIn()) {
+            if ($security->getIn() === 'cookie') {
                 return [
                     'headers' => [
                         'Cookie' => "{$security->getKeyName()}={$token->getAccessToken()}",
                     ],
                 ];
             }
-            if ('query' === $security->getIn()) {
+            if ($security->getIn() === 'query') {
                 return [
                     'query' => [
                         $security->getKeyName() => $token->getAccessToken(),

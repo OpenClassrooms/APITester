@@ -13,6 +13,7 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -27,16 +28,16 @@ final class Assert
     private static PropertyAccessorInterface $accessor;
 
     /**
-     * @param iterable<mixed>|object $expected
-     * @param iterable<mixed>|object $actual
+     * @param object|iterable<mixed> $expected
+     * @param object|iterable<mixed> $actual
      * @param array<string>          $exclude
      *
      * @throws InvalidArgumentException
      * @throws ExpectationFailedException
      */
     public static function objectsEqual(
-        $expected,
-        $actual,
+        iterable|object $expected,
+        iterable|object $actual,
         array $exclude = [],
         string $message = ''
     ): void {
@@ -92,6 +93,8 @@ final class Assert
 
     /**
      * @param array<string> $excludedFields
+     *
+     * @throws ExceptionInterface
      */
     public static function response(
         ResponseExample $expected,
@@ -173,11 +176,12 @@ final class Assert
         self::initAccessor();
         $paths = [];
         foreach ($array as $key => $value) {
-            $path = null === $prefix ? $key : $prefix . '.' . $key;
+            $path = $prefix === null ? $key : $prefix . '.' . $key;
             if (\in_array($path, $excludedFields, true)) {
                 continue;
             }
             if (\is_array($value)) {
+                /** @var array<string, mixed> $value */
                 $paths = array_merge(
                     $paths,
                     self::getPaths(

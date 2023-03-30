@@ -96,9 +96,9 @@ final class Serializer
     /**
      * @param string[] $ignoredAttributes
      *
-     * @return mixed
+     * @throws ExceptionInterface
      */
-    public static function normalize(object $object, array $ignoredAttributes = [])
+    public static function normalize(object $object, array $ignoredAttributes = []): mixed
     {
         return self::create()
             ->normalize($object, null, [

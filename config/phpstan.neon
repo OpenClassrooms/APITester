@@ -34,12 +34,11 @@ parameters:
         - '/Casting to string something that.s already string./'
         - '/Class APITester\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
         - '/Instantiated class \\ApiTestCase not found./'
-        - '/Call to method getTestCaseKernel\(\) on an unknown class \\TestCaseKernelProvider./'
         - '/Instantiated class \\TestCaseKernelProvider not found./'
         - '/Construct empty\(\) is not allowed. Use more strict comparison./'
         - '/Language construct empty\(\) should not be used./'
-        - '/Method APITester\\Test\\TestCase::toPhpUnitTestCase\(\) should return T of PHPUnit\\Framework\\TestCase but returns .+/'
         - '/In method "APITester\\Requester\\SymfonyKernelRequester::request", caught "Throwable" must be rethrown.+/'
+        - '/.+ APITester\\Test\\TestCase\|null is not subtype of type PHPUnit\\Framework\\Test\|null/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
         - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Calling eval\(\) is forbidden, eval is evil, please write more code and do not use eval\(\)/'}
         - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Language construct eval\(\) should not be used./'}

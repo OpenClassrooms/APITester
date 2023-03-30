@@ -11,11 +11,13 @@ final class Error416Preparator extends PaginationErrorPreparator
         'lower' => '-5',
         'upper' => '5',
     ];
+
     public const NON_NUMERIC_VALUES = [
         'name' => 'NonNumericRange',
         'lower' => 'foo',
         'upper' => 'bar',
     ];
+
     public const INVERSED_VALUES = [
         'name' => 'InversedRange',
         'lower' => '20',

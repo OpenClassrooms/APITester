@@ -6,8 +6,9 @@ namespace APITester\Definition;
 
 final class Tag
 {
-    public function __construct(private readonly string $name)
-    {
+    public function __construct(
+        private readonly string $name
+    ) {
     }
 
     public function getName(): string

@@ -13,8 +13,9 @@ final class Plan
     /**
      * @param Suite[] $suites
      */
-    public function __construct(private readonly array $suites)
-    {
+    public function __construct(
+        private readonly array $suites
+    ) {
     }
 
     /**

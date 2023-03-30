@@ -9,8 +9,12 @@ use APITester\Definition\Security;
 
 final class HttpSecurity extends Security
 {
-    public function __construct(string $name, private readonly string $scheme, private readonly ?string $format = null, ?Scopes $scopes = null)
-    {
+    public function __construct(
+        string $name,
+        private readonly string $scheme,
+        private readonly ?string $format = null,
+        ?Scopes $scopes = null
+    ) {
         parent::__construct($name, $scopes);
     }
 
@@ -21,7 +25,7 @@ final class HttpSecurity extends Security
 
     public function isBasic(): bool
     {
-        return Security::SCHEME_BASIC_AUTH === $this->getScheme();
+        return $this->getScheme() === Security::SCHEME_BASIC_AUTH;
     }
 
     public function getScheme(): string
@@ -31,7 +35,7 @@ final class HttpSecurity extends Security
 
     public function isBearer(): bool
     {
-        return Security::SCHEME_BEARER_AUTH === $this->getScheme();
+        return $this->getScheme() === Security::SCHEME_BEARER_AUTH;
     }
 
     public function getFormat(): ?string

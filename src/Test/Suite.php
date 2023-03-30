@@ -125,20 +125,20 @@ final class Suite extends TestSuite
     /**
      * @param array<array<string, string>> $filter
      *
-     * @return array<array<string, string>>
+     * @return array<iterable<string, string>>
      */
     public function toTestCaseFilter(array $filter): array
     {
-        /** @var array<array<string, string>> */
+        /** @var array<iterable<string, string>> */
         return collect($filter)
             ->map(
-                fn ($value) => collect($value)
-                    ->filter(fn ($value, $key) => str_starts_with(
+                static fn ($value) => collect($value)
+                    ->filter(static fn ($value, $key) => str_starts_with(
                         $key,
                         'testcase.'
                     ))
                     ->mapWithKeys(
-                        fn ($value, $key) => [
+                        static fn ($value, $key) => [
                             str_replace('testcase.', '', $key) => $value,
                         ]
                     )
@@ -181,7 +181,7 @@ final class Suite extends TestSuite
         foreach ($this->preparators as $preparator) {
             $operations = $this->api->getOperations()
                 ->map(
-                    fn (Operation $op) => $op->setPreparator($preparator::getName())
+                    static fn (Operation $op) => $op->setPreparator($preparator::getName())
                 )
             ;
             try {
@@ -243,7 +243,7 @@ final class Suite extends TestSuite
             'name'
         );
 
-        return collect($tests)->filter(fn (TestCase $test) => !\in_array(
+        return collect($tests)->filter(static fn (TestCase $test) => !\in_array(
             $test->getName(),
             $excludedTests,
             true
@@ -252,7 +252,7 @@ final class Suite extends TestSuite
 
     private function indexInPart(?string $part, int $index, int $total): bool
     {
-        if (null === $part) {
+        if ($part === null) {
             return true;
         }
 
@@ -279,7 +279,7 @@ final class Suite extends TestSuite
     {
         $operator = '=';
         if ($value instanceof TaggedValue) {
-            if ('NOT' === $value->getTag()) {
+            if ($value->getTag() === 'NOT') {
                 $operator = '!=';
             }
             $value = $value->getValue();

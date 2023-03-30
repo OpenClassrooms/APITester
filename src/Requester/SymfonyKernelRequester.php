@@ -43,11 +43,11 @@ final class SymfonyKernelRequester extends Requester
         try {
             $request = $this->psrToSymfonyRequest($request);
             $response = $this->kernel->handle($request);
-//            $this->kernel->terminate($request, $response);
+            //            $this->kernel->terminate($request, $response);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
         } catch (\Throwable $e) {
-//            print_r($e->getTrace()[0]);
-//            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            //            print_r($e->getTrace()[0]);
+            //            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
             $response = new Response(Json::encode($e), 500);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }

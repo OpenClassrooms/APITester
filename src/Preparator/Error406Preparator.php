@@ -21,7 +21,7 @@ final class Error406Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations->map(
             fn (Operation $operation) => $operation->getResponses()
                 ->select('mediaType')
@@ -34,8 +34,7 @@ final class Error406Preparator extends TestCasesPreparator
                     $operation,
                     (string) $type
                 ))
-        )->flatten()
-        ;
+        )->flatten();
     }
 
     private function prepareTestCase(Operation $operation, string $type): TestCase

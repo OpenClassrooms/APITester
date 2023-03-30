@@ -8,8 +8,11 @@ use APITester\Definition\Collection\Scopes;
 
 final class OAuth2ImplicitSecurity extends OAuth2Security
 {
-    public function __construct(string $name, protected string $authorizationUrl, ?Scopes $scopes = null)
-    {
+    public function __construct(
+        string $name,
+        protected string $authorizationUrl,
+        ?Scopes $scopes = null
+    ) {
         parent::__construct($name, $scopes);
     }
 

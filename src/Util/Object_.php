@@ -62,7 +62,7 @@ final class Object_
                     continue;
                 }
                 $constructor = $class->getConstructor();
-                if (null !== $constructor && $constructor->getNumberOfRequiredParameters() > 0) {
+                if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {
                     continue;
                 }
                 $objects[] = $class->newInstance();

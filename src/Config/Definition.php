@@ -10,8 +10,10 @@ final class Definition
 {
     private readonly string $path;
 
-    public function __construct(string $path, private readonly string $format)
-    {
+    public function __construct(
+        string $path,
+        private readonly string $format
+    ) {
         $path = trim($path, '/');
         $fullPath = $path;
         if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {

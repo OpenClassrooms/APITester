@@ -29,7 +29,7 @@ final class Parameters extends Collection
         $examples = [];
         foreach ($this->items as $item) {
             $example = $item->getExample();
-            if (null !== $example) {
+            if ($example !== null) {
                 $examples[$item->getName()] = $example;
             }
         }
@@ -45,7 +45,7 @@ final class Parameters extends Collection
         $params = [];
         foreach ($this as $parameter) {
             $schema = $parameter->getSchema();
-            if (null !== $schema) {
+            if ($schema !== null) {
                 $random = (new SchemaFaker($schema, new Options()))->generate();
             } else {
                 try {

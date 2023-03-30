@@ -25,7 +25,7 @@ final class ResponseConfig
     public function setStatusCode(string|\Symfony\Component\Yaml\Tag\TaggedValue|null $statusCode): void
     {
         if ($statusCode instanceof TaggedValue) {
-            if ('NOT' === $statusCode->getTag()) {
+            if ($statusCode->getTag() === 'NOT') {
                 $statusCode = "#^(?!{$statusCode->getValue()})\\d+#";
             } else {
                 $statusCode = $statusCode->getValue();

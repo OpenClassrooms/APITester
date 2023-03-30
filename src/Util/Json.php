@@ -26,7 +26,10 @@ final class Json
      */
     public static function decode(string $json, int $depth = 512): array
     {
-        return (array) json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
+        /**
+         * @var array<int|string, mixed>
+         */
+        return json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -66,7 +69,7 @@ final class Json
      */
     public static function encode($data, int $flags = JSON_THROW_ON_ERROR): string
     {
-        if (JSON_THROW_ON_ERROR !== $flags) {
+        if ($flags !== JSON_THROW_ON_ERROR) {
             $flags |= JSON_THROW_ON_ERROR;
         }
 

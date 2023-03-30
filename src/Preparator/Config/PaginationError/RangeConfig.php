@@ -7,13 +7,17 @@ namespace APITester\Preparator\Config\PaginationError;
 final class RangeConfig
 {
     public const HEADER_RANGE = 'header';
+
     public const QUERY_PARAM_RANGE = 'query';
 
     /**
      * @param string[] $names
      */
-    public function __construct(private string $in, private array $names, private ?string $unit = null)
-    {
+    public function __construct(
+        private string $in,
+        private array $names,
+        private ?string $unit = null
+    ) {
         if (!$this->validate()) {
             throw new \InvalidArgumentException('Invalid RangeConfig Error Config');
         }
@@ -21,12 +25,12 @@ final class RangeConfig
 
     public function inHeader(): bool
     {
-        return self::HEADER_RANGE === $this->getIn();
+        return $this->getIn() === self::HEADER_RANGE;
     }
 
     public function inQuery(): bool
     {
-        return self::QUERY_PARAM_RANGE === $this->getIn();
+        return $this->getIn() === self::QUERY_PARAM_RANGE;
     }
 
     public function getIn(): string
@@ -43,7 +47,7 @@ final class RangeConfig
 
     public function getLower(): string
     {
-        if (2 !== \count($this->names)) {
+        if (\count($this->names) !== 2) {
             throw new \InvalidArgumentException('Cannot get lower value if config item is not in query.');
         }
 
@@ -52,7 +56,7 @@ final class RangeConfig
 
     public function getUpper(): string
     {
-        if (2 !== \count($this->names)) {
+        if (\count($this->names) !== 2) {
             throw new \InvalidArgumentException('Cannot get lower value if config item is not in query.');
         }
 
@@ -91,8 +95,7 @@ final class RangeConfig
 
     private function validate(): bool
     {
-        return
-            ($this->inHeader() && 1 === \count($this->names) && null !== $this->unit)
-            || ($this->inQuery() && 2 === \count($this->names));
+        return ($this->inHeader() && \count($this->names) === 1 && $this->unit !== null)
+            || ($this->inQuery() && \count($this->names) === 2);
     }
 }

@@ -23,8 +23,10 @@ final class Body
      *
      * @throws TypeErrorException
      */
-    public function __construct($schema, private readonly string $mediaType = 'application/json')
-    {
+    public function __construct(
+        $schema,
+        private readonly string $mediaType = 'application/json'
+    ) {
         $this->schema = $schema instanceof Schema ? $schema : new Schema($schema);
     }
 
@@ -82,7 +84,7 @@ final class Body
         $example = $this->parent->getExample($name);
         $body = $example->getBody();
 
-        if (null === $body) {
+        if ($body === null) {
             return $this->getRandomContent();
         }
 

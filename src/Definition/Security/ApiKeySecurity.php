@@ -9,8 +9,12 @@ use APITester\Definition\Security;
 
 final class ApiKeySecurity extends Security
 {
-    public function __construct(string $name, private readonly string $keyName, private readonly string $in, ?Scopes $scopes = null)
-    {
+    public function __construct(
+        string $name,
+        private readonly string $keyName,
+        private readonly string $in,
+        ?Scopes $scopes = null
+    ) {
         parent::__construct($name, $scopes);
     }
 
@@ -31,11 +35,11 @@ final class ApiKeySecurity extends Security
 
     public function getKey(string $value): string
     {
-        if ('cookie' === $this->in) {
+        if ($this->in === 'cookie') {
             return "{$this->keyName}={$value}";
         }
 
-        if ('query' === $this->in) {
+        if ($this->in === 'query') {
             return "&{$this->keyName}={$value}";
         }
 

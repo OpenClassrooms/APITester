@@ -10,13 +10,16 @@ final class Result implements \JsonSerializable, \Stringable
 
     public const STATUS_SUCCESS = 'success';
 
-    private function __construct(private readonly string $status, private readonly string $message, private readonly ?string $code = null)
-    {
+    private function __construct(
+        private readonly string $status,
+        private readonly string $message,
+        private readonly ?string $code = null
+    ) {
     }
 
     public function __toString(): string
     {
-        return null !== $this->code ? $this->code . ': ' . $this->message : $this->message;
+        return $this->code !== null ? $this->code . ': ' . $this->message : $this->message;
     }
 
     public static function success(string $message = null, string $code = null): self
@@ -31,7 +34,7 @@ final class Result implements \JsonSerializable, \Stringable
 
     public function hasSucceeded(): bool
     {
-        return self::STATUS_SUCCESS === $this->status;
+        return $this->status === self::STATUS_SUCCESS;
     }
 
     /**

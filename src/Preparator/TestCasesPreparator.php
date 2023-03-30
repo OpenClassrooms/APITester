@@ -35,8 +35,11 @@ abstract class TestCasesPreparator
     /**
      * @param string[] $excludedFields
      */
-    public function buildTestCase(OperationExample $example, bool $auth = true, array $excludedFields = []): TestCase
-    {
+    final public function buildTestCase(
+        OperationExample $example,
+        bool $auth = true,
+        array $excludedFields = []
+    ): TestCase {
         $operation = $example->getParent();
 
         if ($auth) {
@@ -46,7 +49,7 @@ abstract class TestCasesPreparator
         return new TestCase(
             static::getName()
             . ' - '
-            . (null !== $operation ? $operation->getId() : 'unknown_operation')
+            . ($operation !== null ? $operation->getId() : 'unknown_operation')
             . ' - '
             . $example->getName(),
             $example,
@@ -54,7 +57,7 @@ abstract class TestCasesPreparator
         );
     }
 
-    public static function getName(): string
+    final public static function getName(): string
     {
         return lcfirst(
             str_replace(
@@ -70,7 +73,7 @@ abstract class TestCasesPreparator
      *
      * @return iterable<array-key, TestCase>
      */
-    public function doPrepare(Operations $operations): iterable
+    final public function doPrepare(Operations $operations): iterable
     {
         $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {
@@ -85,7 +88,7 @@ abstract class TestCasesPreparator
      *
      * @throws InvalidPreparatorConfigException
      */
-    public function configure(array $config): void
+    final public function configure(array $config): void
     {
         try {
             $config = $this->normalizeTaggedValues($config);
@@ -95,21 +98,21 @@ abstract class TestCasesPreparator
         }
     }
 
-    public function setTokens(Tokens $tokens): self
+    final public function setTokens(Tokens $tokens): self
     {
         $this->tokens = $tokens;
 
         return $this;
     }
 
-    public function addToken(Token $token): self
+    final public function addToken(Token $token): self
     {
         $this->tokens->add($token);
 
         return $this;
     }
 
-    public function getConfig(): PreparatorConfig
+    final public function getConfig(): PreparatorConfig
     {
         return $this->config;
     }
@@ -173,7 +176,7 @@ abstract class TestCasesPreparator
         if (\array_key_exists('response', $config)
             && \array_key_exists('statusCode', $config['response'])
             && $config['response']['statusCode'] instanceof TaggedValue) {
-            if ('NOT' === $config['response']['statusCode']->getTag()) {
+            if ($config['response']['statusCode']->getTag() === 'NOT') {
                 $statusCode = "#^(?!{$config['response']['statusCode']->getValue()})\\d+#";
             } else {
                 $statusCode = $config['response']['statusCode']->getValue();

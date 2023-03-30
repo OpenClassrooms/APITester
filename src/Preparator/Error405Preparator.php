@@ -22,17 +22,19 @@ final class Error405Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations->groupBy('path', true)
             ->map(fn (Collection $pathOperations) => $pathOperations
-            ->select('method')
-            ->intersect($this->config->methods)
-            ->compare($this->config->methods)
-            ->crossJoin($pathOperations->take(1))
-            ->map(
-                fn(array $data) => /** @var array{0: string, 1: Operation} $data */
-$this->prepareTestCase($data[1], $data[0])
-            ))
+                ->select('method')
+                ->intersect($this->config->methods)
+                ->compare($this->config->methods)
+                ->crossJoin($pathOperations->take(1))
+                ->map(
+                    function (array $data) {
+                        /** @var array{0: string, 1: Operation} $data */
+                        return $this->prepareTestCase($data[1], $data[0]);
+                    }
+                ))
             ->flatten()
         ;
     }

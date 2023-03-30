@@ -13,7 +13,7 @@ final class Yaml
      */
     public static function parseFile(?string $path): array
     {
-        if (null === $path) {
+        if ($path === null) {
             return [];
         }
 
@@ -26,7 +26,7 @@ final class Yaml
      */
     public static function concatFromDirectory(?string $path): array
     {
-        if (null === $path) {
+        if ($path === null) {
             return [];
         }
 
@@ -40,7 +40,7 @@ final class Yaml
             }
 
             $yaml = file_get_contents($fileInfo->getPath() . '/' . $fileInfo->getFilename());
-            if (false === $yaml) {
+            if ($yaml === false) {
                 continue;
             }
 

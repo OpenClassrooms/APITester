@@ -34,43 +34,43 @@ abstract class Security
         $this->scopes = $scopes ?? new Scopes();
     }
 
-    public function getParent(): Operation
+    final public function getParent(): Operation
     {
         return $this->parent;
     }
 
-    public function setParent(Operation $parent): self
+    final public function setParent(Operation $parent): self
     {
         $this->parent = $parent;
 
         return $this;
     }
 
-    public function getDescription(): string
+    final public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): self
+    final public function setDescription(string $description): self
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getName(): string
+    final public function getName(): string
     {
         return $this->name;
     }
 
     abstract public function getType(): string;
 
-    public function getScopes(): Scopes
+    final public function getScopes(): Scopes
     {
         return $this->scopes;
     }
 
-    public function addScopeFromString(string $scope): self
+    final public function addScopeFromString(string $scope): self
     {
         $this->scopes->add(new Scope($scope));
 

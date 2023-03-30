@@ -12,10 +12,15 @@ use cebe\openapi\spec\Schema;
 final class Error400BadTypesPreparator extends Error400Preparator
 {
     public const STRING_TYPE = 'string';
+
     public const NUMBER_TYPE = 'number';
+
     public const INTEGER_TYPE = 'integer';
+
     public const BOOLEAN_TYPE = 'boolean';
+
     public const ARRAY_TYPE = 'array';
+
     public const OBJECT_TYPE = 'object';
 
     public const PARAMETER_TYPES = [
@@ -44,7 +49,7 @@ final class Error400BadTypesPreparator extends Error400Preparator
         $testCases = [];
         foreach ($definitionParams as $in => $params) {
             foreach ($params as $param) {
-                if (null === $param->getType() || self::STRING_TYPE === $param->getType()) {
+                if ($param->getType() === null || $param->getType() === self::STRING_TYPE) {
                     continue;
                 }
                 foreach (self::PARAMETER_TYPES as $type) {

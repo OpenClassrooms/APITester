@@ -71,9 +71,9 @@ final class Plan
     private readonly TestRunner $runner;
 
     /**
-     * @param TestCasesPreparator[] $preparators
+     * @param TestCasesPreparator[]     $preparators
      * @param class-string<Requester>[] $requesters
-     * @param DefinitionLoader[] $definitionLoaders
+     * @param DefinitionLoader[]        $definitionLoaders
      */
     public function __construct(
         ?array $preparators = null,
@@ -109,7 +109,7 @@ final class Plan
         array $options = []
     ): bool {
         $bootstrap = $testPlanConfig->getBootstrap();
-        if (null !== $bootstrap) {
+        if ($bootstrap !== null) {
             require_once $bootstrap;
         }
         $suites = $testPlanConfig->getSuites();
@@ -153,7 +153,7 @@ final class Plan
      */
     private function selectSuite(string $suiteName, array $suites): iterable
     {
-        if ('' !== $suiteName) {
+        if ($suiteName !== '') {
             $indexSuites = collect($suites)
                 ->keyBy('name')
             ;
@@ -225,7 +225,7 @@ final class Plan
     private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
     {
         $part = $options['part'] ?? null;
-        $testSuite->setPart(null !== $part ? (string) $part : null);
+        $testSuite->setPart($part !== null ? (string) $part : null);
         $this->results[$suiteConfig->getName()] = $this->runner->run(
             $testSuite,
             $this->getPhpUnitArguments($options, $suiteConfig),
@@ -240,8 +240,11 @@ final class Plan
         $exclude = [];
         foreach ($this->results as $result) {
             foreach (array_merge($result->failures(), $result->errors()) as $failure) {
-                /** @var TestCase $testCase */
+                /** @var TestCase|null $testCase */
                 $testCase = $failure->failedTest();
+                if ($testCase === null) {
+                    continue;
+                }
                 $exclude[] = [
                     'testcase.name' => $testCase->getName(),
                 ];
@@ -270,7 +273,7 @@ final class Plan
     private function loadSymfonyKernel(Config\Suite $suiteConfig, string $testCaseClass): ?Kernel
     {
         $kernel = null;
-        if (null !== $suiteConfig->getSymfonyKernelClass()) {
+        if ($suiteConfig->getSymfonyKernelClass() !== null) {
             $kernelClass = Object_::validateClass(
                 $suiteConfig->getSymfonyKernelClass(),
                 HttpKernelInterface::class
@@ -310,7 +313,7 @@ final class Plan
         foreach ($this->requesters as $requester) {
             if ($requester::getName() === $name) {
                 $object = new $requester($baseUri);
-                if (null !== $kernel && method_exists($object, 'setKernel')) {
+                if ($kernel !== null && method_exists($object, 'setKernel')) {
                     $object->setKernel($kernel);
                 }
 
@@ -344,7 +347,7 @@ final class Plan
      */
     private function loadPreparators(array $preparators, Tokens $tokens): array
     {
-        if (0 === \count($preparators)) {
+        if (\count($preparators) === 0) {
             return $this->preparators;
         }
         $configuredPreparators = [];
@@ -353,7 +356,7 @@ final class Plan
                 ->where('name', $name)
                 ->first()
             ;
-            if (null === $preparator) {
+            if ($preparator === null) {
                 throw new InvalidPreparatorConfigException("Preparator {$name} not found.");
             }
             $preparator->configure($preparatorConfig);
@@ -376,7 +379,7 @@ final class Plan
         $arguments = (new Mapper())->mapToLegacyArray($arguments);
 
         $phpunitConfig = $suiteConfig->getPhpunitConfig();
-        if (null !== $phpunitConfig) {
+        if ($phpunitConfig !== null) {
             $arguments['configurationObject'] = (new Loader())->load($phpunitConfig);
         }
 
@@ -390,7 +393,8 @@ final class Plan
     private function getTestCaseKernel(string $testCaseClass, string $kernelClass): Kernel
     {
         $className = 'TestCaseKernelProvider';
-        $code = <<<CODE_SAMPLE
+        if (!class_exists('TestCaseKernelProvider')) {
+            $code = <<<CODE_SAMPLE
                 class {$className} extends {$testCaseClass} {
                     public function __construct() {
                         parent::__construct('test');
@@ -405,7 +409,8 @@ final class Plan
                     }
                 }
                 CODE_SAMPLE;
-        eval($code);
+            eval($code);
+        }
         $className = '\\' . $className;
         $kernelProvider = new $className();
 
@@ -446,7 +451,7 @@ final class Plan
     private function getPhpUnitOptions(array $options): array
     {
         $options['colors'] = 'always';
-        if (!isset($options['verbose']) || false === $options['verbose']) {
+        if (!isset($options['verbose']) || $options['verbose'] === false) {
             $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
         }
         $options = array_filter(
@@ -458,15 +463,18 @@ final class Plan
         return array_filter(
             array_map(
                 static function (string $key, $value) {
-                    if (null === $value) {
+                    if ($value === null) {
                         return null;
                     }
-                    if (true === $value) {
+                    if ($value === true) {
                         return "--{$key}";
                     }
 
-                    /** @var string|bool|int $value */
-                    return false !== $value ? "--{$key}={$value}" : null;
+                    if (!\is_scalar($value)) {
+                        throw new \InvalidArgumentException('Options must be scalar');
+                    }
+
+                    return $value !== false ? "--{$key}={$value}" : null;
                 },
                 array_keys($options),
                 array_values($options),

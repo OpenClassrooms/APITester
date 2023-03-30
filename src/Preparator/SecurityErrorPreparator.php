@@ -19,13 +19,15 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var TestCase[] */
+        /** @var iterable<array-key, TestCase> */
         return $operations
             ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
             ->select('securities.*')
             ->flatten()
-            ->map(fn($security) => /** @var Security $security */
-$this->prepareTestCases($security))
+            ->map(function ($security) {
+                /** @var Security $security */
+                return $this->prepareTestCases($security);
+            })
             ->flatten()
         ;
     }
@@ -49,7 +51,7 @@ $this->prepareTestCases($security))
             if ($token->getAuthType() !== $security->getType()) {
                 continue;
             }
-            if (0 === $operation->getRequestBodies()->count()) {
+            if ($operation->getRequestBodies()->count() === 0) {
                 $testCases->add(
                     $this->buildTestCase(
                         OperationExample::create($this->getTestCaseName(), $operation)

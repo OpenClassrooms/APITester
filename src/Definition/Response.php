@@ -19,8 +19,9 @@ final class Response
 
     private string $description = '';
 
-    public function __construct(private int $statusCode)
-    {
+    public function __construct(
+        private int $statusCode
+    ) {
         $this->headers = new Parameters();
     }
 

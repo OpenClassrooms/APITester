@@ -25,8 +25,11 @@ final class Parameter
     /**
      * @param Schema|array<string, string|int>|null $schema
      */
-    public function __construct(private readonly string $name, private bool $required = true, $schema = null)
-    {
+    public function __construct(
+        private readonly string $name,
+        private bool $required = true,
+        $schema = null
+    ) {
         if (\is_array($schema)) {
             $schema = new Schema($schema);
         }
@@ -59,7 +62,7 @@ final class Parameter
     {
         $schema = $this->getSchema();
 
-        if (null !== $schema && null !== $schema->type) {
+        if ($schema !== null && $schema->type !== null) {
             return $schema->type;
         }
 
@@ -82,7 +85,7 @@ final class Parameter
     {
         $schema = $this->getSchema();
 
-        if (null !== $schema && null !== $schema->format) {
+        if ($schema !== null && $schema->format !== null) {
             return $schema->format;
         }
 
@@ -97,9 +100,9 @@ final class Parameter
         ;
 
         $parameters = $example->getParametersFrom($this->in);
-//        if (!isset($parameters[$this->name])) {
-//            throw new ExampleNotFoundException("Example {$name} not found for parameter {$this->name}.");
-//        }
+        //        if (!isset($parameters[$this->name])) {
+        //            throw new ExampleNotFoundException("Example {$name} not found for parameter {$this->name}.");
+        //        }
 
         return $parameters[$this->name] ?? null;
     }

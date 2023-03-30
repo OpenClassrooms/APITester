@@ -31,7 +31,7 @@ final class Authenticator
         $security = $this->getSecurity($api, $this->guessType($config));
         $request = $this->buildRequest($security, $config);
         $response = $this->request($requester, $request, $config);
-        if (200 !== $response->getStatusCode()) {
+        if ($response->getStatusCode() !== 200) {
             throw new AuthenticationException(
                 "Could not authenticate with config {$config->getName()}, 
                 statusCode: {$response->getStatusCode()},
@@ -63,7 +63,7 @@ final class Authenticator
             ->first()
         ;
 
-        if (null === $security) {
+        if ($security === null) {
             throw new AuthenticationLoadingException(
                 "Unable to authenticate, security type {$type} not handled but the defined api."
             );
