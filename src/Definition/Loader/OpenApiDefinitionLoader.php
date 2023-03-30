@@ -288,7 +288,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                  */
                 foreach ((array) $scheme->flows->getSerializableData() as $type => $flow) {
                     $scopes = $requirements[$name] ?? [];
-                    $diff = array_diff($scopes, $flow->scopes);
+                    $flowScopes = $flow->scopes;
+                    if (is_object($flowScopes)) {
+                        $flowScopes = array_keys((array) $flowScopes);
+                    }
+                    $diff = array_diff($scopes, $flowScopes);
                     if (\count($diff) > 0) {
                         $notFoundRequirements = $diff;
                         continue;

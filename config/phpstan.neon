@@ -6,6 +6,7 @@ includes:
     - ../vendor/spaze/phpstan-disallowed-calls/disallowed-loose-calls.neon
 
 parameters:
+    treatPhpDocTypesAsCertain: false
     bootstrapFiles:
         - constants.php
     level: 9
@@ -31,7 +32,6 @@ parameters:
         - '/Method APITester\\Util\\Object_::getSubTypesOf\(\) should return .+ but returns .+/'
         - '/Unable to resolve the template type TKey in call to function collect/'
         - '/Unable to resolve the template type TValue in call to function collect/'
-        - '/Casting to string something that.s already string./'
         - '/Class APITester\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
         - '/Instantiated class \\ApiTestCase not found./'
         - '/Instantiated class \\TestCaseKernelProvider not found./'
