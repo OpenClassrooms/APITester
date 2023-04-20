@@ -133,6 +133,7 @@
     "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
-    "ecs": "@check-cs"
+    "ecs": "@check-cs",
+    "post-install-cmd": "cp vendor/openclassrooms/api-tester/config/api-tester.yml ./"
   }
 }
