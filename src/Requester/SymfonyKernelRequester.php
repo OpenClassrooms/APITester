@@ -86,6 +86,9 @@ final class SymfonyKernelRequester extends Requester
             ]
         );
 
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $serverRequest = $serverRequest->withQueryParams($queryParams);
+
         return (new HttpFoundationFactory())->createRequest($serverRequest);
     }
 
