@@ -65,7 +65,7 @@ final class Authenticator
 
         if ($security === null) {
             throw new AuthenticationLoadingException(
-                "Unable to authenticate, security type {$type} not handled but the defined api."
+                "Unable to authenticate, security type {$type} not handled by the defined api."
             );
         }
 
