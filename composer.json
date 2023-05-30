@@ -6,7 +6,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "bin": [
-    "bin/api-tester"
+    "src/api-tester"
   ],
   "config": {
     "optimize-autoloader": true,

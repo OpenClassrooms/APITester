@@ -199,7 +199,7 @@ final class Plan
         $definition = $this->loadApiDefinition($suiteConfig);
         $requester = $this->loadRequester(
             $suiteConfig->getRequester(),
-            $definition->getUrl(),
+            $suiteConfig->getBaseUrl() ?? $definition->getUrl(),
             $kernel
         );
         $tokens = $this->authenticate($suiteConfig, $definition, $requester);

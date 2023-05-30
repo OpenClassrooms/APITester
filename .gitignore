@@ -78,4 +78,3 @@ fabric.properties
 /bin/
 /build/
 composer.lock
-!bin/api-tester

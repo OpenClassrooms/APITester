@@ -16,10 +16,6 @@
     <inspection_tool class="AliasFunctionsUsageInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="AlterInForeachInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="AmbiguousMethodsCallsInArrayMappingInspection" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="AnnotationDeprecatedInspection" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="AnnotationDocBlockClassConstantNotFound" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="AnnotationDocBlockConstantDeprecated" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="AnnotationMissingUseInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="Annotator" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="AnonymousFunctionJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="AnonymousFunctionStaticInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
@@ -187,7 +183,6 @@
     <inspection_tool class="DisconnectedForeachInstructionInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="DivideByZeroJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="DoctrineQueryBuilderAdder" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="DoctrineTypeDeprecatedInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="DocumentWriteJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="DollarSignOutsideCurlyBracesInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="DotEnvDuplicateKeyInspection" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -464,6 +459,7 @@
     <inspection_tool class="LessResolvedByNameOnly" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="LessUnresolvedMixin" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="LessUnresolvedVariable" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="Linter" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="LocalVariableNamingConventionJS" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="m_regex" value="[a-z][A-Za-z]*" />
       <option name="m_minLength" value="1" />
@@ -1024,7 +1020,6 @@
     <inspection_tool class="RepetitiveMethodCallsInspection" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ReplaceAssignmentWithOperatorAssignmentJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ReplaceLegacyMockeryInspection" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="RepositoryClassInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="RequestStackInAction" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="RequiredAttributes" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myAdditionalRequiredHtmlAttributes" value="" />
