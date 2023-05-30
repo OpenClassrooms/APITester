@@ -39,6 +39,8 @@ final class Suite
 
     private string $testCaseClass = TestCase::class;
 
+    private ?string $baseUrl = null;
+
     public function __construct(
         private readonly string $name,
         private readonly Definition $definition
@@ -202,5 +204,15 @@ final class Suite
     public function setPhpunitConfig(?string $phpunitConfig): void
     {
         $this->phpunitConfig = $phpunitConfig;
+    }
+
+    public function getBaseUrl(): ?string
+    {
+        return $this->baseUrl;
+    }
+
+    public function setBaseUrl(?string $baseUrl): void
+    {
+        $this->baseUrl = $baseUrl;
     }
 }
