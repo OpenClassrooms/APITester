@@ -1,4 +1,5 @@
-# Configuration Reference
+# APITester Configuration Reference
+You will find below the whole configuration reference to make APITester more reliable, depending on your context and needs. This whole configuration is applicable to the suite defined in your `api-tester.yaml` file so you can have multiple suites with different configuration.
 
 ## Name
 
@@ -6,201 +7,118 @@
 required: true
 type: string
 ```
-
 name is useful for selecting which
 
-## definition
+---------------
 
-## path
-
+## Definition
 ```yaml
-required: true
-type: string
+definition:
+    path: 'path/to/your/openapi/specification-file.yml'
+    format: 'openapi'
 ```
+Both `path` and `format` are required. For now we only support OpenAPI format but APITester is designed to support more format in future.
 
-## format
+---------------
 
-```yaml
-required: true
-type: [ openapi ] # for now we support only the openapi format
-```
-
-## requester
+## Requester
 
 ```yaml
 required: false
 default: http-async
-type: [ symfony-kernel, http-async ]
+value: [ symfony-kernel, http-async ]
+```
+By default requests to the tested API will be performed by a `HTTP Client` but, in a Symfony app context, you could choose to perform requests through `Symfony Kernel` instead. It can be useful to have better control on code executed before and after each call, handling transactions for example.
+
+**http-async**
+
+Sends HTTP requests asynchronously through the network.
+
+**symfony-kernel**
+
+Forwards HTTP requests directly to `Symfony Kernel`. It has the advantage of being compatible with transactions (in case it's used in test cases callbacks)
+When using `Symfony Kernel` as requester you can specify the Kernel class that would be load to execute requests:
+
+---------------
+
+## SymfonyKernelClass
+```yaml
+symfonyKernelClass: '\ApiKernel'
 ```
 
-## symfony-kernel
+---------------
 
-Forwards http requests directly to symfony kernel, has the advantage of being
-compatible with transactions (in case it's
-used in test cases callbacks)
+## TestCaseClass
+APITester generate TestCases to be executed by PHPUnit. Each `TestCase` will inherit by default from `PHPUnit TestCase` class but you can specify your own TestCase class if needed
+```yaml
+testCaseClass: '\OC\IntegrationTestCase'
+```
 
-## http-async
+---------------
 
-Sends http requests asynchronously through the network.
+## Preparators
+These are used to produce test cases, each one based on it's own logic and configuration.
+Following the list of supported preparators. Configuration for preparators is optionnal but it can help you to have more control on what is generated and tested.
+```yaml
+preparators:
+```
+All preparators share common configuration capabilities. Some preparators have their own configuration too.
 
-## preparators
+Available named Preparator are:
+- examples
+- error400
+- error401
+- error403
+- error404
+- error405
+- error406
+- error413
+- error416
+- random
+
+## Common configuration
+```yaml
+preparators:
+    - name: error401
+      excludedFields: [ 'body', 'headers' ]
+```
+`name` is required.
+
+`excludedFields` allow you to specify which fields should be check in TestCases. If you exclude both `body` and `header`, only HTTP Response code will be check.
+
+## Custom configuration
+
+- **ExamplesPreparator**
+This preparator will generate TestCases based on example it found in your OpenAPI definition file. You can add more examples from a dedicated file by adding `extensionPath` in its configuration
+```yaml
+- name: example
+  extensionPath: 'path/to/more/examples.yaml'
+```
+You can find an example of how this looks like here.
+
+- **403Preparator**
+This preparator will generate TestCases trying to have 403 error, based on security information found in your OpenAPI definition file like for example:
 
 ```yaml
-required: false
-default: all
+security:
+  -
+    OAuth2:
+      - openclassrooms_client
 ```
 
-Theses are used to produce test cases, each one based on it's own logic and
-configuration.
-Following the list of supported preparators.
-
-## examples
-
-## error400
+It generates TestCases withn tokens informations found in [`auth`](#authentication) section of your configuration.
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
+- name: error403
+  excludedTokens: ['token1', 'token2']
 ```
 
-## error401
+- **405Preparator**
 
-```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 401
-        description: the exact statusCode to be checked
-```
+- **406Preparator**
 
-## error403
 
-```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 403
-        description: the exact statusCode to be checked
-```
-
-## error404
-
-```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 404
-        description: the exact statusCode to be checked
-```
-
-## error405
-
-```yaml
-methods:
-    type: [ GET, POST, PATCH, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT ]
-    default: all
-    description: methods to validate against
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
-```
-
-## error406
-
-```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
-```
-
-## error413
-
-```yaml
-range:
-    type: array<object>
-    description: describes how pagination is handled by the api
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
-```
-
-## error416
-
-```yaml
-range:
-    type: array<object>
-    description: describes how pagination is handled by the api
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
-```
+[all preparators configuration](preparators-config.md)
 
 ## filters
 
