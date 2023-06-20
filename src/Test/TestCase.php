@@ -325,7 +325,6 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private function getSchemaResponseForStatusCode(int $statusCode): ?Schema
     {
-
         $preparator = collect($this->operationExample->getParent()->getResponses())
             ->where('name', $statusCode)
             ->first();
@@ -336,12 +335,11 @@ final class TestCase implements \JsonSerializable, Filterable
             }
         }
 
-        return NULL;
+        return null;
     }
 
     private function checkSchemaResponse(): void
     {
-
         if (!$this->shouldValidateResponseSchema) {
             return;
         }

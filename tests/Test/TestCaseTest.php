@@ -91,7 +91,6 @@ class TestCaseTest extends UnitTestCase
     /**
      * Privates
      */
-
     private function getValidSchema(): Schema
     {
         return new Schema([
@@ -119,8 +118,7 @@ class TestCaseTest extends UnitTestCase
         Schema $operationResponseBody,
         string $responseContent,
         bool $shouldValidateResponseSchema = true
-    ): TestCase
-    {
+    ): TestCase {
         $testCase = new TestCase(
             'test1',
             OperationExample::create(
