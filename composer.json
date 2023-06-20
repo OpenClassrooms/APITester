@@ -55,9 +55,9 @@
     "illuminate/collections": "^8.99",
     "monolog/monolog": "^1.25.1 || ^2.8.0 || ^3.0.0",
     "myclabs/deep-copy": "^1.11",
-    "n98/junit-xml": "1.*",
     "nesbot/carbon": "^2.48",
     "nyholm/psr7": "1.*",
+    "opis/json-schema": "^2.3",
     "php-http/httplug": "^2.2",
     "phpdocumentor/reflection-docblock": "^5.3",
     "phpstan/phpdoc-parser": "^1.2",
@@ -133,7 +133,6 @@
     "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
-    "ecs": "@check-cs",
-    "post-install-cmd": "cp vendor/openclassrooms/api-tester/config/api-tester.yml ./"
+    "ecs": "@check-cs"
   }
 }
