@@ -62,7 +62,7 @@ final class TestCase implements \JsonSerializable, Filterable
         'parent',
     ];
 
-    private bool $shouldValidateResponseSchema;
+    private bool $schemaValidation;
 
     private readonly string $id;
 
@@ -89,7 +89,7 @@ final class TestCase implements \JsonSerializable, Filterable
         private readonly string $name,
         private readonly OperationExample $operationExample,
         array $excludedFields = [],
-        bool $shouldValidateResponseSchema = true
+        bool $schemaValidation = true
     ) {
         $this->logger = new NullLogger();
         $this->id = Random::id('testcase_');
@@ -98,7 +98,7 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->preparator = $nameParts[0] ?? null;
         $this->operation = $nameParts[1] ?? null;
         $this->request = $operationExample->getPsrRequest();
-        $this->shouldValidateResponseSchema = $shouldValidateResponseSchema;
+        $this->schemaValidation = $schemaValidation;
         $this->validator = new Validator();
         $this->errorFormatter = new ErrorFormatter();
     }
@@ -112,9 +112,9 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
     }
 
-    public function setShouldValidateResponseSchema(bool $shouldValidateResponseSchema): void
+    public function setSchemaValidation(bool $schemaValidation): void
     {
-        $this->shouldValidateResponseSchema = $shouldValidateResponseSchema;
+        $this->schemaValidation = $schemaValidation;
     }
 
     /**
@@ -340,7 +340,7 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private function checkSchemaResponse(): void
     {
-        if (!$this->shouldValidateResponseSchema) {
+        if (!$this->schemaValidation) {
             return;
         }
 

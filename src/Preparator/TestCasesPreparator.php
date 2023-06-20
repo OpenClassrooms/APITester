@@ -78,7 +78,7 @@ abstract class TestCasesPreparator
         $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {
             $testCase->addExcludedFields($this->config->excludedFields);
-            $testCase->setShouldValidateResponseSchema($this->config->shouldValidateResponseSchema);
+            $testCase->setSchemaValidation($this->config->schemaValidation);
         }
 
         return $testCases;
