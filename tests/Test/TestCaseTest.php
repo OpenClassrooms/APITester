@@ -13,7 +13,7 @@ use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
-class TestCaseTest extends UnitTestCase
+final class TestCaseTest extends UnitTestCase
 {
     private ?TestCase $testCase;
 
@@ -26,11 +26,7 @@ class TestCaseTest extends UnitTestCase
             false
         );
 
-        try {
-            $this->whenAssert();
-        } catch (\Throwable $e) {
-            static::fail('Should not raise an error');
-        }
+        $this->whenAssert();
     }
 
     public function testGivenInvalidValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(): void
@@ -42,11 +38,7 @@ class TestCaseTest extends UnitTestCase
             false
         );
 
-        try {
-            $this->whenAssert();
-        } catch (\Throwable $e) {
-            static::fail('Should not raise an error');
-        }
+        $this->whenAssert();
     }
 
     public function testGivenInvalidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenAnErrorIsThrown(): void
@@ -81,11 +73,7 @@ class TestCaseTest extends UnitTestCase
             $this->getValidResponseContent()
         );
 
-        try {
-            $this->whenAssert();
-        } catch (\Throwable $e) {
-            static::fail('Should not raise an error');
-        }
+        $this->whenAssert();
     }
 
     /**
@@ -144,6 +132,6 @@ class TestCaseTest extends UnitTestCase
 
     private function whenAssert(): void
     {
-        $this->testCase->assert();
+        $this->testCase?->assert();
     }
 }

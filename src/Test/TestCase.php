@@ -20,11 +20,7 @@ use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Stream;
-<<<<<<< Updated upstream
-use Opis\JsonSchema\ValidationResult;
-=======
 use Opis\JsonSchema\Errors\ErrorFormatter;
->>>>>>> Stashed changes
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -120,6 +116,7 @@ final class TestCase implements \JsonSerializable, Filterable
     /**
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
+     * @throws InvalidResponseSchemaException
      */
     public function test(?HttpKernelInterface $kernel = null): void
     {
@@ -148,6 +145,7 @@ final class TestCase implements \JsonSerializable, Filterable
 
     /**
      * @throws ExceptionInterface
+     * @throws InvalidResponseSchemaException
      */
     public function assert(): void
     {
@@ -325,9 +323,9 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private function getSchemaResponseForStatusCode(int $statusCode): ?Schema
     {
-        $preparator = collect($this->operationExample->getParent()->getResponses())
-            ->where('name', $statusCode)
-            ->first();
+        if ($this->operationExample->getParent() === null) {
+            return null;
+        }
 
         foreach ($this->operationExample->getParent()->getResponses() as $schemaResponse) {
             if ($schemaResponse->getStatusCode() === $statusCode) {
@@ -338,6 +336,9 @@ final class TestCase implements \JsonSerializable, Filterable
         return null;
     }
 
+    /**
+     * @throws InvalidResponseSchemaException
+     */
     private function checkSchemaResponse(): void
     {
         if (!$this->schemaValidation) {
@@ -346,14 +347,13 @@ final class TestCase implements \JsonSerializable, Filterable
 
         $schema = $this->getSchemaResponseForStatusCode($this->response->getStatusCode());
 
-        if ($schema === NULL) {
+        if ($schema === null) {
             return;
         }
 
-        $data = json_decode(ResponseExample::fromPsrResponse($this->response)->getContent());
-        $schemaData = $schema->getSerializableData();
+        $data = json_decode((string) ResponseExample::fromPsrResponse($this->response)->getContent());
+        $schemaData = (object) $schema->getSerializableData();
 
-        /** @var ValidationResult/ $result */
         $result = $this->validator->validate($data, $schemaData);
 
         if (!$result->isValid()) {

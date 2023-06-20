@@ -178,7 +178,8 @@ abstract class TestCasesPreparator
             && \array_key_exists('statusCode', $config['response'])
             && $config['response']['statusCode'] instanceof TaggedValue) {
             if ($config['response']['statusCode']->getTag() === 'NOT') {
-                $statusCode = "#^(?!{$config['response']['statusCode']->getValue()})\\d+#";
+                $value = (string) ($config['response']['statusCode']->getValue());
+                $statusCode = "#^(?!{$value})\\d+#";
             } else {
                 $statusCode = $config['response']['statusCode']->getValue();
             }

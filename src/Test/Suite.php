@@ -278,11 +278,12 @@ final class Suite extends TestSuite
     private function handleTags(string|int|\Symfony\Component\Yaml\Tag\TaggedValue $value): array
     {
         $operator = '=';
+
         if ($value instanceof TaggedValue) {
             if ($value->getTag() === 'NOT') {
                 $operator = '!=';
             }
-            $value = $value->getValue();
+            $value = (string) $value->getValue();
         }
 
         return [$operator, $value];
