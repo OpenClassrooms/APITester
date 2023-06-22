@@ -37,7 +37,7 @@ final class ResponseExample
         $example = new self();
         $example->setStatusCode((string) $response->getStatusCode());
         $example->setHeaders($response->getHeaders());
-        $example->setContent($response->getBody()->getContents());
+        $example->setContent((string) $response->getBody());
 
         return $example;
     }
