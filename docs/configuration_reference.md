@@ -62,6 +62,9 @@ Following the list of supported preparators.
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -79,6 +82,9 @@ response:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -96,6 +102,9 @@ response:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -113,6 +122,9 @@ response:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -134,6 +146,9 @@ methods:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -151,6 +166,9 @@ response:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -171,6 +189,9 @@ range:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -191,6 +212,9 @@ range:
 excludedFields:
     type: array
     description: list of response fields to be excluded when checking
+schemaValidation:
+    type: bool
+    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
 response:
     body:
         type: string
@@ -261,10 +285,12 @@ suites:
         preparators: # are responsible of preparing test cases, leaving them empty will load all prepartors with optional config
             -   name: error400 # which preparator
                 excludedFields: [ 'body' ]
+                schemaValidation: false
             -   name: error401
                 excludedFields: [ 'body' ]
             -   name: error403
                 excludedFields: [ 'body' ]
+                schemaValidation: true
             -   name: error404
                 excludedFields: [ 'body' ]
         filters: # select which operations to test, filters are on operations properties

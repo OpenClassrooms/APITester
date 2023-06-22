@@ -26,11 +26,13 @@ final class ResponseConfig
     {
         if ($statusCode instanceof TaggedValue) {
             if ($statusCode->getTag() === 'NOT') {
-                $statusCode = "#^(?!{$statusCode->getValue()})\\d+#";
+                $value = (string) ($statusCode->getValue());
+                $statusCode = "#^(?!{$value})\\d+#";
             } else {
                 $statusCode = $statusCode->getValue();
             }
+        } else {
+            $this->statusCode = (string) $statusCode;
         }
-        $this->statusCode = $statusCode;
     }
 }

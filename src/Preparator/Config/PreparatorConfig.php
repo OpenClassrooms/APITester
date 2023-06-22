@@ -11,6 +11,8 @@ class PreparatorConfig
      */
     public array $excludedFields = [];
 
+    public bool $schemaValidation = true;
+
     public ResponseConfig $response;
 
     public function __construct()

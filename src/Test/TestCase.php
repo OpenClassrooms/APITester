@@ -9,6 +9,7 @@ use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Requester\Requester;
 use APITester\Requester\SymfonyKernelRequester;
+use APITester\Test\Exception\InvalidResponseSchemaException;
 use APITester\Util\Assert;
 use APITester\Util\Filterable;
 use APITester\Util\Json;
@@ -17,7 +18,10 @@ use APITester\Util\Serializer;
 use APITester\Util\Traits\FilterableTrait;
 use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
+use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Stream;
+use Opis\JsonSchema\Errors\ErrorFormatter;
+use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
@@ -54,6 +58,8 @@ final class TestCase implements \JsonSerializable, Filterable
         'parent',
     ];
 
+    private bool $schemaValidation;
+
     private readonly string $id;
 
     private LoggerInterface $logger;
@@ -68,13 +74,18 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private ?string $preparator;
 
+    private Validator $validator;
+
+    private ErrorFormatter $errorFormatter;
+
     /**
      * @param array<int, string> $excludedFields
      */
     public function __construct(
         private readonly string $name,
         private readonly OperationExample $operationExample,
-        array $excludedFields = []
+        array $excludedFields = [],
+        bool $schemaValidation = true
     ) {
         $this->logger = new NullLogger();
         $this->id = Random::id('testcase_');
@@ -83,6 +94,9 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->preparator = $nameParts[0] ?? null;
         $this->operation = $nameParts[1] ?? null;
         $this->request = $operationExample->getPsrRequest();
+        $this->schemaValidation = $schemaValidation;
+        $this->validator = new Validator();
+        $this->errorFormatter = new ErrorFormatter();
     }
 
     /**
@@ -94,9 +108,15 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->excludedFields = array_merge($excludedFields, $this->excludedFields);
     }
 
+    public function setSchemaValidation(bool $schemaValidation): void
+    {
+        $this->schemaValidation = $schemaValidation;
+    }
+
     /**
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
+     * @throws InvalidResponseSchemaException
      */
     public function test(?HttpKernelInterface $kernel = null): void
     {
@@ -125,10 +145,14 @@ final class TestCase implements \JsonSerializable, Filterable
 
     /**
      * @throws ExceptionInterface
+     * @throws InvalidResponseSchemaException
      */
     public function assert(): void
     {
-        $this->response = $this->requester->getResponse($this->id);
+        $this->response = $this->response ?? $this->requester->getResponse($this->id);
+
+        $this->checkSchemaResponse();
+
         try {
             Assert::response(
                 $this->operationExample->getResponse(),
@@ -229,6 +253,11 @@ final class TestCase implements \JsonSerializable, Filterable
         return hash('sha3-256', Json::encode($this->jsonSerialize()));
     }
 
+    public function setResponse(ResponseInterface $response): void
+    {
+        $this->response = $response;
+    }
+
     /**
      * @return array{'name': string, 'request': RequestInterface, 'response': ResponseExample}
      */
@@ -289,6 +318,50 @@ final class TestCase implements \JsonSerializable, Filterable
                 }
             CODE_SAMPLE;
             eval($code);
+        }
+    }
+
+    private function getSchemaResponseForStatusCode(int $statusCode): ?Schema
+    {
+        if ($this->operationExample->getParent() === null) {
+            return null;
+        }
+
+        foreach ($this->operationExample->getParent()->getResponses() as $schemaResponse) {
+            if ($schemaResponse->getStatusCode() === $statusCode) {
+                return $schemaResponse->getBody();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @throws InvalidResponseSchemaException
+     */
+    private function checkSchemaResponse(): void
+    {
+        if (!$this->schemaValidation) {
+            return;
+        }
+
+        $schema = $this->getSchemaResponseForStatusCode($this->response->getStatusCode());
+
+        if ($schema === null) {
+            return;
+        }
+
+        $data = json_decode((string) ResponseExample::fromPsrResponse($this->response)->getContent());
+        $schemaData = (object) $schema->getSerializableData();
+
+        $result = $this->validator->validate($data, $schemaData);
+
+        if (!$result->isValid()) {
+            if ($result->error() !== null) {
+                $errorDescription = (string) json_encode($this->errorFormatter->format($result->error()));
+                $this->logger->error($errorDescription);
+            }
+            throw new InvalidResponseSchemaException();
         }
     }
 }

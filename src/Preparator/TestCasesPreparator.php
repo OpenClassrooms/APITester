@@ -78,6 +78,7 @@ abstract class TestCasesPreparator
         $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {
             $testCase->addExcludedFields($this->config->excludedFields);
+            $testCase->setSchemaValidation($this->config->schemaValidation);
         }
 
         return $testCases;
@@ -177,7 +178,8 @@ abstract class TestCasesPreparator
             && \array_key_exists('statusCode', $config['response'])
             && $config['response']['statusCode'] instanceof TaggedValue) {
             if ($config['response']['statusCode']->getTag() === 'NOT') {
-                $statusCode = "#^(?!{$config['response']['statusCode']->getValue()})\\d+#";
+                $value = (string) ($config['response']['statusCode']->getValue());
+                $statusCode = "#^(?!{$value})\\d+#";
             } else {
                 $statusCode = $config['response']['statusCode']->getValue();
             }
