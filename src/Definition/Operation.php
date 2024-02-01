@@ -43,6 +43,8 @@ final class Operation implements Filterable
 
     private OperationExamples $examples;
 
+    private array $customParameters;
+
     public function __construct(
         private readonly string $id,
         private readonly string $path,
@@ -56,6 +58,7 @@ final class Operation implements Filterable
         $this->tags = new Tags();
         $this->securities = new Securities();
         $this->examples = new OperationExamples();
+        $this->customParameters = [];
     }
 
     public function addHeader(Parameter $header): self
@@ -275,6 +278,23 @@ final class Operation implements Filterable
         $this->examples = $examples;
 
         return $this;
+    }
+
+    public function getCustomParameters(): array
+    {
+        return $this->customParameters;
+    }
+
+    public function setCustomParameters(array $customParameters): self
+    {
+        $this->customParameters = $customParameters;
+
+        return $this;
+    }
+
+    public function isUserCentric(): bool
+    {
+        return isset($this->customParameters['x-apitester-user-centric-parameter']) && $this->customParameters['x-apitester-user-centric-parameter'] === true;
     }
 
     /**

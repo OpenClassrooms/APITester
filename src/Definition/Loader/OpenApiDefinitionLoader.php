@@ -36,6 +36,7 @@ use cebe\openapi\spec\Header;
 use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\OAuthFlow;
 use cebe\openapi\spec\OpenApi;
+use cebe\openapi\spec\Operation as OpenApiOperation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
@@ -115,11 +116,21 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setTags($this->getTags($operation->tags))
                         ->setSecurities($this->getSecurities($securitySchemes, $requirements))
                         ->setExamples($this->getExamples($operation, $parameters))
+                        ->setCustomParameters($this->getCustomParameters($operation))
                 );
             }
         }
 
         return $operations;
+    }
+
+    private function getCustomParameters(OpenApiOperation $operation): array
+    {
+        return array_filter(
+            (array) $operation->getSerializableData(),
+            fn ($v, $k) => str_starts_with($k, 'x-'),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 
     /**

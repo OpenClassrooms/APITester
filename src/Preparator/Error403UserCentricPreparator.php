@@ -7,14 +7,15 @@ namespace APITester\Preparator;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
+use APITester\Definition\Operation;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Test\TestCase;
 
-final class Error404Preparator extends TestCasesPreparator
+final class Error403UserCentricPreparator extends TestCasesPreparator
 {
-    protected function getStatusCode(): string
+    public function getStatusCode(): string
     {
-        return '404';
+        return '403';
     }
     /**
      * @inheritDoc
@@ -23,14 +24,10 @@ final class Error404Preparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations
-            ->select('responses.*')
-            ->flatten()
-            ->where('statusCode', $this->getStatusCode())
-            ->filter(fn ($response) => !$response->getParent()->isUserCentric())
+            ->filter(fn ($operation) => $operation->isUserCentric())
             ->values()
-            ->map(function ($response) {
-                /** @var DefinitionResponse $response */
-                return $this->prepareTestCase($response);
+            ->map(function ($operation) {
+                return $this->prepareTestCase($operation);
             })
             ->flatten()
         ;
@@ -39,10 +36,8 @@ final class Error404Preparator extends TestCasesPreparator
     /**
      * @return array<TestCase>
      */
-    private function prepareTestCase(DefinitionResponse $response): array
+    private function prepareTestCase(Operation $operation): array
     {
-        $operation = $response->getParent();
-
         $testcases = [];
 
         if ($operation->getRequestBodies()->count() === 0) {
@@ -51,9 +46,9 @@ final class Error404Preparator extends TestCasesPreparator
                     ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? $this->getStatusCode())
+                            ->setStatusCode($this->config->response->getStatusCode() ?? '403')
                             ->setHeaders($this->config->response->headers ?? [])
-                            ->setContent($this->config->response->body ?? $response->getDescription())
+                            ->setContent($this->config->response->body ?? null)
                     )
             );
         }
@@ -64,9 +59,9 @@ final class Error404Preparator extends TestCasesPreparator
                     ->setForceRandom()
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? $this->getStatusCode())
+                            ->setStatusCode($this->config->response->getStatusCode() ?? '403')
                             ->setHeaders($this->config->response->headers ?? [])
-                            ->setContent($this->config->response->body ?? $response->getDescription())
+                            ->setContent($this->config->response->body ?? null)
                     )
             );
         }
