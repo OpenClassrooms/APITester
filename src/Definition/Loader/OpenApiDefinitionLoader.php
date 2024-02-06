@@ -349,6 +349,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     {
         $examples = [];
 
+        $successStatusCodes = array_filter(
+            array_keys($operation->responses?->getResponses() ?? []),
+            static fn ($status) => in_array($status, [200, 201], true)
+        );
+        $successStatusCode = count($successStatusCodes) > 0 ? array_shift($successStatusCodes) : null;
+
         foreach ($parameters as $parameter) {
             foreach ($parameter->examples ?? [] as $name => $example) {
                 $operationExample = $this->getExample((string) $name, $examples);
@@ -363,7 +369,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 if (\is_array($example)) {
                     $example = implode(',', $example);
                 }
-                $operationExample = $this->getExample('properties', $examples);
+                $operationExample = $this->getExample('properties', $examples, $successStatusCode);
                 $operationExample->setParameter($parameter->name, (string) $example, $parameter->in);
             }
         }
@@ -465,10 +471,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     /**
      * @param array<OperationExample> $examples
      */
-    private function getExample(string $name, array &$examples): OperationExample
+    private function getExample(string $name, array &$examples, int $statusCode = null): OperationExample
     {
         if (!isset($examples[$name])) {
-            $examples[$name] = new OperationExample($name);
+            $examples[$name] = new OperationExample($name, null, $statusCode);
         }
 
         return $examples[$name];

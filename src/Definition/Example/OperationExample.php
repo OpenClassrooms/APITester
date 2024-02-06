@@ -52,12 +52,13 @@ final class OperationExample
 
     public function __construct(
         private string $name,
-        Operation $parent = null
+        Operation $parent = null,
+        int $statusCode = null
     ) {
         if ($parent !== null) {
             $this->parent = $parent;
         }
-        $this->response = new ResponseExample();
+        $this->response = new ResponseExample($statusCode !== null ? "{$statusCode}" : null);
         $this->deepCopy = new DeepCopy();
         $this->deepCopy->addTypeFilter(
             new ShallowCopyFilter(),
