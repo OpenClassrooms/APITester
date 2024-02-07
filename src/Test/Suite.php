@@ -44,6 +44,8 @@ final class Suite extends TestSuite
 
     private bool $ignoreBaseLine = false;
 
+    private bool $onlyBaseLine = false;
+
     private ?string $part = null;
 
     /**
@@ -169,6 +171,11 @@ final class Suite extends TestSuite
         $this->ignoreBaseLine = $ignoreBaseLine;
     }
 
+    public function setOnlyBaseLine(bool $onlyBaseLine): void
+    {
+        $this->onlyBaseLine = $onlyBaseLine;
+    }
+
     public function setPart(?string $part): void
     {
         $this->part = $part;
@@ -189,6 +196,9 @@ final class Suite extends TestSuite
                 $tests = $preparator->doPrepare($operations);
                 if (!$this->ignoreBaseLine) {
                     $tests = $this->filterTestCases($tests);
+                }
+                if ($this->onlyBaseLine) {
+                    $tests = $this->filterOnlyTestCases($tests);
                 }
                 foreach ($tests as $testCase) {
                     $testCase->setRequester($this->requester);
@@ -246,6 +256,25 @@ final class Suite extends TestSuite
         return collect($tests)->filter(static fn (TestCase $test) => !\in_array(
             $test->getName(),
             $excludedTests,
+            true
+        ));
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterOnlyTestCases(iterable $tests): iterable
+    {
+        $includedTests = array_column(
+            $this->toTestCaseFilter($this->filters->getBaseLineExclude()),
+            'name'
+        );
+
+        return collect($tests)->filter(static fn (TestCase $test) => \in_array(
+            $test->getName(),
+            $includedTests,
             true
         ));
     }

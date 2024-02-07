@@ -130,6 +130,12 @@ final class ExecutePlanCommand extends Command
                 'ignore baseline file'
             )
             ->addOption(
+                'only-baseline',
+                null,
+                InputOption::VALUE_NONE,
+                'only execute tests from the baseline'
+            )
+            ->addOption(
                 'filter',
                 null,
                 InputOption::VALUE_OPTIONAL,
@@ -192,6 +198,9 @@ final class ExecutePlanCommand extends Command
         }
         if ($this->input->getOption('ignore-baseline') !== false) {
             $this->output->writeln('Ignoring baseline.');
+        }
+        if ($this->input->getOption('only-baseline') !== false) {
+            $this->output->writeln('Only executing tests from the baseline.');
         }
     }
 
