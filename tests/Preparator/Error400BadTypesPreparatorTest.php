@@ -180,5 +180,75 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             ],
         ];
+
+        yield 'For floating-point number body field' => [
+            Api::create()
+                ->addOperation(
+                    Operation::create('test', '/test')
+                        ->setMethod('GET')
+                        ->addRequestBody(
+                            new Body(
+                                new Schema([
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'foo' => [
+                                            'type' => 'number',
+                                            'format' => 'double',
+                                        ],
+                                    ],
+                                    'required' => ['foo'],
+                                ]),
+                                'application/json'
+                            )
+                        )->addExample(
+                            OperationExample::create('foo')
+                                ->setBody(
+                                    BodyExample::create([
+                                        'foo' => 3.14,
+                                    ])
+                                )
+                        )
+                ),
+            [
+                new TestCase(
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_string',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
+                            'foo' => 'foo',
+                        ])
+                        ->setResponse(ResponseExample::create('400'))
+                ),
+                new TestCase(
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_boolean',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
+                            'foo' => true,
+                        ])
+                        ->setResponse(ResponseExample::create('400')),
+                ),
+                new TestCase(
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_array',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
+                            'foo' => ['foo', 'bar'],
+                        ])
+                        ->setResponse(ResponseExample::create('400')),
+                ),
+                new TestCase(
+                    Error400BadTypesPreparator::getName() . ' - test - foo_body_field_type_object',
+                    OperationExample::create('test')
+                        ->setPath('/test')
+                        ->setBodyContent([
+                            'foo' => [
+                                'foo' => 'bar',
+                            ],
+                        ])
+                        ->setResponse(ResponseExample::create('400')),
+                ),
+            ],
+        ];
     }
 }
