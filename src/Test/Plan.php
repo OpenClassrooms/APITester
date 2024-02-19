@@ -43,6 +43,7 @@ final class Plan
         'set-baseline',
         'update-baseline',
         'ignore-baseline',
+        'only-baseline',
         'part',
     ];
 
@@ -120,6 +121,10 @@ final class Plan
             }
             $testSuite = $this->prepareSuite($suiteConfig);
             if (!empty($options['ignore-baseline'])) {
+                $testSuite->setIgnoreBaseLine(true);
+            }
+            if (!empty($options['only-baseline'])) {
+                $testSuite->setOnlyBaseLine(true);
                 $testSuite->setIgnoreBaseLine(true);
             }
             $this->runSuite($suiteConfig, $testSuite, $options);
