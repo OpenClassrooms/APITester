@@ -17,8 +17,8 @@ final class TestCaseTest extends UnitTestCase
 {
     private ?TestCase $testCase;
 
-    public function testGivenValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(): void
-    {
+    public function testGivenValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(
+    ): void {
         $this->testCase = $this->givenTestCase(
             200,
             $this->getValidSchema(),
@@ -29,8 +29,8 @@ final class TestCaseTest extends UnitTestCase
         $this->whenAssert();
     }
 
-    public function testGivenInvalidValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(): void
-    {
+    public function testGivenInvalidValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(
+    ): void {
         $this->testCase = $this->givenTestCase(
             200,
             $this->getValidSchema(),
@@ -41,8 +41,8 @@ final class TestCaseTest extends UnitTestCase
         $this->whenAssert();
     }
 
-    public function testGivenInvalidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenAnErrorIsThrown(): void
-    {
+    public function testGivenInvalidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenAnErrorIsThrown(
+    ): void {
         $this->expectException(InvalidResponseSchemaException::class);
 
         $this->testCase = $this->givenTestCase(
@@ -54,8 +54,8 @@ final class TestCaseTest extends UnitTestCase
         $this->whenAssert();
     }
 
-    public function testGivenSchemaResponseExistsButForDifferentStatusCodeAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenNoErrorIsThrown(): void
-    {
+    public function testGivenSchemaResponseExistsButForDifferentStatusCodeAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenNoErrorIsThrown(
+    ): void {
         $this->testCase = $this->givenTestCase(
             201,
             $this->getValidSchema(),
@@ -65,8 +65,8 @@ final class TestCaseTest extends UnitTestCase
         $this->whenAssert();
     }
 
-    public function testGivenValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenNoErrorIsThrown(): void
-    {
+    public function testGivenValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsEnabledWhenAssertThenNoErrorIsThrown(
+    ): void {
         $this->testCase = $this->givenTestCase(
             200,
             $this->getValidSchema(),
@@ -110,8 +110,8 @@ final class TestCaseTest extends UnitTestCase
         $testCase = new TestCase(
             'test1',
             OperationExample::create(
-                'test1_example',
-                Operation::create('test1', '/test1')
+                name: 'test1_example',
+                operation: Operation::create('test1', '/test1')
                     ->setResponses(
                         new Responses([
                             \APITester\Definition\Response::create($operationResponseStatusCode)
@@ -120,13 +120,15 @@ final class TestCaseTest extends UnitTestCase
                                     $operationResponseBody
                                 ),
                         ])
-                    )
+                    ),
+                statusCode: 200
             ),
             ['body'],
             $shouldValidateResponseSchema
         );
 
         $testCase->setResponse(new Response(200, [], $responseContent));
+
         return $testCase;
     }
 

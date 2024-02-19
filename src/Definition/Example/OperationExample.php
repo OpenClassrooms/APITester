@@ -53,12 +53,12 @@ final class OperationExample
     public function __construct(
         private string $name,
         Operation $parent = null,
-        int $statusCode = null
+        ?int $statusCode = null,
     ) {
         if ($parent !== null) {
             $this->parent = $parent;
         }
-        $this->response = new ResponseExample("$statusCode");
+        $this->response = new ResponseExample("{$statusCode}");
         $this->deepCopy = new DeepCopy();
         $this->deepCopy->addTypeFilter(
             new ShallowCopyFilter(),
@@ -123,9 +123,9 @@ final class OperationExample
         return $this;
     }
 
-    public static function create(string $name, Operation $operation = null): self
+    public static function create(string $name, ?Operation $operation = null, ?int $statusCode = null): self
     {
-        return new self($name, $operation);
+        return new self($name, $operation, $statusCode);
     }
 
     public function withBody(BodyExample $body): self
