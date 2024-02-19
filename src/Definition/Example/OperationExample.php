@@ -58,7 +58,7 @@ final class OperationExample
         if ($parent !== null) {
             $this->parent = $parent;
         }
-        $this->response = new ResponseExample("{$statusCode}");
+        $this->response = new ResponseExample($statusCode ? "{$statusCode}" : null);
         $this->deepCopy = new DeepCopy();
         $this->deepCopy->addTypeFilter(
             new ShallowCopyFilter(),
@@ -209,8 +209,8 @@ final class OperationExample
                 ->count()
             ;
             if ($this->forceRandom || ($this->autoComplete && \count(
-                $this->queryParameters
-            ) < $definitionParamsCount)) {
+                        $this->queryParameters
+                    ) < $definitionParamsCount)) {
                 return $this->parent
                     ->getQueryParameters()
                     ->getRandomExamples()
