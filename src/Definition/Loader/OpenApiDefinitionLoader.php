@@ -41,6 +41,8 @@ use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
 use cebe\openapi\spec\SecurityRequirement;
 use cebe\openapi\spec\SecurityScheme;
+use Vural\OpenAPIFaker\Options;
+use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class OpenApiDefinitionLoader implements DefinitionLoader
 {
@@ -349,6 +351,15 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     {
         $examples = [];
 
+        $successStatusCode = null;
+        if ($operation->responses !== null) {
+            $successStatusCodes = array_filter(
+                array_keys($operation->responses->getResponses()),
+                static fn ($status) => in_array($status, [200, 201, 206], true)
+            );
+            $successStatusCode = array_shift($successStatusCodes);
+        }
+
         foreach ($parameters as $parameter) {
             foreach ($parameter->examples ?? [] as $name => $example) {
                 $operationExample = $this->getExample((string) $name, $examples);
@@ -363,7 +374,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 if (\is_array($example)) {
                     $example = implode(',', $example);
                 }
-                $operationExample = $this->getExample('properties', $examples);
+                $operationExample = $this->getExample('properties', $examples, $successStatusCode);
                 $operationExample->setParameter($parameter->name, (string) $example, $parameter->in);
             }
         }
@@ -383,13 +394,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     if ($mediaType->schema->example !== null) {
                         $operationExample = $this->getExample('default', $examples);
                         $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example));
-                    }
-                    try {
+                    } else {
                         $example = $this->extractDeepExamples($mediaType->schema);
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setBody(BodyExample::create($example));
-                    } catch (ExampleNotExtractableException) {
-                        // @ignoreException
                     }
                 }
             }
@@ -424,15 +432,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, (array) $mediaType->schema->example)
                         );
-                    }
-                    try {
+                    } else {
                         $example = $this->extractDeepExamples($mediaType->schema);
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, $example)
                         );
-                    } catch (ExampleNotExtractableException) {
-                        // @ignoreException
                     }
                 }
             }
@@ -465,18 +470,16 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     /**
      * @param array<OperationExample> $examples
      */
-    private function getExample(string $name, array &$examples): OperationExample
+    private function getExample(string $name, array &$examples, ?int $statusCode = null): OperationExample
     {
         if (!isset($examples[$name])) {
-            $examples[$name] = new OperationExample($name);
+            $examples[$name] = new OperationExample($name, null, $statusCode);
         }
 
         return $examples[$name];
     }
 
     /**
-     * @throws ExampleNotExtractableException
-     *
      * @return array<mixed>
      */
     private function extractDeepExamples(Schema $schema, bool $optional = false): array
@@ -496,21 +499,16 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     if ($return !== [] || $isRequired) {
                         $parent[$name] = $return;
                     }
-                } else {
-                    if (
-                        !$optional
-                        && !isset($property->default)
-                        && !$property->nullable
-                        && !isset($property->example)
-                        && \in_array($name, $schema->required ?? [], true)) {
-                        throw new ExampleNotExtractableException();
-                    }
-                    if (isset($property->example)) {
-                        $parent[$name] = $property->example;
-                    } elseif (isset($property->default)) {
-                        $parent[$name] = $property->default;
-                    } elseif ($property->nullable) {
-                        $parent[$name] = null;
+                } elseif (isset($property->example)) {
+                    $parent[$name] = $property->example;
+                } elseif (isset($property->default)) {
+                    $parent[$name] = $property->default;
+                } elseif ($property->nullable) {
+                    $parent[$name] = null;
+                } elseif (!$optional && \in_array($name, $schema->required ?? [], true)) {
+                    $fakeSchema = (new SchemaFaker($schema, new Options()))->generate();
+                    if (is_array($fakeSchema) && isset($fakeSchema[$name])) {
+                        $parent[$name] = $fakeSchema[$name];
                     }
                 }
             }

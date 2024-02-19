@@ -47,7 +47,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
-    "canvural/php-openapi-faker": "^1.0",
+    "canvural/php-openapi-faker": "^2.0",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^6.0.0",
