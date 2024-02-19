@@ -136,6 +136,6 @@ final class Error400BadTypesPreparator extends Error400Preparator
 
     private function isAllowedType(string $passedType, string $testedType): bool
     {
-        return $passedType === $testedType || (self::NUMBER_TYPE === $passedType && self::INTEGER_TYPE === $testedType);
+        return $passedType === $testedType || ($passedType === self::NUMBER_TYPE && $testedType === self::INTEGER_TYPE);
     }
 }
