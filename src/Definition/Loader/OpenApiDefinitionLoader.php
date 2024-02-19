@@ -498,7 +498,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $parent[$name] = null;
                 } elseif (!$optional && \in_array($name, $schema->required ?? [], true)) {
                     $fakeSchema = (new SchemaFaker($schema, new Options()))->generate();
-                    $parent[$name] = $fakeSchema[$name];
+                    if (is_array($fakeSchema) && isset($fakeSchema[$name])) {
+                        $parent[$name] = $fakeSchema[$name];
+                    }
                 }
             }
         }
