@@ -84,7 +84,7 @@ final class Error400BadTypesPreparator extends Error400Preparator
         /** @var Schema $schema */
         foreach ($body->getSchema()->properties as $property => $schema) {
             foreach (self::SCHEMA_TYPES as $type) {
-                if ($this->isAllowedType($schema->type, $type)) {
+                if ($this->isAllowedType($schema->type ?? '', $type)) {
                     continue;
                 }
 
