@@ -6,10 +6,13 @@ namespace APITester\Definition\Loader;
 
 use APITester\Definition\Api;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use Psr\Log\LoggerInterface;
 
 interface DefinitionLoader
 {
     public static function getFormat(): string;
+
+    public function setLogger(LoggerInterface $logger): void;
 
     /**
      * @throws DefinitionLoadingException

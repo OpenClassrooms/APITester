@@ -19,6 +19,7 @@ use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Definition\Loader\Exception\InvalidExampleException;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response;
@@ -41,8 +42,8 @@ use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
 use cebe\openapi\spec\SecurityRequirement;
 use cebe\openapi\spec\SecurityScheme;
-use Vural\OpenAPIFaker\Options;
-use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class OpenApiDefinitionLoader implements DefinitionLoader
 {
@@ -51,6 +52,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     public const FORMAT_YAML = 'yaml';
 
     public const FORMATS = [self::FORMAT_JSON, self::FORMAT_YAML];
+
+    private LoggerInterface $logger;
+
+    public function __construct(?LoggerInterface $logger = null)
+    {
+        $this->logger = $logger ?? new NullLogger();
+    }
 
     /**
      * @throws DefinitionLoadingException
@@ -81,6 +89,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     public static function getFormat(): string
     {
         return 'openapi';
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -395,7 +408,17 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $operationExample = $this->getExample('default', $examples);
                         $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example));
                     } else {
-                        $example = $this->extractDeepExamples($mediaType->schema);
+                        try {
+                            $example = (array) $this->extractDeepExamples(
+                                $mediaType->schema,
+                                path: 'requestBody.mediaType.schema'
+                            );
+                        } catch (InvalidExampleException $e) {
+                            $this->logger->warning(
+                                'Could not extract example for request body, error: ' . $e->getMessage()
+                            );
+                            continue;
+                        }
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setBody(BodyExample::create($example));
                     }
@@ -433,7 +456,17 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                             new ResponseExample((string) $statusCode, (array) $mediaType->schema->example)
                         );
                     } else {
-                        $example = $this->extractDeepExamples($mediaType->schema);
+                        try {
+                            $example = $this->extractDeepExamples(
+                                $mediaType->schema,
+                                path: 'responseBody.mediaType.schema'
+                            );
+                        } catch (InvalidExampleException $e) {
+                            $this->logger->warning(
+                                'Could not extract example for response body, error: ' . $e->getMessage()
+                            );
+                            continue;
+                        }
                         $operationExample = $this->getExample('properties', $examples);
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, $example)
@@ -480,40 +513,88 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @return array<mixed>
+     * @return array<string, int>
      */
-    private function extractDeepExamples(Schema $schema, bool $optional = false): array
+    private function findRepeatingPatterns(string $string, int $occurrences = 2): array
     {
-        $parent = [];
-        if ($schema->type === 'object') {
-            foreach ($schema->properties as $name => $property) {
-                if (!$property instanceof Schema) {
-                    continue;
-                }
-                if (isset($property->type) && $property->type === 'object' && !isset($property->example)) {
-                    $isRequired = \in_array($name, $property->required ?? [], true);
-                    $return = $this->extractDeepExamples(
-                        $property,
-                        !$isRequired
-                    );
-                    if ($return !== [] || $isRequired) {
-                        $parent[$name] = $return;
-                    }
-                } elseif (isset($property->example)) {
-                    $parent[$name] = $property->example;
-                } elseif (isset($property->default)) {
-                    $parent[$name] = $property->default;
-                } elseif ($property->nullable) {
-                    $parent[$name] = null;
-                } elseif (!$optional && \in_array($name, $schema->required ?? [], true)) {
-                    $fakeSchema = (new SchemaFaker($schema, new Options()))->generate();
-                    if (is_array($fakeSchema) && isset($fakeSchema[$name])) {
-                        $parent[$name] = $fakeSchema[$name];
+        $length = mb_strlen($string);
+        $patternCounts = [];
+
+        $minPatternLength = 2;
+        $maxPatternLength = $length / 2;
+
+        for ($patternLength = $minPatternLength; $patternLength <= $maxPatternLength; $patternLength++) {
+            for ($start = 0; $start <= $length - $patternLength; $start++) {
+                $pattern = mb_substr($string, $start, $patternLength);
+                $patternQuoted = preg_quote($pattern, '/');
+                $matches = [];
+                preg_match_all("/{$patternQuoted}/", $string, $matches);
+
+                if (!empty($matches[0]) && count($matches[0]) > $occurrences) {
+                    if (!array_key_exists($pattern, $patternCounts)) {
+                        $patternCounts[$pattern] = count($matches[0]);
                     }
                 }
             }
         }
 
-        return $parent;
+        return array_filter($patternCounts, static fn ($count) => $count > $occurrences);
+    }
+
+    /**
+     * @throws InvalidExampleException
+     */
+    private function extractDeepExamples(Schema $schema, bool $optional = false, string $path = ''): mixed
+    {
+        $repeatPatterns = $this->findRepeatingPatterns($path, 3);
+        if (count($repeatPatterns) > 0) {
+            $this->logger->warning("Found circular reference in path: {$path}, using null as example");
+
+            return null;
+        }
+
+        if (isset($schema->type)) {
+            if ($schema->type === 'array' && $schema->items instanceof Schema) {
+                return [
+                    $this->extractDeepExamples($schema->items, false, $path . 'items'),
+                ];
+            }
+
+            if ($schema->type === 'object' && isset($schema->properties)) {
+                $example = [];
+                foreach ($schema->properties as $name => $property) {
+                    if (!$property instanceof Schema) {
+                        continue;
+                    }
+                    $isRequired = \in_array($name, $schema->required ?? [], true);
+                    try {
+                        $example[$name] = $this->extractDeepExamples(
+                            $property,
+                            !$isRequired,
+                            $path . '.properties.' . $name,
+                        );
+                    } catch (InvalidExampleException $e) {
+                        if ($optional) {
+                            continue;
+                        }
+                        $this->logger->warning($e->getMessage());
+                    }
+                }
+
+                return $example;
+            }
+        }
+
+        if (isset($schema->default)) {
+            return $schema->default;
+        }
+
+        if (isset($schema->nullable)) {
+            return null;
+        }
+
+        throw new InvalidExampleException(
+            'Could not extract example for ' . $path
+        );
     }
 }

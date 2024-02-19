@@ -442,6 +442,8 @@ final class Plan
     {
         foreach ($this->definitionLoaders as $loader) {
             if ($loader::getFormat() === $format) {
+                $loader->setLogger($this->logger);
+
                 return $loader;
             }
         }
