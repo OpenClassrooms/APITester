@@ -411,12 +411,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         try {
                             $example = (array) $this->extractDeepExamples(
                                 $mediaType->schema,
-                                path: 'requestBody.mediaType.schema'
+                                path: $operation->operationId . '.requestBody.mediaType.schema'
                             );
                         } catch (InvalidExampleException $e) {
-                            $this->logger->warning(
-                                'Could not extract example for request body, error: ' . $e->getMessage()
-                            );
+                            $this->logger->warning($e->getMessage());
                             continue;
                         }
                         $operationExample = $this->getExample('properties', $examples);
@@ -459,12 +457,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         try {
                             $example = $this->extractDeepExamples(
                                 $mediaType->schema,
-                                path: 'responseBody.mediaType.schema'
+                                path: $operation->operationId . '.responseBody.mediaType.schema'
                             );
                         } catch (InvalidExampleException $e) {
-                            $this->logger->warning(
-                                'Could not extract example for response body, error: ' . $e->getMessage()
-                            );
+                            $this->logger->warning($e->getMessage());
                             continue;
                         }
                         $operationExample = $this->getExample('properties', $examples);
@@ -513,32 +509,15 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @return array<string, int>
+     * naive check for circular references for performance reasons
      */
-    private function findRepeatingPatterns(string $string, int $occurrences = 2): array
+    private function hasRepeatingConsecutivePattern(string $s): bool
     {
-        $length = mb_strlen($string);
-        $patternCounts = [];
+        $parts = explode('.', $s);
+        $lastPart = $parts[count($parts) - 1];
+        $count = mb_substr_count($s, $lastPart);
 
-        $minPatternLength = 2;
-        $maxPatternLength = $length / 2;
-
-        for ($patternLength = $minPatternLength; $patternLength <= $maxPatternLength; $patternLength++) {
-            for ($start = 0; $start <= $length - $patternLength; $start++) {
-                $pattern = mb_substr($string, $start, $patternLength);
-                $patternQuoted = preg_quote($pattern, '/');
-                $matches = [];
-                preg_match_all("/{$patternQuoted}/", $string, $matches);
-
-                if (!empty($matches[0]) && count($matches[0]) > $occurrences) {
-                    if (!array_key_exists($pattern, $patternCounts)) {
-                        $patternCounts[$pattern] = count($matches[0]);
-                    }
-                }
-            }
-        }
-
-        return array_filter($patternCounts, static fn ($count) => $count > $occurrences);
+        return $count > 3;
     }
 
     /**
@@ -546,8 +525,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
      */
     private function extractDeepExamples(Schema $schema, bool $optional = false, string $path = ''): mixed
     {
-        $repeatPatterns = $this->findRepeatingPatterns($path, 3);
-        if (count($repeatPatterns) > 0) {
+        if ($this->hasRepeatingConsecutivePattern($path)) {
             $this->logger->warning("Found circular reference in path: {$path}, using null as example");
 
             return null;
@@ -556,7 +534,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         if (isset($schema->type)) {
             if ($schema->type === 'array' && $schema->items instanceof Schema) {
                 return [
-                    $this->extractDeepExamples($schema->items, false, $path . 'items'),
+                    $this->extractDeepExamples($schema->items, false, $path),
                 ];
             }
 
@@ -571,13 +549,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $example[$name] = $this->extractDeepExamples(
                             $property,
                             !$isRequired,
-                            $path . '.properties.' . $name,
+                            $path . '.' . $name,
                         );
                     } catch (InvalidExampleException $e) {
                         if ($optional) {
                             continue;
                         }
-                        $this->logger->warning($e->getMessage());
+                        throw $e;
                     }
                 }
 
