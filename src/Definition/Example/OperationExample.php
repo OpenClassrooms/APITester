@@ -178,10 +178,11 @@ final class OperationExample
                 ->count()
             ;
             if ($this->forceRandom || ($this->autoComplete && \count($this->pathParameters) < $definitionParamsCount)) {
-                return $this->parent
+                $randomPathParams = $this->parent
                     ->getPathParameters()
                     ->getRandomExamples()
                 ;
+                $this->pathParameters = array_merge($randomPathParams, $this->pathParameters);
             }
         }
 
@@ -211,10 +212,11 @@ final class OperationExample
             if ($this->forceRandom || ($this->autoComplete && \count(
                 $this->queryParameters
             ) < $definitionParamsCount)) {
-                return $this->parent
+                $randomQueryParams = $this->parent
                     ->getQueryParameters()
                     ->getRandomExamples()
                 ;
+                $this->queryParameters = array_merge($randomQueryParams, $this->queryParameters);
             }
         }
 
@@ -243,6 +245,25 @@ final class OperationExample
             ;
         }
 
+        if ($this->parent !== null) {
+            $definitionHeadersCount = $this->parent
+                ->getHeaders()
+                ->count() + 1 // content-type
+            ;
+
+            if ($this->parent->getSecurities()->count() > 0) {
+                ++$definitionHeadersCount; // Authorization
+            }
+
+            if ($this->forceRandom || ($this->autoComplete && \count($this->headers) < $definitionHeadersCount)) {
+                $randomHeaders = $this->parent
+                    ->getHeaders()
+                    ->getRandomExamples()
+                ;
+                $this->headers = array_merge($randomHeaders, $this->headers);
+            }
+        }
+
         return $this->headers;
     }
 
@@ -267,8 +288,22 @@ final class OperationExample
         }
 
         $requestBody = $this->parent->getBody();
-        if ($this->body === null && $requestBody !== null) {
+
+        if ($requestBody === null) {
+            return null;
+        }
+
+        if ($this->forceRandom) {
             return BodyExample::create($requestBody->getRandomContent());
+        }
+
+        if ($this->autoComplete) {
+            $randomBody = BodyExample::create($requestBody->getRandomContent());
+            if ($this->body !== null) {
+                $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
+            } else {
+                $this->body = $randomBody;
+            }
         }
 
         return $this->body;

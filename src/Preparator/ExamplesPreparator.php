@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Preparator;
 
+use APITester\Definition\Collection\OperationExamples;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Loader\ExamplesExtensionLoader;
@@ -56,11 +57,17 @@ final class ExamplesPreparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): iterable
     {
-        return $operation
-            ->getExamples()
+        $examples = $operation->getExamples();
+        if ($this->config->autoCreateWhenMissing && $examples->count() > 0) {
+            $examples = new OperationExamples([
+                $operation->getRandomExample(),
+            ]);
+        }
+
+        return $examples
             ->map(
                 fn (OperationExample $example) => $this->buildTestCase(
-                    $example->setAutoComplete(false)
+                    $example->setAutoComplete($this->config->autoComplete)
                 )
             )
         ;

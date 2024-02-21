@@ -457,6 +457,7 @@ final class Operation implements Filterable
             ->setQueryParameters($this->getQueryParameters()->getRandomExamples())
             ->setHeaders($this->getHeaders()->getRandomExamples())
             ->setBody($bodyExample)
+            ->setStatusCode((string) ($this->getResponses()->first()?->getStatusCode() ?? 200))
         ;
     }
 

@@ -563,11 +563,15 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
         }
 
+        if (isset($schema->example)) {
+            return $schema->example;
+        }
+
         if (isset($schema->default)) {
             return $schema->default;
         }
 
-        if (isset($schema->nullable)) {
+        if (!empty($schema->nullable)) {
             return null;
         }
 

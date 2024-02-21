@@ -130,7 +130,7 @@
     "rector": [
       "vendor/bin/rector process src --ansi --config config/rector.php"
     ],
-    "unit": "vendor/bin/phpunit -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
+    "unit": "vendor/bin/phpunit --testdox -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
     "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
     "ecs": "@check-cs"
