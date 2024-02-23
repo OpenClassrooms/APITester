@@ -373,6 +373,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $successStatusCode = array_shift($successStatusCodes);
         }
 
+        $operationExample = null;
         foreach ($parameters as $parameter) {
             foreach ($parameter->examples ?? [] as $name => $example) {
                 $operationExample = $this->getExample((string) $name, $examples);
@@ -421,6 +422,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         $operationExample->setBody(BodyExample::create($example));
                     }
                 }
+            }
+            if ($operation->requestBody->required && $operationExample?->getBody() === null) {
+                $this->logger->warning(
+                    "Request body is required for operation {$operation->operationId}, but no example found, skipping..."
+                );
+
+                return new OperationExamples([]);
             }
         }
 
