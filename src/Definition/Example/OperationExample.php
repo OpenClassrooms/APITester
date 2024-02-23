@@ -258,7 +258,11 @@ final class OperationExample
             if ($this->forceRandom || ($this->autoComplete && \count($this->headers) < $definitionHeadersCount)) {
                 $randomHeaders = $this->parent
                     ->getHeaders()
-                    ->getRandomExamples()
+                    ->getRandomExamples([
+                        'content-type',
+                        'authorization',
+                        'range',
+                    ])
                 ;
                 $this->headers = array_merge($randomHeaders, $this->headers);
             }

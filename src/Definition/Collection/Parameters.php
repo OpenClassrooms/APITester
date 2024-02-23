@@ -38,12 +38,17 @@ final class Parameters extends Collection
     }
 
     /**
+     * @param string[] $exclude
+     *
      * @return array<string, string>
      */
-    public function getRandomExamples(): array
+    public function getRandomExamples(array $exclude = []): array
     {
         $params = [];
         foreach ($this as $parameter) {
+            if (\in_array(mb_strtolower($parameter->getName()), $exclude, true)) {
+                continue;
+            }
             $schema = $parameter->getSchema();
             if ($schema !== null) {
                 $random = (new SchemaFaker($schema, new Options()))->generate();
