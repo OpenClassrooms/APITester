@@ -108,9 +108,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         $operations = new Operations();
         foreach ($paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
-                if ($operation->operationId !== 'oc_api_categories_get') {
-                    continue;
-                }
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
                 $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */
