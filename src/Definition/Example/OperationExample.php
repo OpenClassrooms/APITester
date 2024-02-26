@@ -83,12 +83,28 @@ final class OperationExample
         return $clone;
     }
 
-    public function setParameter(string $name, string $value, string $in): self
+    public function setParameter(string $name, mixed $value, string $in, ?string $type = null): self
     {
+        if (\is_array($value)) {
+            $value = implode(',', $value);
+        }
+        if (is_bool($value)) {
+            $value = $value ? 'true' : 'false';
+        }
+        if ($type === 'boolean') {
+            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+        }
         $paramProp = $this->getParametersProp($in);
-        $this->{$paramProp}[$name] = $value;
+        $this->{$paramProp}[$name] = (string) $value;
 
         return $this;
+    }
+
+    public function hasParameter(string $name, string $in): bool
+    {
+        $paramProp = $this->getParametersProp($in);
+
+        return isset($this->{$paramProp}[$name]);
     }
 
     public function getResponse(): ResponseExample
@@ -224,11 +240,13 @@ final class OperationExample
     }
 
     /**
-     * @param array<string, int|string> $queryParameters
+     * @param array<string, mixed> $queryParameters
      */
     public function setQueryParameters(array $queryParameters): self
     {
-        $this->queryParameters = $queryParameters;
+        foreach ($queryParameters as $name => $value) {
+            $this->setQueryParameter($name, $value);
+        }
 
         return $this;
     }
@@ -272,11 +290,13 @@ final class OperationExample
     }
 
     /**
-     * @param array<string, int|string> $headers
+     * @param array<string, mixed> $headers
      */
     public function setHeaders(array $headers): self
     {
-        $this->headers = $headers;
+        foreach ($headers as $name => $value) {
+            $this->setHeader($name, $value);
+        }
 
         return $this;
     }
@@ -371,6 +391,8 @@ final class OperationExample
                 foreach ($headers['query'] ?? [] as $query => $value) {
                     $this->setQueryParameter($query, $value);
                 }
+
+                return $this;
             }
         }
 
@@ -389,16 +411,16 @@ final class OperationExample
         return $this;
     }
 
-    public function setHeader(string $name, string $value): self
+    public function setHeader(string $name, mixed $value): self
     {
-        $this->headers[$name] = $value;
+        $this->setParameter($name, $value, 'header');
 
         return $this;
     }
 
-    public function setQueryParameter(string $name, string $value): self
+    public function setQueryParameter(string $name, mixed $value): self
     {
-        $this->queryParameters[$name] = $value;
+        $this->setParameter($name, $value, 'query');
 
         return $this;
     }

@@ -31,6 +31,7 @@ use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
 use APITester\Definition\Security\OAuth2\OAuth2PasswordSecurity;
 use APITester\Definition\Server;
 use APITester\Definition\Tag;
+use APITester\Util\Json;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\Example;
 use cebe\openapi\spec\Header;
@@ -107,6 +108,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         $operations = new Operations();
         foreach ($paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
+                if ($operation->operationId !== 'oc_api_categories_get') {
+                    continue;
+                }
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
                 $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */
@@ -296,12 +300,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 $collection[] = new HttpSecurity($name, $scheme->scheme, $scheme->bearerFormat);
             }
             if ($scheme->type === 'oauth2' && $scheme->flows !== null) {
+                $flows = (array) $scheme->flows->getSerializableData();
                 $notFoundRequirements = [];
                 /**
                  * @var string    $type
                  * @var OAuthFlow $flow
                  */
-                foreach ((array) $scheme->flows->getSerializableData() as $type => $flow) {
+                foreach ($flows as $type => $flow) {
                     $scopes = $requirements[$name] ?? [];
                     $flowScopes = $flow->scopes;
                     if (is_object($flowScopes)) {
@@ -309,44 +314,44 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     }
                     $diff = array_diff($scopes, $flowScopes);
                     if (\count($diff) > 0) {
-                        $notFoundRequirements = $diff;
+                        $notFoundRequirements[$type] = $diff;
                         continue;
                     }
                     $notFoundRequirements = [];
                     $scopes = Scopes::fromNames($scopes);
-                    $name .= '_' . $type;
+                    $securityName = $name . '_' . $type;
                     if ($type === 'implicit') {
                         $collection[] = new OAuth2ImplicitSecurity(
-                            $name,
+                            $securityName,
                             $flow->authorizationUrl,
                             $scopes
                         );
                     }
                     if ($type === 'password') {
                         $collection[] = new OAuth2PasswordSecurity(
-                            $name,
+                            $securityName,
                             $flow->tokenUrl,
                             $scopes
                         );
                     }
                     if ($type === 'clientCredentials') {
                         $collection[] = new OAuth2ClientCredentialsSecurity(
-                            $name,
+                            $securityName,
                             $flow->tokenUrl,
                             $scopes
                         );
                     }
                     if ($type === 'authorizationCode') {
                         $collection[] = new OAuth2AuthorizationCodeSecurity(
-                            $name,
+                            $securityName,
                             $flow->authorizationUrl,
                             $flow->tokenUrl,
                             $scopes,
                         );
                     }
                 }
-                if (\count($notFoundRequirements) > 0) {
-                    $notFoundRequirements = implode(',', $notFoundRequirements);
+                if (count($notFoundRequirements) >= count($flows)) {
+                    $notFoundRequirements = Json::encode($notFoundRequirements);
                     throw new DefinitionLoadingException(
                         "Scopes '{$notFoundRequirements}' not configured in securitySchemes"
                     );
@@ -377,19 +382,51 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         foreach ($parameters as $parameter) {
             foreach ($parameter->examples ?? [] as $name => $example) {
                 $operationExample = $this->getExample((string) $name, $examples);
-                $operationExample->setParameter($parameter->name, (string) $example->value, $parameter->in);
+                $operationExample->setParameter(
+                    $parameter->name,
+                    $example->value,
+                    $parameter->in,
+                    $parameter->schema instanceof Schema ? $parameter->schema->type : null,
+                );
             }
             if ($parameter->example !== null) {
                 $operationExample = $this->getExample('default', $examples);
-                $operationExample->setParameter($parameter->name, (string) $parameter->example, $parameter->in);
+                $operationExample->setParameter(
+                    $parameter->name,
+                    $parameter->example,
+                    $parameter->in,
+                    $parameter->schema instanceof Schema ? $parameter->schema->type : null,
+                );
             }
             if ($parameter->schema instanceof Schema && $parameter->schema->example !== null) {
-                $example = $parameter->schema->example;
-                if (\is_array($example)) {
-                    $example = implode(',', $example);
+                $operationExample = $this->getExample('default', $examples, $successStatusCode);
+                try {
+                    $example = $this->extractDeepExamples($parameter->schema);
+                } catch (InvalidExampleException $e) {
+                    $this->logger->warning($e->getMessage());
+                    continue;
                 }
-                $operationExample = $this->getExample('properties', $examples, $successStatusCode);
-                $operationExample->setParameter($parameter->name, (string) $example, $parameter->in);
+                $operationExample->setParameter(
+                    $parameter->name,
+                    $example,
+                    $parameter->in,
+                    $parameter->schema->type,
+                );
+            }
+            if ($operationExample === null || !$operationExample->hasParameter($parameter->name, $parameter->in)) {
+                if ($parameter->schema instanceof Schema && isset($parameter->schema->default)) {
+                    $operationExample = $this->getExample('default', $examples);
+                    $operationExample->setParameter(
+                        $parameter->name,
+                        $parameter->schema->default,
+                        $parameter->in,
+                        $parameter->schema->type,
+                    );
+                } elseif ($parameter->required) {
+                    $this->logger->warning(
+                        "Parameter {$parameter->name} is required for operation {$operation->operationId}, but no example found, skipping..."
+                    );
+                }
             }
         }
 
@@ -418,12 +455,14 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                             $this->logger->warning($e->getMessage());
                             continue;
                         }
-                        $operationExample = $this->getExample('properties', $examples);
+                        $operationExample = $this->getExample('default', $examples);
                         $operationExample->setBody(BodyExample::create($example));
                     }
                 }
             }
-            if ($operation->requestBody->required && $operationExample?->getBody() === null) {
+            if (isset($operation->requestBody->required)
+                && $operation->requestBody->required === false
+                && $operationExample?->getBody() === null) {
                 $this->logger->warning(
                     "Request body is required for operation {$operation->operationId}, but no example found, skipping..."
                 );
@@ -434,7 +473,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
         foreach ($operation->responses ?? [] as $statusCode => $response) {
             if (\count($response->content) === 0) {
-                $operationExample = $this->getExample('properties', $examples);
+                $operationExample = $this->getExample('default', $examples);
                 $operationExample->setResponse(new ResponseExample((string) $statusCode));
                 break;
             }
@@ -471,7 +510,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                             $this->logger->warning($e->getMessage());
                             continue;
                         }
-                        $operationExample = $this->getExample('properties', $examples);
+                        $operationExample = $this->getExample('default', $examples);
                         $operationExample->setResponse(
                             new ResponseExample((string) $statusCode, $example)
                         );
@@ -521,6 +560,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
      */
     private function hasRepeatingConsecutivePattern(string $s): bool
     {
+        if (mb_strlen($s) === 0) {
+            return false;
+        }
         $parts = explode('.', $s);
         $lastPart = $parts[count($parts) - 1];
         $count = mb_substr_count($s, $lastPart);
