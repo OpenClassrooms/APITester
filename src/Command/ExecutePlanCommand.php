@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Command;
 
-use APITester\Authenticator\Exception\AuthenticationException;
-use APITester\Authenticator\Exception\AuthenticationLoadingException;
 use APITester\Config;
 use APITester\Config\Exception\ConfigurationException;
 use APITester\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
@@ -40,9 +38,7 @@ final class ExecutePlanCommand extends Command
      * @throws DefinitionLoadingException
      * @throws InvalidPreparatorConfigException
      * @throws RequesterNotFoundException
-     * @throws AuthenticationLoadingException
      * @throws ConfigurationException
-     * @throws AuthenticationException
      * @throws SuiteNotFoundException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

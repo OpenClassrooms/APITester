@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Definition;
 
-use APITester\Util\Json;
 use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\spec\Schema;
 use Vural\OpenAPIFaker\Options;
@@ -73,7 +72,7 @@ final class Body
     {
         $example = $this->parent->getExample($name);
 
-        return $example->getStringBody() ?? Json::encode($this->getRandomContent());
+        return $example->getStringBody();
     }
 
     /**

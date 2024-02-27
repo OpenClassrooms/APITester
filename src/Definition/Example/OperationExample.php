@@ -502,10 +502,10 @@ final class OperationExample
         return $this;
     }
 
-    public function getStringBody(): ?string
+    public function getStringBody(): string
     {
         if ($this->getBody() === null) {
-            return null;
+            return '{}';
         }
 
         return $this->getBody()

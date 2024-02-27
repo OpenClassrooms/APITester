@@ -45,6 +45,7 @@ final class Plan
         'ignore-baseline',
         'only-baseline',
         'part',
+        'operation-id',
     ];
 
     private readonly Authenticator $authenticator;
@@ -100,8 +101,6 @@ final class Plan
      * @throws DefinitionLoadingException
      * @throws RequesterNotFoundException
      * @throws InvalidPreparatorConfigException
-     * @throws AuthenticationLoadingException
-     * @throws AuthenticationException
      * @throws SuiteNotFoundException
      */
     public function execute(
@@ -187,8 +186,6 @@ final class Plan
     /**
      * @param array<string, mixed> $options
      *
-     * @throws AuthenticationException
-     * @throws AuthenticationLoadingException
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
      * @throws InvalidPreparatorConfigException
@@ -343,15 +340,15 @@ final class Plan
         throw new RequesterNotFoundException($name);
     }
 
-    /**
-     * @throws AuthenticationLoadingException
-     * @throws AuthenticationException
-     */
     private function authenticate(Config\Suite $config, Api $api, Requester $requester): Tokens
     {
         $tokens = new Tokens();
         foreach ($config->getAuthentications() as $authConf) {
-            $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
+            try {
+                $tokens->add($this->authenticator->authenticate($authConf, $api, $requester));
+            } catch (AuthenticationException|AuthenticationLoadingException $e) {
+                $this->logger->error($e->getMessage());
+            }
         }
 
         return $tokens;
