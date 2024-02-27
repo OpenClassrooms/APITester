@@ -177,6 +177,12 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Partition tests into groups and run only one of them, ex: --part=1/3'
             )
+            ->addOption(
+                'operation-id',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'takes an operation-id to load from api definition'
+            )
         ;
     }
 

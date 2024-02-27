@@ -43,7 +43,7 @@ abstract class TestCasesPreparator
         $operation = $example->getParent();
 
         if ($auth) {
-            $example->authenticate($this->tokens);
+            $example->setAuthenticationHeaders($this->tokens);
         }
 
         return new TestCase(

@@ -357,7 +357,7 @@ final class OperationExample
         return $this;
     }
 
-    public function authenticate(Tokens $tokens, bool $ignoreScope = false): self
+    public function setAuthenticationHeaders(Tokens $tokens, bool $ignoreScope = false): self
     {
         $operation = $this->getParent();
         if ($operation === null) {

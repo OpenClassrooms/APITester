@@ -119,7 +119,7 @@ final class Plan
             if (!empty($options['set-baseline'])) {
                 $this->resetBaseLine($suiteConfig);
             }
-            $testSuite = $this->prepareSuite($suiteConfig);
+            $testSuite = $this->prepareSuite($suiteConfig, $options);
             if (!empty($options['ignore-baseline'])) {
                 $testSuite->setIgnoreBaseLine(true);
             }
@@ -185,6 +185,8 @@ final class Plan
     }
 
     /**
+     * @param array<string, mixed> $options
+     *
      * @throws AuthenticationException
      * @throws AuthenticationLoadingException
      * @throws DefinitionLoaderNotFoundException
@@ -194,14 +196,14 @@ final class Plan
      *
      * @return Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface>
      */
-    private function prepareSuite(Config\Suite $suiteConfig): Suite
+    private function prepareSuite(Config\Suite $suiteConfig, array $options = []): Suite
     {
         $testCaseClass = Object_::validateClass(
             $suiteConfig->getTestCaseClass(),
             \PHPUnit\Framework\TestCase::class
         );
         $kernel = $this->loadSymfonyKernel($suiteConfig, $testCaseClass);
-        $definition = $this->loadApiDefinition($suiteConfig);
+        $definition = $this->loadApiDefinition($suiteConfig, $options);
         $requester = $this->loadRequester(
             $suiteConfig->getRequester(),
             $suiteConfig->getBaseUrl() ?? $definition->getUrl(),
@@ -295,19 +297,30 @@ final class Plan
     }
 
     /**
+     * @param array<string, mixed> $options
+     *
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
      */
-    private function loadApiDefinition(Config\Suite $config): Api
+    private function loadApiDefinition(Config\Suite $config, array $options = []): Api
     {
         $definitionLoader = $this->getConfiguredLoader(
             $config->getDefinition()
                 ->getFormat()
         );
 
+        $filters = [];
+        if (isset($options['operation-id'])) {
+            $filters['operationId'] = array_map(
+                'trim',
+                explode(',', (string) $options['operation-id'])
+            );
+        }
+
         return $definitionLoader->load(
             $config->getDefinition()
-                ->getPath()
+                ->getPath(),
+            filters: $filters,
         );
     }
 

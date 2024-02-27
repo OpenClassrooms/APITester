@@ -48,12 +48,6 @@ use Psr\Log\NullLogger;
 
 final class OpenApiDefinitionLoader implements DefinitionLoader
 {
-    public const FORMAT_JSON = 'json';
-
-    public const FORMAT_YAML = 'yaml';
-
-    public const FORMATS = [self::FORMAT_JSON, self::FORMAT_YAML];
-
     private LoggerInterface $logger;
 
     public function __construct(?LoggerInterface $logger = null)
@@ -61,10 +55,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         $this->logger = $logger ?? new NullLogger();
     }
 
-    /**
-     * @throws DefinitionLoadingException
-     */
-    public function load(string $filePath, string $format = self::FORMAT_YAML): Api
+    public function load(string $filePath, string $format = self::FORMAT_YAML, array $filters = []): Api
     {
         $api = Api::create();
         if (!\in_array($format, self::FORMATS, true)) {
@@ -81,7 +72,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         $securitySchemes = $openApi->components !== null ? $openApi->components->securitySchemes : [];
 
         return $api
-            ->setOperations($this->getOperations($openApi->paths->getPaths(), $securitySchemes))
+            ->setOperations(
+                $this->getOperations(
+                    $openApi->paths->getPaths(),
+                    $securitySchemes,
+                    $filters
+                )
+            )
             ->setServers($this->getServers($openApi->servers))
             ->setTags($this->getTags($openApi->tags))
         ;
@@ -98,16 +95,21 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
+     * @param array<string, string[]>       $filters
      * @param array<string, SecurityScheme> $securitySchemes
      * @param array<string, PathItem>       $paths
      *
      * @throws DefinitionLoadingException
      */
-    private function getOperations(array $paths, array $securitySchemes): Operations
+    private function getOperations(array $paths, array $securitySchemes, array $filters = []): Operations
     {
         $operations = new Operations();
         foreach ($paths as $path => $pathInfo) {
             foreach ($pathInfo->getOperations() as $method => $operation) {
+                if (isset($filters['operationId'])
+                    && !in_array($operation->operationId, $filters['operationId'], true)) {
+                    continue;
+                }
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
                 $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */

@@ -55,7 +55,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
                 $testCases->add(
                     $this->buildTestCase(
                         OperationExample::create($this->getTestCaseName(), $operation)
-                            ->authenticate(new Tokens([$token]), true)
+                            ->setAuthenticationHeaders(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,
                     ),
@@ -65,7 +65,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
                 $testCases->add(
                     $this->buildTestCase(
                         OperationExample::create($this->getTestCaseName(), $operation)
-                            ->authenticate(new Tokens([$token]), true)
+                            ->setAuthenticationHeaders(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,
                     ),
