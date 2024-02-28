@@ -298,6 +298,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             if ($scheme->type === 'http') {
                 $collection[] = new HttpSecurity($name, $scheme->scheme, $scheme->bearerFormat);
             }
+            $supportedScopes = [];
             if ($scheme->type === 'oauth2' && $scheme->flows !== null) {
                 $flows = (array) $scheme->flows->getSerializableData();
                 $notFoundRequirements = [];
@@ -311,33 +312,32 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     if (is_object($flowScopes)) {
                         $flowScopes = array_keys((array) $flowScopes);
                     }
-                    $diff = array_diff($scopes, $flowScopes);
-                    if (\count($diff) > 0) {
-                        $notFoundRequirements[$type] = $diff;
+                    $flowSupportedScopes = array_values(array_intersect($scopes, $flowScopes));
+                    $supportedScopes[] = $flowSupportedScopes;
+                    if (count($flowSupportedScopes) === 0) {
                         continue;
                     }
-                    $notFoundRequirements = [];
-                    $scopes = Scopes::fromNames($scopes);
+                    $flowSupportedScopes = Scopes::fromNames($flowSupportedScopes);
                     $securityName = $name . '_' . $type;
                     if ($type === 'implicit') {
                         $collection[] = new OAuth2ImplicitSecurity(
                             $securityName,
                             $flow->authorizationUrl,
-                            $scopes
+                            $flowSupportedScopes
                         );
                     }
                     if ($type === 'password') {
                         $collection[] = new OAuth2PasswordSecurity(
                             $securityName,
                             $flow->tokenUrl,
-                            $scopes
+                            $flowSupportedScopes
                         );
                     }
                     if ($type === 'clientCredentials') {
                         $collection[] = new OAuth2ClientCredentialsSecurity(
                             $securityName,
                             $flow->tokenUrl,
-                            $scopes
+                            $flowSupportedScopes
                         );
                     }
                     if ($type === 'authorizationCode') {
@@ -345,11 +345,15 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                             $securityName,
                             $flow->authorizationUrl,
                             $flow->tokenUrl,
-                            $scopes,
+                            $flowSupportedScopes,
                         );
                     }
                 }
-                if (count($notFoundRequirements) >= count($flows)) {
+                $notFoundRequirements = array_diff(
+                    $requirements[$name],
+                    array_unique(array_merge(...$supportedScopes))
+                );
+                if ($notFoundRequirements !== []) {
                     $notFoundRequirements = Json::encode($notFoundRequirements);
                     throw new DefinitionLoadingException(
                         "Scopes '{$notFoundRequirements}' not configured in securitySchemes"
@@ -400,7 +404,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             if ($parameter->schema instanceof Schema && $parameter->schema->example !== null) {
                 $operationExample = $this->getExample('default', $examples, $successStatusCode);
                 try {
-                    $example = $this->extractDeepExamples($parameter->schema);
+                    $example = $this->extractDeepExamples($parameter->schema, path: 'parameter.' . $parameter->name);
                 } catch (InvalidExampleException $e) {
                     $this->logger->warning($e->getMessage());
                     continue;

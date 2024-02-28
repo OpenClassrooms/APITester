@@ -186,6 +186,7 @@ final class Suite extends TestSuite
         /** @var Collection<int, TestCase> $allTests */
         $allTests = collect();
         foreach ($this->preparators as $preparator) {
+            $preparator->setLogger($this->logger);
             $operations = $this->api->getOperations()
                 ->map(
                     static fn (Operation $op) => $op->setPreparator($preparator::getName())

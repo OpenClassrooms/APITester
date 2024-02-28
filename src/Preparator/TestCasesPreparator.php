@@ -15,6 +15,8 @@ use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Test\TestCase;
 use APITester\Util\Json;
 use APITester\Util\Object_;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Yaml\Tag\TaggedValue;
 use Vural\OpenAPIFaker\Options;
@@ -26,10 +28,13 @@ abstract class TestCasesPreparator
 
     protected PreparatorConfig $config;
 
+    protected LoggerInterface $logger;
+
     public function __construct()
     {
         $this->tokens = new Tokens();
         $this->config = $this->newConfigInstance(static::getConfigFQCN());
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -116,6 +121,11 @@ abstract class TestCasesPreparator
     final public function getConfig(): PreparatorConfig
     {
         return $this->config;
+    }
+
+    final public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
