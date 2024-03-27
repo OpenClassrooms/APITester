@@ -58,7 +58,7 @@ final class ExamplesPreparator extends TestCasesPreparator
     private function prepareTestCases(Operation $operation): iterable
     {
         $examples = $operation->getExamples();
-        if ($this->config->autoCreateWhenMissing && $examples->count() > 0) {
+        if ($this->config->autoCreateWhenMissing && $examples->count() === 0) {
             $examples = new OperationExamples([
                 $operation->getRandomExample(),
             ]);
