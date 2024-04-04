@@ -71,7 +71,8 @@ final class ExamplesPreparator extends TestCasesPreparator
                         $example->setStatusCode($this->config->response->statusCode);
                     }
                     $example->setAutoComplete($this->config->autoComplete);
-                    $this->buildTestCase($example);
+
+                    return $this->buildTestCase($example);
                 }
             )
         ;
