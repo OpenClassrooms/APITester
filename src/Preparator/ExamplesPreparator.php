@@ -66,11 +66,13 @@ final class ExamplesPreparator extends TestCasesPreparator
 
         return $examples
             ->map(
-                fn (OperationExample $example) => $this->buildTestCase(
-                    $example
-                        ->setStatusCode($this->config->response->statusCode)
-                        ->setAutoComplete($this->config->autoComplete)
-                )
+                function (OperationExample $example) {
+                    if ($this->config->response->statusCode !== null) {
+                        $example->setStatusCode($this->config->response->statusCode);
+                    }
+                    $example->setAutoComplete($this->config->autoComplete);
+                    $this->buildTestCase($example);
+                }
             )
         ;
     }
