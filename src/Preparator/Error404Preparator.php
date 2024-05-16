@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Operations;
-use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Test\TestCase;
 
 final class Error404Preparator extends TestCasesPreparator
 {
+    public const INT32_MAX = 2147483647;
+
     /**
      * @inheritDoc
      */
@@ -40,13 +41,20 @@ final class Error404Preparator extends TestCasesPreparator
 
         $testcases = [];
 
+        $pathParameters = $operation->getPathParameters()
+            ->map(static fn ($parameter) => $parameter->getName())
+            ->toArray()
+        ;
+        $pathParameters = array_fill_keys($pathParameters, self::INT32_MAX);
+
         if ($operation->getRequestBodies()->count() === 0) {
             $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
+                $operation->getExample()
+                    ->withName('RandomPath')
+                    ->setPathParameters($pathParameters)
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
+                            ->setStatusCode('404')
                             ->setHeaders($this->config->response->headers ?? [])
                             ->setContent($this->config->response->body ?? $response->getDescription())
                     )
@@ -55,11 +63,12 @@ final class Error404Preparator extends TestCasesPreparator
 
         foreach ($operation->getRequestBodies() as $ignored) {
             $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
+                $operation->getExample()
+                    ->withName('RandomPath')
+                    ->setPathParameters($pathParameters)
                     ->setResponse(
                         ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
+                            ->setStatusCode('404')
                             ->setHeaders($this->config->response->headers ?? [])
                             ->setContent($this->config->response->body ?? $response->getDescription())
                     )

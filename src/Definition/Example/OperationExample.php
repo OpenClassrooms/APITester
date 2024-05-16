@@ -165,6 +165,14 @@ final class OperationExample
         return $this;
     }
 
+    public function withName(string $name): self
+    {
+        $clone = $this->deepCopy->copy($this);
+        $clone->name = $name;
+
+        return $this;
+    }
+
     /**
      * @return array<string, int|string>
      */
