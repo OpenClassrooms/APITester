@@ -324,7 +324,10 @@ final class OperationExample
         if ($this->autoComplete) {
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
-                $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
+                $content = $this->body->getContent();
+                if (!isset($content[0])) {
+                    $this->body->setContent(array_merge($randomBody->getContent(), $content));
+                }
             } else {
                 $this->body = $randomBody;
             }
