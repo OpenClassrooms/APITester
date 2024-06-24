@@ -235,8 +235,8 @@ final class OperationExample
                 ->count()
             ;
             if ($this->forceRandom || ($this->autoComplete && \count(
-                        $this->queryParameters
-                    ) < $definitionParamsCount)) {
+                $this->queryParameters
+            ) < $definitionParamsCount)) {
                 $randomQueryParams = $this->parent
                     ->getQueryParameters()
                     ->getRandomExamples()
@@ -274,8 +274,8 @@ final class OperationExample
 
         if ($this->parent !== null) {
             $definitionHeadersCount = $this->parent
-                    ->getHeaders()
-                    ->count() + 1 // content-type
+                ->getHeaders()
+                ->count() + 1 // content-type
             ;
 
             if ($this->parent->getSecurities()->count() > 0) {
