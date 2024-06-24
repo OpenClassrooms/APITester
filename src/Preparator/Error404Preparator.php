@@ -43,8 +43,8 @@ final class Error404Preparator extends TestCasesPreparator
 
         $pathParameters = $operation->getPathParameters()
             ->map(static fn ($parameter) => $parameter->getName())
-            ->toArray()
-        ;
+            ->toArray();
+
         $pathParameters = array_fill_keys($pathParameters, self::INT32_MAX);
 
         if ($operation->getRequestBodies()->count() === 0) {

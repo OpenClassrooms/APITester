@@ -171,7 +171,7 @@ final class OperationExample
         $clone = $this->deepCopy->copy($this);
         $clone->name = $name;
 
-        return $this;
+        return $clone;
     }
 
     /**
