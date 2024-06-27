@@ -40,23 +40,13 @@ final class Error404Preparator extends TestCasesPreparator
 
         $testcases = [];
 
-        if ($operation->getRequestBodies()->count() === 0) {
-            $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
-                    ->setResponse(
-                        ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
-                            ->setHeaders($this->config->response->headers ?? [])
-                            ->setContent($this->config->response->body ?? $response->getDescription())
-                    )
+        foreach (range(1, $operation->getRequestBodies()->count() ?: 1) as $ignored) {
+            $notFoundExample = $operation->getExample(
+                '404',
+                OperationExample::create('RandomPath', $operation)->setForceRandom()
             );
-        }
-
-        foreach ($operation->getRequestBodies() as $ignored) {
             $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
+                $notFoundExample
                     ->setResponse(
                         ResponseExample::create()
                             ->setStatusCode($this->config->response->getStatusCode() ?? '404')
