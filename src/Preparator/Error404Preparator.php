@@ -40,7 +40,12 @@ final class Error404Preparator extends TestCasesPreparator
 
         $testcases = [];
 
-        foreach (range(1, $operation->getRequestBodies()->count() ?: 1) as $ignored) {
+        foreach (
+            range(
+                1,
+                $operation->getRequestBodies()->count() ?: 1
+            ) as $ignored
+        ) {
             $notFoundExample = $operation->getExample(
                 '404',
                 OperationExample::create('RandomPath', $operation)->setForceRandom()
