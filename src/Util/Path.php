@@ -14,4 +14,18 @@ final class Path
 
         return \dirname((string) $reflection->getFileName(), 3);
     }
+
+    public static function getFullPath(string $path): string
+    {
+        $dir = \dirname(__DIR__);
+
+        while (!in_array('vendor', \scandir($dir), true)) {
+            if ($dir === \dirname($dir)) {
+                return $dir . '/' . trim($path, '/');
+            }
+            $dir = \dirname($dir);
+        }
+
+        return $dir . '/' . trim($path, '/');
+    }
 }
