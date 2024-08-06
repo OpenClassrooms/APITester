@@ -83,8 +83,13 @@ final class OperationExample
         return $clone;
     }
 
-    public function setParameter(string $name, mixed $value, string $in, ?string $type = null, bool $deepObject = false): self
-    {
+    public function setParameter(
+        string $name,
+        mixed $value,
+        string $in,
+        ?string $type = null,
+        bool $deepObject = false
+    ): self {
         $paramProp = $this->getParametersProp($in);
 
         if ($deepObject && \is_array($value)) {

@@ -350,7 +350,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     }
                 }
                 $notFoundRequirements = array_diff(
-                    $requirements[$name],
+                    $requirements[$name] ?? [],
                     array_unique(array_merge(...$supportedScopes))
                 );
                 if ($notFoundRequirements !== []) {
@@ -418,7 +418,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
 
             if ($parameter->schema instanceof Schema && $parameter->schema->type === 'object') {
-
                 $deepObject = $parameter->style === 'deepObject';
                 $operationExample = $this->getExample('default', $examples, $successStatusCode);
 
