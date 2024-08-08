@@ -19,7 +19,7 @@ final class Path
     {
         $dir = \dirname(__DIR__);
 
-        while (!in_array('vendor', \scandir($dir), true)) {
+        while (!in_array('vendor', (array) \scandir($dir), true)) {
             if ($dir === \dirname($dir)) {
                 return $dir . '/' . trim($path, '/');
             }
