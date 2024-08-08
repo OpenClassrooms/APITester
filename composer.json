@@ -124,9 +124,7 @@
     "check-static": [
       "@phpstan"
     ],
-    "test": [
-      "@unit"
-    ],
+    "test": "vendor/bin/phpunit --testdox -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml",
     "rector": [
       "vendor/bin/rector process src --ansi --config config/rector.php"
     ],

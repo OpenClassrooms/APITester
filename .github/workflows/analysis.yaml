@@ -24,7 +24,7 @@ jobs:
                         run: composer check-cs
 
                     -   name: PHPUnit
-                        run: composer unit
+                        run: composer test
         steps:
             -   uses: actions/checkout@v2
 
