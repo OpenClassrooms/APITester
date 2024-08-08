@@ -401,33 +401,18 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $parameter->schema instanceof Schema ? $parameter->schema->type : null,
                 );
             }
-            if ($parameter->schema instanceof Schema && $parameter->schema->example !== null) {
-                $operationExample = $this->getExample('default', $examples, $successStatusCode);
-                try {
-                    $example = $this->extractDeepExamples($parameter->schema, path: 'parameter.' . $parameter->name);
-                } catch (InvalidExampleException $e) {
-                    $this->logger->warning($e->getMessage());
-                    continue;
-                }
-                $operationExample->setParameter(
-                    $parameter->name,
-                    $example,
-                    $parameter->in,
-                    $parameter->schema->type,
-                );
-            }
-
-            if ($parameter->schema instanceof Schema && $parameter->schema->type === 'object') {
+            if ($parameter->schema instanceof Schema &&
+                ($parameter->schema->example !== null || $parameter->schema->type === 'object')
+            ) {
                 $deepObject = $parameter->style === 'deepObject';
-                $operationExample = $this->getExample('default', $examples, $successStatusCode);
 
+                $operationExample = $this->getExample('default', $examples, $successStatusCode);
                 try {
                     $example = $this->extractDeepExamples($parameter->schema, path: 'parameter.' . $parameter->name);
                 } catch (InvalidExampleException $e) {
                     $this->logger->warning($e->getMessage());
                     continue;
                 }
-
                 $operationExample->setParameter(
                     $parameter->name,
                     $example,
