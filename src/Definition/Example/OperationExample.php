@@ -83,8 +83,22 @@ final class OperationExample
         return $clone;
     }
 
-    public function setParameter(string $name, mixed $value, string $in, ?string $type = null): self
-    {
+    public function setParameter(
+        string $name,
+        mixed $value,
+        string $in,
+        ?string $type = null,
+        bool $deepObject = false
+    ): self {
+        $paramProp = $this->getParametersProp($in);
+
+        if ($deepObject && \is_array($value)) {
+            foreach ($value as $attribute => $attributeValue) {
+                $this->{$paramProp}[$name][$attribute] = (string) $attributeValue;
+            }
+            return $this;
+        }
+
         if (\is_array($value)) {
             $value = implode(',', $value);
         }
@@ -94,7 +108,6 @@ final class OperationExample
         if ($type === 'boolean') {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
         }
-        $paramProp = $this->getParametersProp($in);
         $this->{$paramProp}[$name] = (string) $value;
 
         return $this;

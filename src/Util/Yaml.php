@@ -17,6 +17,10 @@ final class Yaml
             return [];
         }
 
+        if (!is_file($path)) {
+            $path = Path::getFullPath($path);
+        }
+
         /** @var array<array-key, mixed> */
         return \Symfony\Component\Yaml\Yaml::parseFile($path);
     }

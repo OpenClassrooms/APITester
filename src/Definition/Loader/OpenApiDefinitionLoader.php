@@ -350,7 +350,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     }
                 }
                 $notFoundRequirements = array_diff(
-                    $requirements[$name],
+                    $requirements[$name] ?? [],
                     array_unique(array_merge(...$supportedScopes))
                 );
                 if ($notFoundRequirements !== []) {
@@ -401,7 +401,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $parameter->schema instanceof Schema ? $parameter->schema->type : null,
                 );
             }
-            if ($parameter->schema instanceof Schema && $parameter->schema->example !== null) {
+            if ($parameter->schema instanceof Schema &&
+                ($parameter->schema->example !== null || $parameter->schema->type === 'object')
+            ) {
+                $deepObject = $parameter->style === 'deepObject';
+
                 $operationExample = $this->getExample('default', $examples, $successStatusCode);
                 try {
                     $example = $this->extractDeepExamples($parameter->schema, path: 'parameter.' . $parameter->name);
@@ -414,8 +418,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     $example,
                     $parameter->in,
                     $parameter->schema->type,
+                    $deepObject
                 );
             }
+
             if ($operationExample === null || !$operationExample->hasParameter($parameter->name, $parameter->in)) {
                 if ($parameter->schema instanceof Schema && isset($parameter->schema->default)) {
                     $operationExample = $this->getExample('default', $examples);

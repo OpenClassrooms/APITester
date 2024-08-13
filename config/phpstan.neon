@@ -13,9 +13,6 @@ parameters:
     paths:
         - ../src
         - ../tests
-    excludePaths:
-        - ../src/Util/Collection.php
-        - ../src/Util/functions.php
     ignoreErrors:
         - '/Constructor in .+ has parameter .+ with default value./'
         - '/Method .+ has parameter .+ with null as default value./'

@@ -22,7 +22,7 @@ final class ResponseConfig
         return $this->statusCode;
     }
 
-    public function setStatusCode(string|TaggedValue|null $statusCode): void
+    public function setStatusCode(string|TaggedValue|int|null $statusCode): void
     {
         if ($statusCode instanceof TaggedValue) {
             if ($statusCode->getTag() === 'NOT') {
