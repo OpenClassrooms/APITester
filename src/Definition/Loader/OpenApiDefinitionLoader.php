@@ -110,6 +110,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                     && !in_array($operation->operationId, $filters['operationId'], true)) {
                     continue;
                 }
+                if (isset($filters['tags'])
+                    && empty(array_intersect($operation->tags, $filters['tags']))) {
+                    continue;
+                }
                 /** @var \cebe\openapi\spec\Parameter[] $parameters */
                 $parameters = array_merge($operation->parameters ?? [], $pathInfo->parameters ?? []);
                 /** @var RequestBody $requestBody */

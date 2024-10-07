@@ -179,6 +179,12 @@ final class ExecutePlanCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'takes an operation-id to load from api definition'
             )
+            ->addOption(
+                'filter-tags',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Filters which tests to run based on their openapi tags'
+            )
         ;
     }
 

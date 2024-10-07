@@ -46,6 +46,7 @@ final class Plan
         'only-baseline',
         'part',
         'operation-id',
+        'filter-tags',
     ];
 
     private readonly Authenticator $authenticator;
@@ -311,6 +312,12 @@ final class Plan
             $filters['operationId'] = array_map(
                 'trim',
                 explode(',', (string) $options['operation-id'])
+            );
+        }
+        if (isset($options['filter-tags'])) {
+            $filters['tags'] = array_map(
+                'trim',
+                explode(',', (string) $options['filter-tags'])
             );
         }
 
