@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase as UnitTestCase;
 
 final class TestCaseTest extends UnitTestCase
 {
-    private ?TestCase $testCase;
+    private TestCase $testCase;
 
     public function testGivenValidResponseRegardingSchemaAndShouldValidateSchemaResponseOptionIsDisabledWhenAssertThenNoErrorIsThrown(
     ): void {
@@ -134,6 +134,6 @@ final class TestCaseTest extends UnitTestCase
 
     private function whenAssert(): void
     {
-        $this->testCase?->assert();
+        $this->testCase->assert();
     }
 }

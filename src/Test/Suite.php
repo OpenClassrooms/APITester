@@ -11,14 +11,12 @@ use APITester\Definition\Operation;
 use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Requester;
-use APITester\Util\Filterable;
 use APITester\Util\Traits\TimeBoundTrait;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Symfony\Component\Yaml\Tag\TaggedValue;
 
 /**
  * @internal
@@ -85,43 +83,6 @@ final class Suite extends TestSuite
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
-    }
-
-    /**
-     * @param array<array<string, string>> $includeFilters
-     * @param array<array<string, string>> $excludeFilters
-     */
-    public function includes(Filterable $object, array $includeFilters = [], array $excludeFilters = []): bool
-    {
-        $include = true;
-        foreach ($includeFilters as $item) {
-            $include = true;
-            foreach ($item as $key => $value) {
-                [$operator, $value] = $this->handleTags($value);
-                if (!$object->has($key, $value, $operator)) {
-                    $include = false;
-                    continue 2;
-                }
-            }
-            break;
-        }
-
-        if (!$include) {
-            return false;
-        }
-
-        foreach ($excludeFilters as $item) {
-            foreach ($item as $key => $value) {
-                [$operator, $value] = $this->handleTags($value);
-                if (!$object->has($key, $value, $operator)) {
-                    continue 2;
-                }
-            }
-            $include = false;
-            break;
-        }
-
-        return $include;
     }
 
     /**
@@ -233,13 +194,7 @@ final class Suite extends TestSuite
 
     private function filterOperation(Operations $operations): Operations
     {
-        return $operations->filter(
-            fn (Operation $operation) => $this->includes(
-                $operation,
-                $this->filters->getInclude(),
-                $this->filters->getExclude(),
-            )
-        );
+        return $operations->filter(fn (Operation $operation) => $this->filters->includes($operation));
     }
 
     /**
@@ -300,22 +255,5 @@ final class Suite extends TestSuite
         }
 
         return false;
-    }
-
-    /**
-     * @return array{0: string, 1: string|int}
-     */
-    private function handleTags(string|int|\Symfony\Component\Yaml\Tag\TaggedValue $value): array
-    {
-        $operator = '=';
-
-        if ($value instanceof TaggedValue) {
-            if ($value->getTag() === 'NOT') {
-                $operator = '!=';
-            }
-            $value = (string) $value->getValue();
-        }
-
-        return [$operator, $value];
     }
 }
