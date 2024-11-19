@@ -16,6 +16,8 @@ final class Auth
      */
     private array $body = [];
 
+    private ?Filters $filters = null;
+
     public function __construct(
         private readonly string $name
     ) {
@@ -56,5 +58,15 @@ final class Auth
     public function setBody(array $body): void
     {
         $this->body = $body;
+    }
+
+    public function getFilters(): ?Filters
+    {
+        return $this->filters;
+    }
+
+    public function setFilters(Filters $filters): void
+    {
+        $this->filters = $filters;
     }
 }

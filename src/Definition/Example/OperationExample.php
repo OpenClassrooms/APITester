@@ -96,6 +96,7 @@ final class OperationExample
             foreach ($value as $attribute => $attributeValue) {
                 $this->{$paramProp}[$name][$attribute] = (string) $attributeValue;
             }
+
             return $this;
         }
 
@@ -388,11 +389,12 @@ final class OperationExample
                 $token = $tokens->first();
             } else {
                 /** @var Token|null $token */
-                $token = $tokens->where(
-                    'scopes',
-                    'includes',
-                    $scopes
-                )->first();
+                $token = $tokens->filter(
+                    static fn (Token $token) => $token->getFilters()?->includes($operation) ?? false
+                )
+                    ->first() ?? $tokens->where('scopes', 'includes', $scopes)
+                    ->first()
+                ;
             }
 
             if ($token !== null) {

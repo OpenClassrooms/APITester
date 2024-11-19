@@ -72,7 +72,7 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private ?string $operation;
 
-    private ?string $preparator;
+    private string $preparator;
 
     private Validator $validator;
 
@@ -238,7 +238,7 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->operation = $operation;
     }
 
-    public function getPreparator(): ?string
+    public function getPreparator(): string
     {
         return $this->preparator;
     }

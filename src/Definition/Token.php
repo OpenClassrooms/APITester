@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Definition;
 
+use APITester\Config\Filters;
+
 final class Token
 {
     private readonly string $type;
@@ -19,11 +21,17 @@ final class Token
         private readonly string $accessToken,
         private readonly array $scopes = [],
         private readonly ?string $refreshToken = null,
+        private readonly ?Filters $filters = null,
         ?string $type = null,
         ?int $expiresIn = null
     ) {
         $this->type = $type ?? 'Bearer';
         $this->expiresIn = $expiresIn ?? 3600;
+    }
+
+    public function getFilters(): ?Filters
+    {
+        return $this->filters;
     }
 
     public function getAccessToken(): string

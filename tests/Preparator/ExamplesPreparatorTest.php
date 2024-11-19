@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
+use APITester\Config\Filters;
 use APITester\Definition\Api;
 use APITester\Definition\Body;
+use APITester\Definition\Collection\Scopes;
 use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
+use APITester\Definition\Security\HttpSecurity;
+use APITester\Definition\Token;
 use APITester\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Preparator\ExamplesPreparator;
 use APITester\Test\TestCase;
@@ -43,6 +47,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     {
         $preparator = new ExamplesPreparator();
 
+        $this->addTokens($preparator);
         $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
@@ -376,5 +381,104 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             ],
         ];
+
+        yield 'with filtered tokens' => [
+            Api::create()->addOperation(
+                Operation::create('filtered_token_test', '/tokens')
+                    ->addSecurity(
+                        HttpSecurity::create(
+                            'bearer_test',
+                            'bearer',
+                            scopes: Scopes::fromNames(['scope5'])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addExample(
+                        OperationExample::create('200.default')
+                            ->setResponse(new ResponseExample())
+                    )
+            ),
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - filtered_token_test - 200.default',
+                    OperationExample::create('filtered_token_test')
+                        ->setPath('/tokens')
+                        ->setHeaders([
+                            'Authorization' => ['Bearer 3333'],
+                        ])
+                        ->setResponse(ResponseExample::create('200')),
+                ),
+            ],
+        ];
+
+        yield 'without filtered tokens but multiple options' => [
+            Api::create()->addOperation(
+                Operation::create('unfiltered_token_test', '/tokens')
+                    ->addSecurity(
+                        HttpSecurity::create(
+                            'bearer_test',
+                            'bearer',
+                            scopes: Scopes::fromNames(['scope5'])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addExample(
+                        OperationExample::create('200.default')
+                            ->setResponse(new ResponseExample())
+                    )
+            ),
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - unfiltered_token_test - 200.default',
+                    OperationExample::create('unfiltered_token_test')
+                        ->setPath('/tokens')
+                        ->setHeaders([
+                            'Authorization' => ['Bearer 1111'],
+                        ])
+                        ->setResponse(ResponseExample::create('200')),
+                ),
+            ],
+        ];
+    }
+
+    private function addTokens(ExamplesPreparator $preparator): void
+    {
+        $preparator->addToken(
+            new Token(
+                'token1',
+                'oauth2_implicit',
+                '1111',
+                [
+                    'scope1',
+                    'scope2',
+                    'scope5',
+                ],
+            )
+        )
+            ->addToken(
+                new Token(
+                    'token2',
+                    'oauth2_implicit',
+                    '2222',
+                    [
+                        'scope3',
+                        'scope4',
+                    ],
+                )
+            )
+            ->addToken(
+                new Token(
+                    'token3',
+                    'oauth2_implicit',
+                    '3333',
+                    [
+                        'scope5',
+                    ],
+                    filters: new Filters(include: [[
+                        'id' => 'filtered_token_test',
+                    ]])
+                )
+            )
+        ;
     }
 }

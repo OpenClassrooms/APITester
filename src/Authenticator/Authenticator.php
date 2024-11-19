@@ -47,6 +47,7 @@ final class Authenticator
             $body['access_token'],
             explode(' ', $config->getBody()['scope'] ?? ''),
             $body['refresh_token'] ?? null,
+            $config->getFilters(),
             $body['token_type'] ?? null,
             $body['expires_in'] ?? null,
         );

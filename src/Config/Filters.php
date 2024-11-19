@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Config;
 
+use APITester\Util\Filterable;
+use Symfony\Component\Yaml\Tag\TaggedValue;
 use Symfony\Component\Yaml\Yaml;
 
 final class Filters
@@ -108,6 +110,39 @@ final class Filters
         );
     }
 
+    public function includes(Filterable $object): bool
+    {
+        $include = true;
+        foreach ($this->getInclude() as $item) {
+            $include = true;
+            foreach ($item as $key => $value) {
+                [$operator, $value] = $this->handleTags($value);
+                if (!$object->has($key, $value, $operator)) {
+                    $include = false;
+                    continue 2;
+                }
+            }
+            break;
+        }
+
+        if (!$include) {
+            return false;
+        }
+
+        foreach ($this->getExclude() as $item) {
+            foreach ($item as $key => $value) {
+                [$operator, $value] = $this->handleTags($value);
+                if (!$object->has($key, $value, $operator)) {
+                    continue 2;
+                }
+            }
+            $include = false;
+            break;
+        }
+
+        return $include;
+    }
+
     /**
      * @return array{'exclude': ?array<int, array<string, string>>}
      */
@@ -115,5 +150,22 @@ final class Filters
     {
         /** @var array{'exclude': ?array<int, array<string, string>>} */
         return Yaml::parseFile($this->getBaseline());
+    }
+
+    /**
+     * @return array{0: string, 1: string|int}
+     */
+    private function handleTags(string|int|TaggedValue $value): array
+    {
+        $operator = '=';
+
+        if ($value instanceof TaggedValue) {
+            if ($value->getTag() === 'NOT') {
+                $operator = '!=';
+            }
+            $value = (string) $value->getValue();
+        }
+
+        return [$operator, $value];
     }
 }
