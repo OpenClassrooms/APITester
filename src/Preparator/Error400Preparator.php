@@ -12,8 +12,12 @@ use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
+use APITester\Preparator\Config\Error400PreparatorConfig;
 use APITester\Test\TestCase;
 
+/**
+ * @property Error400PreparatorConfig $config
+ */
 abstract class Error400Preparator extends TestCasesPreparator
 {
     /**
@@ -23,7 +27,7 @@ abstract class Error400Preparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations
-            ->map(fn (Operation $op) => $this->prepareTestCases($op))
+            ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
             ->flatten()
         ;
     }
@@ -118,6 +122,10 @@ abstract class Error400Preparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): array
     {
+        if ($this->config->excludeOpenApiEndpoints
+            && isset($operation->getExtensions()['x-usecase'])) {
+            return [];
+        }
         $requiredParams = $operation->getParameters(true);
 
         return array_merge(
