@@ -205,7 +205,11 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
             [
             ],
             [
-                'excludeOpenApiEndpoints' => true,
+                'filters' => [
+                    'exclude' => [[
+                        'extensions' => 'x-usecase',
+                    ]],
+                ],
             ],
         ];
     }

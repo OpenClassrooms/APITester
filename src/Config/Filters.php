@@ -143,6 +143,20 @@ final class Filters
         return $include;
     }
 
+    public function excludes(Filterable $object): bool
+    {
+        foreach ($this->getExclude() as $item) {
+            foreach ($item as $key => $value) {
+                [$operator, $value] = $this->handleTags($value);
+                if ($object->has($key, $value, $operator)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return array{'exclude': ?array<int, array<string, string>>}
      */
