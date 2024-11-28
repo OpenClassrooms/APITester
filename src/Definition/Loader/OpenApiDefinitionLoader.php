@@ -133,7 +133,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                         ->setTags($this->getTags($operation->tags))
                         ->setSecurities($this->getSecurities($securitySchemes, $requirements))
                         ->setExamples($this->getExamples($operation, $parameters))
-                        ->setExtensions($operation->getExtensions())
                 );
             }
         }

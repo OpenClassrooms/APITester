@@ -43,11 +43,6 @@ final class Operation implements Filterable
 
     private OperationExamples $examples;
 
-    /**
-     * @var array<string, mixed>
-     */
-    private array $extensions;
-
     public function __construct(
         private readonly string $id,
         private readonly string $path,
@@ -205,14 +200,6 @@ final class Operation implements Filterable
         return $this;
     }
 
-    /**
-     * @return array<string, mixed> $extensions
-     */
-    public function getExtensions(): array
-    {
-        return $this->extensions;
-    }
-
     public function getResponse(int $status): ?Response
     {
         return $this->responses->get($status);
@@ -286,16 +273,6 @@ final class Operation implements Filterable
             $example->setParent($this);
         }
         $this->examples = $examples;
-
-        return $this;
-    }
-
-    /**
-     * @param array<string, mixed> $extensions
-     */
-    public function setExtensions(array $extensions): self
-    {
-        $this->extensions = $extensions;
 
         return $this;
     }

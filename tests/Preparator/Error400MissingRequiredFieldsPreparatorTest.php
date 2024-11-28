@@ -21,13 +21,11 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
     /**
      * @dataProvider getData
      *
-     * @param array<string, array<mixed>> $config
      * @param TestCase[] $expected
      */
-    public function test(Api $api, array $expected, array $config = []): void
+    public function test(Api $api, array $expected): void
     {
         $preparator = new Error400MissingRequiredFieldsPreparator();
-        $preparator->configure($config);
         Assert::objectsEqual(
             $expected,
             $preparator->doPrepare($api->getOperations()),
@@ -163,49 +161,6 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
                         ->setHeader('content-type', 'application/json')
                         ->setResponse(ResponseExample::create('400'))
                 ),
-            ],
-        ];
-
-        yield 'openapi endpoint is ignored' => [
-            Api::create()
-                ->addOperation(
-                    Operation::create(
-                        'test',
-                        '/test',
-                        'POST'
-                    )
-                        ->addRequestBody(
-                            (new Body(
-                                new Schema([
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'foo' => [
-                                            'type' => 'string',
-                                        ],
-                                        'bar' => [
-                                            'type' => 'string',
-                                        ],
-                                    ],
-                                    'required' => ['foo'],
-                                ]),
-                                'application/json'
-                            ))
-                        )
-                        ->addExample(
-                            OperationExample::create('foo')
-                                ->setBodyContent([
-                                    'foo' => 'foo_body1',
-                                    'bar' => 'bar_body1',
-                                ])
-                                ->setQueryParameter('foo_query', 'foo1')
-                        )->setExtensions([
-                            'x-usecase' => 'UseCaseName',
-                        ])
-                ),
-            [
-            ],
-            [
-                'excludeOpenApiEndpoints' => true,
             ],
         ];
     }
