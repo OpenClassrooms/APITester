@@ -118,10 +118,6 @@ abstract class Error400Preparator extends TestCasesPreparator
      */
     private function prepareTestCases(Operation $operation): array
     {
-        if ($this->config->filters->excludes($operation)) {
-            return [];
-        }
-
         $requiredParams = $operation->getParameters(true);
 
         return array_merge(
