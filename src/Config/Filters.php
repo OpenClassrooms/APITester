@@ -160,9 +160,11 @@ final class Filters
         $operator = '=';
 
         if ($value instanceof TaggedValue) {
-            if ($value->getTag() === 'NOT') {
-                $operator = '!=';
-            }
+            match ($value->getTag()) {
+                'NOT' => $operator = '!=',
+                'IN' => $operator = 'contains',
+                default => $operator,
+            };
             $value = (string) $value->getValue();
         }
 
