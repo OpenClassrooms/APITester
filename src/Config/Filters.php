@@ -153,7 +153,7 @@ final class Filters
     }
 
     /**
-     * @return array{0: string, 1: string|int}
+     * @return array{0: string, 1: string|int|null}
      */
     private function handleTags(string|int|TaggedValue $value): array
     {
@@ -166,6 +166,10 @@ final class Filters
                 default => $operator,
             };
             $value = (string) $value->getValue();
+        }
+
+        if ($value === 'null') {
+            $value = null;
         }
 
         return [$operator, $value];
