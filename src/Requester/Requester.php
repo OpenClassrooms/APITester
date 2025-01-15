@@ -26,8 +26,6 @@ abstract class Requester
 
     abstract public function getResponse(string $id): ResponseInterface;
 
-    abstract public function setBaseUri(string $baseUri): void;
-
     protected function fillRequestVars(RequestInterface $request): void
     {
         foreach ($request->getHeaders() as $name => $header) {
