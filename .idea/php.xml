@@ -214,6 +214,28 @@
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/polyfill-intl-grapheme" />
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/polyfill-intl-normalizer" />
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/composer" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/seld/jsonlint" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/seld/phar-utils" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/justinrainbow/json-schema" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/seld/signal-handler" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/string" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-php81" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-php73" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/filesystem" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-intl-normalizer" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-intl-grapheme" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/deprecation-contracts" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1">
