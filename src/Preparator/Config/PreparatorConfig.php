@@ -15,6 +15,8 @@ class PreparatorConfig
 
     public ResponseConfig $response;
 
+    public array $headers = [];
+
     public function __construct()
     {
         $this->response = new ResponseConfig();
