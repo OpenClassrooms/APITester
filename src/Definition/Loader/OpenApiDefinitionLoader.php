@@ -593,6 +593,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
         if (isset($schema->type)) {
             if ($schema->type === 'array' && $schema->items instanceof Schema) {
+                if ($schema->example !== null) {
+                    return $schema->example;
+                }
+
                 return [
                     $this->extractDeepExamples($schema->items, false, $path),
                 ];

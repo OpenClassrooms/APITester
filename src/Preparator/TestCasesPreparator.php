@@ -51,6 +51,8 @@ abstract class TestCasesPreparator
             $example->setAuthenticationHeaders($this->tokens);
         }
 
+        $example->setHeaders($this->config->headers);
+
         return new TestCase(
             static::getName()
             . ' - '
