@@ -91,7 +91,7 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->id = Random::id('testcase_');
         $this->excludedFields = array_unique([...$this->excludedFields, ...$excludedFields]);
         $nameParts = explode(' - ', $name);
-        $this->preparator = $nameParts[0] ?? null;
+        $this->preparator = $nameParts[0] ?? '';
         $this->operation = $nameParts[1] ?? null;
         $this->request = $operationExample->getPsrRequest();
         $this->schemaValidation = $schemaValidation;

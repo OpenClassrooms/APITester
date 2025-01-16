@@ -22,7 +22,7 @@ final class HttpDumpRequester extends Requester
 
         echo "\n" . $httpDump . "\n";
 
-        $response = new Response(200, [], 'Simulated response for ' . $id);
+        $response = new Response($request->getMethod() === 'POST' ? 201 : 200);
         $this->responses[$id] = $response;
     }
 

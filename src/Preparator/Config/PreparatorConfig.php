@@ -15,6 +15,9 @@ class PreparatorConfig
 
     public ResponseConfig $response;
 
+    /**
+     * @var array<string, string>
+     */
     public array $headers = [];
 
     public function __construct()
