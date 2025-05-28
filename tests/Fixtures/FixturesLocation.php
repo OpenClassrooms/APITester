@@ -17,4 +17,6 @@ final class FixturesLocation
     public const CONFIG_OPENAPI = __DIR__ . '/Config/api-tester.yaml';
 
     public const CONFIG_EXAMPLES_EXTENSION = __DIR__ . '/Examples/petstore/examples.new.yml';
+
+    public const OPEN_API_WITH_EXAMPLES = __DIR__ . '/OpenAPI/openapi-with-examples.yaml';
 }

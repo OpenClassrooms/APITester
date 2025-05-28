@@ -20,6 +20,7 @@ use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
 use APITester\Definition\Loader\Exception\InvalidExampleException;
+use APITester\Definition\OpenApiSpecification;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
 use APITester\Definition\Response;
@@ -57,13 +58,13 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     public function load(string $filePath, string $format = self::FORMAT_YAML, array $filters = []): Api
     {
-        $api = Api::create();
         if (!\in_array($format, self::FORMATS, true)) {
             throw new \InvalidArgumentException('Invalid format ' . $format);
         }
         try {
             /** @var OpenApi $openApi */
             $openApi = Reader::readFromYamlFile($filePath);
+            $api = Api::create();
         } catch (\Exception $e) {
             throw new DefinitionLoadingException("Could not load {$filePath}", $e);
         }
@@ -81,6 +82,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             )
             ->setServers($this->getServers($openApi->servers))
             ->setTags($this->getTags($openApi->tags))
+            ->setSpecification(new OpenApiSpecification($openApi))
         ;
     }
 
