@@ -100,7 +100,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/sidux/collections"
+      "url": "https://github.com/OpenClassrooms/collections"
     }
   ],
   "scripts": {
