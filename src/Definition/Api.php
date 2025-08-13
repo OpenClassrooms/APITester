@@ -23,11 +23,25 @@ final class Api
 
     private Tags $tags;
 
+    private ?ApiSpecification $specification = null;
+
     public function __construct()
     {
         $this->operations = new Operations();
         $this->servers = new Servers();
         $this->tags = new Tags();
+    }
+
+    public function getSpecification(): ?ApiSpecification
+    {
+        return $this->specification;
+    }
+
+    public function setSpecification(ApiSpecification $specification): self
+    {
+        $this->specification = $specification;
+
+        return $this;
     }
 
     public static function create(): self

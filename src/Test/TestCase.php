@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace APITester\Test;
 
+use APITester\Definition\ApiSpecification;
 use APITester\Definition\Body;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
+use APITester\Definition\OpenApiSpecification;
 use APITester\Requester\Requester;
 use APITester\Requester\SymfonyKernelRequester;
 use APITester\Test\Exception\InvalidResponseSchemaException;
@@ -20,6 +22,10 @@ use APITester\Util\Traits\TimeBoundTrait;
 use Carbon\Carbon;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Stream;
+use OpenClassrooms\OpenAPIValidation\PSR7\Exception\ValidationFailed;
+use OpenClassrooms\OpenAPIValidation\PSR7\OperationAddress;
+use OpenClassrooms\OpenAPIValidation\PSR7\ResponseValidator;
+use OpenClassrooms\OpenAPIValidation\Schema\Exception\SchemaMismatch;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -74,9 +80,7 @@ final class TestCase implements \JsonSerializable, Filterable
 
     private string $preparator;
 
-    private Validator $validator;
-
-    private ErrorFormatter $errorFormatter;
+    private ?ApiSpecification $specification = null;
 
     /**
      * @param array<int, string> $excludedFields
@@ -95,8 +99,6 @@ final class TestCase implements \JsonSerializable, Filterable
         $this->operation = $nameParts[1] ?? null;
         $this->request = $operationExample->getPsrRequest();
         $this->schemaValidation = $schemaValidation;
-        $this->validator = new Validator();
-        $this->errorFormatter = new ErrorFormatter();
     }
 
     /**
@@ -111,6 +113,11 @@ final class TestCase implements \JsonSerializable, Filterable
     public function setSchemaValidation(bool $schemaValidation): void
     {
         $this->schemaValidation = $schemaValidation;
+    }
+
+    public function setSpecification(?ApiSpecification $specification = null): void
+    {
+        $this->specification = $specification;
     }
 
     /**
@@ -271,6 +278,52 @@ final class TestCase implements \JsonSerializable, Filterable
     }
 
     /**
+     * @throws InvalidResponseSchemaException
+     */
+    public function validateOpenApiSchema(): void
+    {
+        if (!$this->specification instanceof OpenApiSpecification) {
+            throw new InvalidResponseSchemaException(
+                'Unexpected error during schema validation: OpenApi document missing',
+                0,
+            );
+        }
+
+        $operationAddress = new OperationAddress(
+            $this->operationExample->getPath(),
+            mb_strtolower($this->operationExample->getMethod())
+        );
+
+        try {
+            $validator = new ResponseValidator($this->specification->getDocument());
+            $validator->validate($operationAddress, $this->response);
+        } catch (ValidationFailed $e) {
+            $exception = $e->getPrevious();
+
+            if ($exception instanceof SchemaMismatch) {
+                $breadcrumb = implode(
+                    '.',
+                    $exception->dataBreadCrumb() !== null ? $exception->dataBreadCrumb()
+                        ->buildChain() : []
+                );
+                $message = sprintf('Invalid field: %s. %s', $breadcrumb, $exception->getMessage());
+            }
+            throw new InvalidResponseSchemaException(
+                $message ??
+                sprintf('Response schema validation failed: %s', $exception?->getMessage()),
+                0,
+                $e
+            );
+        } catch (\Throwable $e) {
+            throw new InvalidResponseSchemaException(
+                'Unexpected error during schema validation: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
      * @throws ExceptionInterface
      */
     private function log(string $logLevel): void
@@ -321,6 +374,24 @@ final class TestCase implements \JsonSerializable, Filterable
         }
     }
 
+    /**
+     * @throws InvalidResponseSchemaException
+     */
+    private function checkSchemaResponse(): void
+    {
+        if (!$this->schemaValidation) {
+            return;
+        }
+
+        if ($this->specification instanceof OpenApiSpecification) {
+            $this->validateOpenApiSchema();
+
+            return;
+        }
+
+        $this->validateSchema();
+    }
+
     private function getSchemaResponseForStatusCode(int $statusCode): ?Schema
     {
         if ($this->operationExample->getParent() === null) {
@@ -339,12 +410,8 @@ final class TestCase implements \JsonSerializable, Filterable
     /**
      * @throws InvalidResponseSchemaException
      */
-    private function checkSchemaResponse(): void
+    private function validateSchema(): void
     {
-        if (!$this->schemaValidation) {
-            return;
-        }
-
         $schema = $this->getSchemaResponseForStatusCode($this->response->getStatusCode());
 
         if ($schema === null) {
@@ -354,11 +421,14 @@ final class TestCase implements \JsonSerializable, Filterable
         $data = json_decode((string) ResponseExample::fromPsrResponse($this->response)->getContent());
         $schemaData = (object) $schema->getSerializableData();
 
-        $result = $this->validator->validate($data, $schemaData);
+        $validator = new Validator();
+        $errorFormatter = new ErrorFormatter();
+
+        $result = $validator->validate($data, $schemaData);
 
         if (!$result->isValid()) {
             if ($result->error() !== null) {
-                $errorDescription = (string) json_encode($this->errorFormatter->format($result->error()));
+                $errorDescription = (string) json_encode($errorFormatter->format($result->error()));
                 $this->logger->error($errorDescription);
             }
             throw new InvalidResponseSchemaException();

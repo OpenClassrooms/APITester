@@ -167,6 +167,7 @@ final class Suite extends TestSuite
                     $testCase->setLogger($this->logger);
                     $testCase->setBeforeCallbacks($this->beforeTestCaseCallbacks);
                     $testCase->setAfterCallbacks($this->afterTestCaseCallbacks);
+                    $testCase->setSpecification($this->api->getSpecification());
                     $allTests->add($testCase);
                 }
             } catch (PreparatorLoadingException $e) {

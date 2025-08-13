@@ -1,0 +1,86 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^PHPDoc tag @var with type Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\), APITester\\\\Definition\\\\Security\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Definition/Api.php
+
+		-
+			message: "#^PHPDoc tag @var with type Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\), string\\> is not subtype of type Illuminate\\\\Support\\\\Collection\\<int, mixed\\>\\.$#"
+			count: 1
+			path: ../src/Definition/Api.php
+
+		-
+			message: "#^Cannot cast APITester\\\\Definition\\\\Tag to string\\.$#"
+			count: 1
+			path: ../src/Definition/Collection/Operations.php
+
+		-
+			message: "#^PHPDoc tag @var with type APITester\\\\Definition\\\\Example\\\\OperationExample is not subtype of type \\$this\\(APITester\\\\Definition\\\\Example\\\\OperationExample\\)\\.$#"
+			count: 2
+			path: ../src/Definition/Example/OperationExample.php
+
+		-
+			message: "#^Cannot cast APITester\\\\Definition\\\\Example\\\\OperationExample\\|null to string\\.$#"
+			count: 1
+			path: ../src/Definition/Operation.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/Error400Preparator.php
+
+		-
+			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Scope\\>\\:\\:intersect\\(\\) expects Illuminate\\\\Contracts\\\\Support\\\\Arrayable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Scope\\>\\|iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Scope\\>, array\\<string\\> given\\.$#"
+			count: 1
+			path: ../src/Preparator/Error403Preparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/Error404Preparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/Error405Preparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/Error406Preparator.php
+
+		-
+			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Response\\>\\:\\:compare\\(\\) expects iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>, array\\<string\\> given\\.$#"
+			count: 1
+			path: ../src/Preparator/Error406Preparator.php
+
+		-
+			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Response\\>\\:\\:intersect\\(\\) expects Illuminate\\\\Contracts\\\\Support\\\\Arrayable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>\\|iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>, array\\<string\\> given\\.$#"
+			count: 1
+			path: ../src/Preparator/Error406Preparator.php
+
+		-
+			message: "#^Method APITester\\\\Preparator\\\\ExamplesPreparator\\:\\:prepareTestCases\\(\\) should return iterable\\<APITester\\\\Test\\\\TestCase\\> but returns APITester\\\\Definition\\\\Collection\\\\OperationExamples\\.$#"
+			count: 1
+			path: ../src/Preparator/ExamplesPreparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/ExamplesPreparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/PaginationErrorPreparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/RandomPreparator.php
+
+		-
+			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			count: 1
+			path: ../src/Preparator/SecurityErrorPreparator.php

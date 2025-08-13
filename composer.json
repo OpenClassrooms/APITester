@@ -52,11 +52,13 @@
     "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^6.0.0",
     "guzzlehttp/promises": "^1.4.0",
-    "illuminate/collections": "8.x-dev",
+    "illuminate/collections": "^8.0",
     "monolog/monolog": "^1.25.1 || ^2.8.0 || ^3.0.0",
     "myclabs/deep-copy": "^1.11",
     "nesbot/carbon": "^2.48",
     "nyholm/psr7": "1.*",
+    "league/openapi-psr7-validator": "^0.18",
+    "openclassrooms/openapi-psr7-validator": "dev-master",
     "opis/json-schema": "^2.3",
     "php-http/httplug": "^2.2",
     "phpdocumentor/reflection-docblock": "^5.3",
@@ -101,6 +103,10 @@
     {
       "type": "vcs",
       "url": "https://github.com/sidux/collections"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/OpenClassrooms/openapi-psr7-validator"
     }
   ],
   "scripts": {
