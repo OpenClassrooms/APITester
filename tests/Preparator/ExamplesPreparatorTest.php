@@ -441,6 +441,54 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
+    public function testSchemaValidationDisabledForBaselineOperation(): void
+    {
+        $preparator = new ExamplesPreparator();
+
+        $preparator->configure([
+            'schemaValidation' => true,
+        ]);
+
+        $api = Api::create()->addOperation(
+            Operation::create('operationIdInBaseline', '/test')
+                ->addQueryParameter(
+                    Parameter::create('foo')
+                        ->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                            ])
+                        )
+                )
+                ->addResponse(DefinitionResponse::create(200))
+                ->addExample(
+                    OperationExample::create('200.default')
+                        ->setQueryParameters([
+                            'foo' => 'bar',
+                        ])
+                        ->setResponse(new ResponseExample())
+                )
+        );
+        $filters = new Filters(
+            schemaValidationBaseline: __DIR__ . '/../../tests/Fixtures/Config/schema-validation-baseline.yaml'
+        );
+        $preparator->setSchemaValidationBaseline($filters->getSchemaValidationBaseline());
+
+        Assert::objectsEqual(
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - operationIdInBaseline - 200.default',
+                    OperationExample::create('operationIdInBaseline')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo', 'bar')
+                        ->setResponse(ResponseExample::create('200')),
+                    schemaValidation: false
+                ),
+            ],
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
+        );
+    }
+
     private function addTokens(ExamplesPreparator $preparator): void
     {
         $preparator->addToken(

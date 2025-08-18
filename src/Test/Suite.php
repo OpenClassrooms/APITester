@@ -148,6 +148,7 @@ final class Suite extends TestSuite
         $allTests = collect();
         foreach ($this->preparators as $preparator) {
             $preparator->setLogger($this->logger);
+            $preparator->setSchemaValidationBaseline($this->filters->getSchemaValidationBaseline());
             $operations = $this->api->getOperations()
                 ->map(
                     static fn (Operation $op) => $op->setPreparator($preparator::getName())
