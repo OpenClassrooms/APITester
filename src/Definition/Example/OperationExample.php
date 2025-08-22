@@ -51,7 +51,7 @@ final class OperationExample
     private DeepCopy $deepCopy;
 
     public function __construct(
-        private string $name,
+        private string|int $name,
         Operation $parent = null,
         ?int $statusCode = null,
     ) {
@@ -167,16 +167,25 @@ final class OperationExample
         return $clone;
     }
 
-    public function getName(): string
+    public function getName(): string|int
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(string|int $name): self
     {
         $this->name = $name;
 
         return $this;
+    }
+
+    public function withName(string|int $name): self
+    {
+        /** @var OperationExample $clone */
+        $clone = $this->deepCopy->copy($this);
+        $clone->name = $name;
+
+        return $clone;
     }
 
     /**
@@ -338,7 +347,10 @@ final class OperationExample
         if ($this->autoComplete) {
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
-                $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
+                $content = $this->body->getContent();
+                if (!isset($content[0])) {
+                    $this->body->setContent(array_merge($randomBody->getContent(), $content));
+                }
             } else {
                 $this->body = $randomBody;
             }
