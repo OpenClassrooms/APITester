@@ -30,11 +30,17 @@ abstract class TestCasesPreparator
 
     protected LoggerInterface $logger;
 
+    /**
+     * @var array<string>
+     */
+    protected array $schemaValidationBaseline;
+
     public function __construct()
     {
         $this->tokens = new Tokens();
         $this->config = $this->newConfigInstance(static::getConfigFQCN());
         $this->logger = new NullLogger();
+        $this->schemaValidationBaseline = [];
     }
 
     /**
@@ -85,7 +91,10 @@ abstract class TestCasesPreparator
         $testCases = $this->prepare($operations);
         foreach ($testCases as $testCase) {
             $testCase->addExcludedFields($this->config->excludedFields);
-            $testCase->setSchemaValidation($this->config->schemaValidation);
+            if (!$this->config->schemaValidation
+                || in_array($testCase->getOperation(), $this->schemaValidationBaseline, true)) {
+                $testCase->setSchemaValidation(false);
+            }
         }
 
         return $testCases;
@@ -128,6 +137,14 @@ abstract class TestCasesPreparator
     final public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * @param array<string> $schemaValidationBaseline
+     */
+    final public function setSchemaValidationBaseline(array $schemaValidationBaseline): void
+    {
+        $this->schemaValidationBaseline = $schemaValidationBaseline;
     }
 
     /**

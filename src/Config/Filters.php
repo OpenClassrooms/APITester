@@ -10,6 +10,8 @@ use Symfony\Component\Yaml\Yaml;
 
 final class Filters
 {
+    public string $schemaValidationBaseline = 'api-tester.schema-baseline.yaml';
+
     /**
      * @var array<array<string, string>>
      */
@@ -26,11 +28,16 @@ final class Filters
      * @param array<array<string, string>> $include
      * @param array<array<string, string>> $exclude
      */
-    public function __construct(?array $include = null, ?array $exclude = null, string $baseline = null)
-    {
+    public function __construct(
+        ?array $include = null,
+        ?array $exclude = null,
+        string $baseline = null,
+        string $schemaValidationBaseline = null
+    ) {
         $this->include = $include ?? [];
         $this->exclude = $exclude ?? [];
         $this->baseline = $baseline ?? $this->baseline;
+        $this->schemaValidationBaseline = $schemaValidationBaseline ?? $this->schemaValidationBaseline;
     }
 
     /**
@@ -65,6 +72,26 @@ final class Filters
         }
 
         /** @var array<int, array<string, string>> */
+        return $baseline['exclude'];
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getSchemaValidationBaseline(): array
+    {
+        if (!file_exists($this->schemaValidationBaseline)) {
+            return [];
+        }
+
+        /** @var array{'exclude': ?array<string>} */
+        $baseline = Yaml::parseFile($this->schemaValidationBaseline);
+
+        if (!isset($baseline['exclude'])) {
+            return [];
+        }
+
+        /** @var array<string> */
         return $baseline['exclude'];
     }
 
