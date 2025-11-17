@@ -90,7 +90,7 @@ final class TestCaseTest extends UnitTestCase
         $this->testCase->assert();
     }
 
-    public function testNullRequiredPropertyWithSchemaValidationShouldFail(): void
+    public function testIntInsteadOfStringShouldThrowInvalidSchemaException(): void
     {
         $this->expectException(InvalidResponseSchemaException::class);
 
