@@ -298,19 +298,19 @@ final class TestCase implements \JsonSerializable, Filterable
             $validator = new ResponseValidator($this->specification->getDocument());
             $validator->validate($operationAddress, $this->response);
         } catch (ValidationFailed $e) {
-            $exception = $e->getPrevious();
+            $previous = $e->getPrevious();
 
-            if ($exception instanceof SchemaMismatch) {
+            if ($previous instanceof SchemaMismatch) {
                 $breadcrumb = implode(
                     '.',
-                    $exception->dataBreadCrumb() !== null ? $exception->dataBreadCrumb()
+                    $previous->dataBreadCrumb() !== null ? $previous->dataBreadCrumb()
                         ->buildChain() : []
                 );
-                $message = sprintf('Invalid field: %s. %s', $breadcrumb, $exception->getMessage());
+                $message = sprintf('Invalid field: %s. %s', $breadcrumb, $previous->getMessage());
             }
             throw new InvalidResponseSchemaException(
                 $message ??
-                sprintf('Response schema validation failed: %s', $exception?->getMessage()),
+                sprintf('Response schema validation failed: %s', $e->getMessage()),
                 0,
                 $e
             );
