@@ -154,7 +154,6 @@
       <path value="$PROJECT_DIR$/vendor/guzzlehttp/promises" />
       <path value="$PROJECT_DIR$/vendor/respect/stringifier" />
       <path value="$PROJECT_DIR$/vendor/respect/validation" />
-      <path value="$PROJECT_DIR$/vendor/n98/junit-xml" />
       <path value="$PROJECT_DIR$/vendor/slevomat/coding-standard" />
       <path value="$PROJECT_DIR$/vendor/phpdocumentor/reflection-common" />
       <path value="$PROJECT_DIR$/vendor/phpdocumentor/type-resolver" />
@@ -190,8 +189,6 @@
       <path value="$PROJECT_DIR$/vendor/sllh/composer-versions-check" />
       <path value="$PROJECT_DIR$/vendor/psr/clock" />
       <path value="$PROJECT_DIR$/vendor/carbonphp/carbon-doctrine-types" />
-      <path value="$PROJECT_DIR$/vendor/doctrine/lexer" />
-      <path value="$PROJECT_DIR$/vendor/doctrine/annotations" />
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/polyfill-ctype" />
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/filesystem" />
       <path value="$PROJECT_DIR$/.devenv/profile/share/php/composer/vendor/symfony/polyfill-php73" />
@@ -236,6 +233,21 @@
       <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/polyfill-intl-grapheme" />
       <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/finder" />
       <path value="$PROJECT_DIR$/.devenv/profile/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/vendor/clue/ndjson-react" />
+      <path value="$PROJECT_DIR$/vendor/openclassrooms/openapi-psr7-validator" />
+      <path value="$PROJECT_DIR$/vendor/devizzent/cebe-php-openapi" />
+      <path value="$PROJECT_DIR$/vendor/evenement/evenement" />
+      <path value="$PROJECT_DIR$/vendor/fidry/cpu-core-counter" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php84" />
+      <path value="$PROJECT_DIR$/vendor/giggsey/locale" />
+      <path value="$PROJECT_DIR$/vendor/giggsey/libphonenumber-for-php" />
+      <path value="$PROJECT_DIR$/vendor/react/event-loop" />
+      <path value="$PROJECT_DIR$/vendor/react/cache" />
+      <path value="$PROJECT_DIR$/vendor/react/stream" />
+      <path value="$PROJECT_DIR$/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/vendor/react/dns" />
+      <path value="$PROJECT_DIR$/vendor/react/socket" />
+      <path value="$PROJECT_DIR$/vendor/react/child-process" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1">

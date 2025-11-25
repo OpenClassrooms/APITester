@@ -42,7 +42,7 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
-use cebe\openapi\spec\SecurityRequirement;
+use cebe\openapi\spec\SecurityRequirements;
 use cebe\openapi\spec\SecurityScheme;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -117,7 +117,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
                 $responses = $operation->responses;
-                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
+                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? new SecurityRequirements([]));
 
                 $operations->add(
                     Operation::create(
@@ -174,14 +174,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     }
 
     /**
-     * @param SecurityRequirement[] $securityRequirements
-     *
      * @return array<string, string[]>
      */
-    private function getSecurityRequirementsScopes(array $securityRequirements): array
+    private function getSecurityRequirementsScopes(SecurityRequirements $securityRequirements): array
     {
         $requirements = [];
-        foreach ($securityRequirements as $requirement) {
+        foreach ($securityRequirements->getRequirements() as $requirement) {
             /**
              * @var string   $name
              * @var string[] $data
