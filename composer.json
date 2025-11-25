@@ -102,10 +102,6 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/sidux/collections"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/OpenClassrooms/openapi-psr7-validator"
     }
   ],
