@@ -26,7 +26,7 @@ abstract class Security
 
     protected string $name;
 
-    protected Scopes $scopes;
+    public readonly Scopes $scopes;
 
     public function __construct(string $name, ?Scopes $scopes = null)
     {

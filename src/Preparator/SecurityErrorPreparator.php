@@ -8,6 +8,8 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
+use APITester\Definition\Operation;
+use APITester\Definition\Response;
 use APITester\Definition\Security;
 use APITester\Test\TestCase;
 use Illuminate\Support\Collection;
@@ -21,8 +23,12 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations
-            ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
-            ->select('securities.*')
+            ->filter(
+                fn (Operation $o) => $o->getResponses()->filter(
+                    fn (Response $r) => $r->getStatusCode() === (int) $this->getStatusCode()
+                )
+            )
+            ->pluck('securities.*')
             ->flatten()
             ->map(function ($security) {
                 /** @var Security $security */

@@ -9,18 +9,16 @@ use cebe\openapi\spec\Schema;
 
 final class Response
 {
-    private Operation $parent;
+    public ?string $mediaType = null;
 
-    private ?string $mediaType = null;
+    public Parameters $headers;
 
-    private Parameters $headers;
+    public ?Schema $body = null;
 
-    private ?Schema $body = null;
-
-    private string $description = '';
+    public string $description = '';
 
     public function __construct(
-        private int $statusCode
+        public readonly int $statusCode
     ) {
         $this->headers = new Parameters();
     }
@@ -45,13 +43,6 @@ final class Response
     public function getStatusCode(): int
     {
         return $this->statusCode;
-    }
-
-    public function setStatusCode(int $statusCode): self
-    {
-        $this->statusCode = $statusCode;
-
-        return $this;
     }
 
     public function getHeaders(): Parameters
@@ -99,15 +90,5 @@ final class Response
         $this->description = $description;
 
         return $this;
-    }
-
-    public function getParent(): Operation
-    {
-        return $this->parent;
-    }
-
-    public function setParent(Operation $parent): void
-    {
-        $this->parent = $parent;
     }
 }

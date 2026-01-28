@@ -7,8 +7,8 @@ namespace APITester\Definition;
 final class Scope
 {
     public function __construct(
-        private readonly string $name,
-        private readonly string $description = ''
+        public readonly string $name,
+        public readonly string $description = ''
     ) {
     }
 

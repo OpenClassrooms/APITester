@@ -19,7 +19,7 @@ final class Parameters extends Collection
     /**
      * @var Parameter[]
      */
-    protected $items;
+    public $items;
 
     /**
      * @return array<string, string|int>

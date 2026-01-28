@@ -7,7 +7,8 @@ namespace APITester\Preparator;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Response as DefinitionResponse;
+use APITester\Definition\Operation;
+use APITester\Definition\Response;
 use APITester\Test\TestCase;
 
 final class Error404Preparator extends TestCasesPreparator
@@ -19,14 +20,14 @@ final class Error404Preparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations
-            ->select('responses.*')
+            ->map(
+                fn (Operation $operation) => $operation->responses
+                    ->where('statusCode', 404)
+                    ->values()
+                    ->map(fn (Response $response) =>  $this->prepareTestCase($operation, $response))
+            )
             ->flatten()
-            ->where('statusCode', 404)
-            ->values()
-            ->map(function ($response) {
-                /** @var DefinitionResponse $response */
-                return $this->prepareTestCase($response);
-            })
+
             ->flatten()
         ;
     }
@@ -34,10 +35,8 @@ final class Error404Preparator extends TestCasesPreparator
     /**
      * @return array<TestCase>
      */
-    private function prepareTestCase(DefinitionResponse $response): array
+    private function prepareTestCase(Operation $operation, Response $response): array
     {
-        $operation = $response->getParent();
-
         $testcases = [];
 
         if ($operation->getRequestBodies()->count() === 0) {

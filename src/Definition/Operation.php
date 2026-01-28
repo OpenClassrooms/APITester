@@ -21,7 +21,7 @@ final class Operation implements Filterable
 
     private string $description = '';
 
-    private Parameters $headers;
+    public Parameters $headers;
 
     private Api $parent;
 
@@ -31,27 +31,27 @@ final class Operation implements Filterable
 
     private Parameters $queryParameters;
 
-    private Bodies $bodies;
+    public Bodies $bodies;
 
-    private Responses $responses;
+    public readonly Responses $responses;
 
-    private Securities $securities;
+    public readonly Securities $securities;
 
     private string $summary = '';
 
-    private Tags $tags;
+    public Tags $tags;
 
-    private OperationExamples $examples;
+    public OperationExamples $examples;
 
     /**
      * @var array<string, mixed>
      */
-    private array $extensions;
+    public array $extensions;
 
     public function __construct(
-        private readonly string $id,
-        private readonly string $path,
-        private string $method
+        public readonly string $id,
+        public readonly string $path,
+        public string $method
     ) {
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
@@ -197,10 +197,11 @@ final class Operation implements Filterable
 
     public function setResponses(Responses $responses): self
     {
+        $this->responses->forget($this->responses->keys());
+
         foreach ($responses as $response) {
-            $response->setParent($this);
+            $this->responses->add($response);
         }
-        $this->responses = $responses;
 
         return $this;
     }
@@ -220,7 +221,6 @@ final class Operation implements Filterable
 
     public function addResponse(Response $response): self
     {
-        $response->setParent($this);
         $this->responses->add($response);
 
         return $this;
@@ -382,10 +382,12 @@ final class Operation implements Filterable
 
     public function setSecurities(Securities $securities): self
     {
+        $this->securities->forget($this->securities->keys());
+
         foreach ($securities as $security) {
             $security->setParent($this);
+            $this->securities->add($security);
         }
-        $this->securities = $securities;
 
         return $this;
     }

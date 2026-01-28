@@ -51,7 +51,7 @@ final class OperationExample
     private DeepCopy $deepCopy;
 
     public function __construct(
-        private string $name,
+        public string $name,
         Operation $parent = null,
         ?int $statusCode = null,
     ) {
@@ -380,7 +380,7 @@ final class OperationExample
         foreach ($operation->getSecurities() as $security) {
             $scopes = $security->getScopes()
                 ->where('name', '!=', 'current_user')
-                ->select('name')
+                ->pluck('name')
                 ->toArray()
             ;
 
@@ -392,7 +392,8 @@ final class OperationExample
                 $token = $tokens->filter(
                     static fn (Token $token) => $token->getFilters()?->includes($operation) ?? false
                 )
-                    ->first() ?? $tokens->where('scopes', 'includes', $scopes)
+                    ->first() ?? $tokens->filter(
+                        fn (Token $t) => count(array_diff($scopes, $t->getScopes())) === 0)
                     ->first()
                 ;
             }

@@ -8,20 +8,20 @@ use APITester\Config\Filters;
 
 final class Token
 {
-    private readonly string $type;
+    public readonly string $type;
 
-    private readonly int $expiresIn;
+    public readonly int $expiresIn;
 
     /**
      * @param string[] $scopes
      */
     public function __construct(
-        private readonly string $name,
-        private readonly string $authType,
-        private readonly string $accessToken,
-        private readonly array $scopes = [],
-        private readonly ?string $refreshToken = null,
-        private readonly ?Filters $filters = null,
+        public readonly string $name,
+        public readonly string $authType,
+        public readonly string $accessToken,
+        public readonly array $scopes = [],
+        public readonly ?string $refreshToken = null,
+        public readonly ?Filters $filters = null,
         ?string $type = null,
         ?int $expiresIn = null
     ) {

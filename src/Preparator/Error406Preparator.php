@@ -24,7 +24,7 @@ final class Error406Preparator extends TestCasesPreparator
         /** @var iterable<array-key, TestCase> */
         return $operations->map(
             fn (Operation $operation) => $operation->getResponses()
-                ->select('mediaType')
+                ->pluck('mediaType')
                 ->intersect($this->config->mediaTypes)
                 ->compare($this->config->mediaTypes)
                 ->shuffle()

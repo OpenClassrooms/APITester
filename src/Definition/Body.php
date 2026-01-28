@@ -13,9 +13,9 @@ final class Body
 {
     private Operation $parent;
 
-    private readonly Schema $schema;
+    public readonly Schema $schema;
 
-    private bool $required = false;
+    public bool $required = false;
 
     /**
      * @param Schema|array<mixed> $schema
@@ -24,7 +24,7 @@ final class Body
      */
     public function __construct(
         $schema,
-        private readonly string $mediaType = 'application/json'
+        public readonly string $mediaType = 'application/json'
     ) {
         $this->schema = $schema instanceof Schema ? $schema : new Schema($schema);
     }
@@ -49,11 +49,6 @@ final class Body
         $this->required = $required;
 
         return $this;
-    }
-
-    public function getMediaType(): string
-    {
-        return $this->mediaType;
     }
 
     public function getParent(): Operation

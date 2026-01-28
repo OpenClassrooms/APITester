@@ -18,16 +18,16 @@ final class Parameter
 
     private Operation $parent;
 
-    private string $in;
+    public string $in;
 
-    private ?Schema $schema;
+    public ?Schema $schema;
 
     /**
      * @param Schema|array<string, string|int>|null $schema
      */
     public function __construct(
-        private readonly string $name,
-        private bool $required = true,
+        public readonly string $name,
+        public bool $required = true,
         $schema = null
     ) {
         if (\is_array($schema)) {

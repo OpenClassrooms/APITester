@@ -14,4 +14,5 @@ use Illuminate\Support\Collection;
  */
 final class Responses extends Collection
 {
+    use Comparable;
 }

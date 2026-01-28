@@ -14,6 +14,8 @@ use Illuminate\Support\Collection;
  */
 final class Operations extends Collection
 {
+    use Comparable;
+
     /**
      * @return array<string, array<Operation>>
      */
@@ -23,7 +25,7 @@ final class Operations extends Collection
         foreach ($this as $operation) {
             $operations[$operation->getMethod()][] = $operation;
             $operations[$operation->getId()][] = $operation;
-            foreach ($operation->getTags()->select('name') as $tag) {
+            foreach ($operation->getTags()->pluck('name') as $tag) {
                 $operations[(string) $tag][] = $operation;
             }
         }
