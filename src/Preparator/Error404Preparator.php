@@ -18,13 +18,12 @@ final class Error404Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(
                 fn (Operation $operation) => $operation->responses
                     ->where('statusCode', 404)
                     ->values()
-                    ->map(fn (Response $response) =>  $this->prepareTestCase($operation, $response))
+                    ->map(fn (Response $response) => $this->prepareTestCase($operation, $response))
             )
             ->flatten()
         ;

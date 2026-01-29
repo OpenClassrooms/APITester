@@ -20,11 +20,11 @@ abstract class Security
 
     public const SCHEME_BEARER_AUTH = 'bearer';
 
+    public readonly Scopes $scopes;
+
     protected string $description = '';
 
     protected string $name;
-
-    public readonly Scopes $scopes;
 
     public function __construct(string $name, ?Scopes $scopes = null)
     {

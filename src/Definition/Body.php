@@ -11,11 +11,11 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Body
 {
-    private Operation $parent;
-
     public readonly Schema $schema;
 
     public bool $required = false;
+
+    private Operation $parent;
 
     /**
      * @param Schema|array<mixed> $schema

@@ -23,7 +23,6 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
             ->flatten()

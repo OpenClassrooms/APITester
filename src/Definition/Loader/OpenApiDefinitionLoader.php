@@ -42,7 +42,6 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\RequestBody;
 use cebe\openapi\spec\Schema;
-use cebe\openapi\spec\SecurityRequirement;
 use cebe\openapi\spec\SecurityRequirements;
 use cebe\openapi\spec\SecurityScheme;
 use Psr\Log\LoggerInterface;
@@ -118,7 +117,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
                 $responses = $operation->responses;
-                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? new SecurityRequirements([]));
+                $requirements = $this->getSecurityRequirementsScopes(
+                    $operation->security ?? new SecurityRequirements([])
+                );
 
                 $operations->add(
                     Operation::create(

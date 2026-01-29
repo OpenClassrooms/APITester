@@ -21,7 +21,6 @@ final class Error406Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations->map(
             fn (Operation $operation) => $operation->getResponses()
                 ->pluck('mediaType')
@@ -30,9 +29,9 @@ final class Error406Preparator extends TestCasesPreparator
                 ->shuffle()
                 ->take($this->config->casesCount)
                 ->sort()
-                ->map(fn ($type) => $this->prepareTestCase(
+                ->map(fn (string $type) => $this->prepareTestCase(
                     $operation,
-                    (string) $type
+                    $type
                 ))
         )->flatten();
     }

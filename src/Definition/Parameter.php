@@ -16,11 +16,11 @@ final class Parameter
 
     public const TYPES = [self::TYPE_QUERY, self::TYPE_PATH, self::TYPE_HEADER];
 
-    private Operation $parent;
-
     public string $in;
 
     public ?Schema $schema;
+
+    private Operation $parent;
 
     /**
      * @param Schema|array<string, string|int>|null $schema

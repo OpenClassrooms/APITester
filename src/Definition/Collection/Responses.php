@@ -9,7 +9,6 @@ use Illuminate\Support\Collection;
 
 /**
  * @method Response[] getIterator()
- * @method Responses  map(callable $c)
  * @extends Collection<array-key, Response>
  */
 final class Responses extends Collection

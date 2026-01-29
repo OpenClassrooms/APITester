@@ -24,13 +24,13 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 abstract class TestCasesPreparator
 {
+    public readonly string $name;
+
     protected Tokens $tokens;
 
     protected PreparatorConfig $config;
 
     protected LoggerInterface $logger;
-
-    public readonly string $name;
 
     /**
      * @var array<string>

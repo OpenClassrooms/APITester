@@ -41,7 +41,7 @@ final class PlanConfigLoader
                     throw new ConfigurationException("Environment variable '{$var}' is not defined.");
                 }
                 $patterns[] = "/%env\\({$var}\\)%/i";
-                $replacements[] = $env;
+                $replacements[] = (string) $env;
             }
         }
 

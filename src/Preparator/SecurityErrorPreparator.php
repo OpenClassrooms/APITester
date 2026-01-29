@@ -21,16 +21,17 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations
             ->filter(
-                fn (Operation $o) => $o->getResponses()->filter(
-                    fn (Response $r) => $r->getStatusCode() === (int) $this->getStatusCode()
-                )
+                fn (Operation $o) => $o->getResponses()
+                    ->filter(
+                        fn (Response $r) => $r->getStatusCode() === (int) $this->getStatusCode()
+                    )
             )
-            ->map(fn (Operation $operation) => $operation->getSecurities()
-                ->map(fn (Security $security) => $this->prepareTestCases($operation, $security))
-                ->flatten()
+            ->map(
+                fn (Operation $operation) => $operation->getSecurities()
+                    ->map(fn (Security $security) => $this->prepareTestCases($operation, $security))
+                    ->flatten()
             )
             ->flatten();
     }

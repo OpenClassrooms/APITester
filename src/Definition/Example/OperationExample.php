@@ -75,7 +75,6 @@ final class OperationExample
 
     public function withParameter(string $name, string $value, string $in): self
     {
-        /** @var self $clone */
         $clone = $this->deepCopy->copy($this);
 
         $clone->setParameter($name, $value, $in);
@@ -160,7 +159,6 @@ final class OperationExample
 
     public function withBody(BodyExample $body): self
     {
-        /** @var self $clone */
         $clone = $this->deepCopy->copy($this);
         $clone->setBody($body);
 
@@ -393,7 +391,8 @@ final class OperationExample
                     static fn (Token $token) => $token->getFilters()?->includes($operation) ?? false
                 )
                     ->first() ?? $tokens->filter(
-                        fn (Token $t) => count(array_diff($scopes, $t->getScopes())) === 0)
+                        static fn (Token $t) => count(array_diff($scopes, $t->getScopes())) === 0
+                    )
                     ->first()
                 ;
             }

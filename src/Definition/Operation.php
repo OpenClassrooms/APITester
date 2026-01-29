@@ -19,23 +19,13 @@ final class Operation implements Filterable
 {
     use FilterableTrait;
 
-    private string $description = '';
-
     public Parameters $headers;
-
-    private Api $parent;
-
-    private Parameters $pathParameters;
-
-    private Parameters $queryParameters;
 
     public Bodies $bodies;
 
     public readonly Responses $responses;
 
     public readonly Securities $securities;
-
-    private string $summary = '';
 
     public Tags $tags;
 
@@ -45,6 +35,16 @@ final class Operation implements Filterable
      * @var array<string, mixed>
      */
     public array $extensions;
+
+    private string $description = '';
+
+    private Api $parent;
+
+    private Parameters $pathParameters;
+
+    private Parameters $queryParameters;
+
+    private string $summary = '';
 
     public function __construct(
         public readonly string $id,

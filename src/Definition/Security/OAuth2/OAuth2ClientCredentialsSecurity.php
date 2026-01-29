@@ -14,7 +14,6 @@ final class OAuth2ClientCredentialsSecurity extends OAuth2Security
         Scopes $scopes
     ) {
         parent::__construct($name, $scopes);
-        $this->scopes = $scopes;
     }
 
     public static function create(string $name, string $tokenUrl, Scopes $scopes): self

@@ -11,7 +11,6 @@ use APITester\Definition\Loader\ExamplesExtensionLoader;
 use APITester\Definition\Operation;
 use APITester\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Preparator\Exception\PreparatorLoadingException;
-use APITester\Test\TestCase;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
@@ -26,7 +25,6 @@ final class ExamplesPreparator extends TestCasesPreparator
     {
         $operations = $this->handleExtension($operations);
 
-        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
             ->flatten()
@@ -52,10 +50,7 @@ final class ExamplesPreparator extends TestCasesPreparator
         return $operations;
     }
 
-    /**
-     * @return iterable<TestCase>
-     */
-    private function prepareTestCases(Operation $operation): iterable
+    private function prepareTestCases(Operation $operation): OperationExamples
     {
         $examples = $operation->getExamples();
         if ($this->config->autoCreateWhenMissing && $examples->count() === 0) {
