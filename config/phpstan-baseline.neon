@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			rawMessage: Property APITester\Command\ExecutePlanCommand::$defaultName has no type specified.
+			identifier: missingType.property
+			count: 1
+			path: ../src/Command/ExecutePlanCommand.php
+
+		-
 			rawMessage: 'Method APITester\Config\Suite::getPreparators() should return array<string, array<string, mixed>> but returns array<mixed>.'
 			identifier: return.type
 			count: 1
@@ -433,6 +439,36 @@ parameters:
 			path: ../src/Test/TestCase.php
 
 		-
+			rawMessage: 'Method APITester\Util\Assert::objectsEqual() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Assert.php
+
+		-
+			rawMessage: 'Method APITester\Util\Json::deserialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Json.php
+
+		-
+			rawMessage: 'Method APITester\Util\Json::serialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Json.php
+
+		-
+			rawMessage: PHPDoc tag @param for parameter $format with type mixed is not subtype of native type string|null.
+			identifier: parameter.phpDocType
+			count: 2
+			path: ../src/Util/Normalizer/PsrRequestNormalizer.php
+
+		-
+			rawMessage: PHPDoc tag @param for parameter $format with type mixed is not subtype of native type string|null.
+			identifier: parameter.phpDocType
+			count: 2
+			path: ../src/Util/Normalizer/PsrResponseNormalizer.php
+
+		-
 			rawMessage: 'Call to method getTestName() of internal class PHPUnit\Framework\TestFailure from outside its root namespace PHPUnit.'
 			identifier: method.internalClass
 			count: 1
@@ -467,6 +503,18 @@ parameters:
 			identifier: class.extendsInternalClass
 			count: 1
 			path: ../src/Util/TestCase/Printer/TestDoxPrinter.php
+
+		-
+			rawMessage: 'Method APITester\Util\Yaml::deserialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Yaml.php
+
+		-
+			rawMessage: 'Method APITester\Util\Yaml::serialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Yaml.php
 
 		-
 			rawMessage: Constructor of APITester\Config\Filters is invoked with named argument for parameter $include.
