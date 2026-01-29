@@ -20,8 +20,6 @@ abstract class Security
 
     public const SCHEME_BEARER_AUTH = 'bearer';
 
-    protected Operation $parent;
-
     protected string $description = '';
 
     protected string $name;
@@ -32,18 +30,6 @@ abstract class Security
     {
         $this->name = mb_strtolower($name);
         $this->scopes = $scopes ?? new Scopes();
-    }
-
-    final public function getParent(): Operation
-    {
-        return $this->parent;
-    }
-
-    final public function setParent(Operation $parent): self
-    {
-        $this->parent = $parent;
-
-        return $this;
     }
 
     final public function getDescription(): string

@@ -27,8 +27,6 @@ final class Operation implements Filterable
 
     private Parameters $pathParameters;
 
-    private string $preparator;
-
     private Parameters $queryParameters;
 
     public Bodies $bodies;
@@ -228,7 +226,6 @@ final class Operation implements Filterable
 
     public function addSecurity(Security $security): self
     {
-        $security->setParent($this);
         $this->securities->add($security);
 
         return $this;
@@ -363,18 +360,6 @@ final class Operation implements Filterable
         $this->parent = $parent;
     }
 
-    public function getPreparator(): string
-    {
-        return $this->preparator;
-    }
-
-    public function setPreparator(string $string): self
-    {
-        $this->preparator = $string;
-
-        return $this;
-    }
-
     public function getSecurities(): Securities
     {
         return $this->securities;
@@ -385,7 +370,6 @@ final class Operation implements Filterable
         $this->securities->forget($this->securities->keys());
 
         foreach ($securities as $security) {
-            $security->setParent($this);
             $this->securities->add($security);
         }
 

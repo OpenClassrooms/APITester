@@ -28,14 +28,11 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
                     fn (Response $r) => $r->getStatusCode() === (int) $this->getStatusCode()
                 )
             )
-            ->pluck('securities.*')
-            ->flatten()
-            ->map(function ($security) {
-                /** @var Security $security */
-                return $this->prepareTestCases($security);
-            })
-            ->flatten()
-        ;
+            ->map(fn (Operation $operation) => $operation->getSecurities()
+                ->map(fn (Security $security) => $this->prepareTestCases($operation, $security))
+                ->flatten()
+            )
+            ->flatten();
     }
 
     abstract protected function getStatusCode(): string;
@@ -47,9 +44,8 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
     /**
      * @return Collection<array-key, TestCase>
      */
-    private function prepareTestCases(Security $security): iterable
+    private function prepareTestCases(Operation $operation, Security $security): iterable
     {
-        $operation = $security->getParent();
         $tokens = $this->getTestTokens($security);
         /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();

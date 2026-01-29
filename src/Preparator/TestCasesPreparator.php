@@ -30,6 +30,8 @@ abstract class TestCasesPreparator
 
     protected LoggerInterface $logger;
 
+    public readonly string $name;
+
     /**
      * @var array<string>
      */
@@ -41,6 +43,8 @@ abstract class TestCasesPreparator
         $this->config = $this->newConfigInstance(static::getConfigFQCN());
         $this->logger = new NullLogger();
         $this->schemaValidationBaseline = [];
+
+        $this->name = static::getName();
     }
 
     /**
