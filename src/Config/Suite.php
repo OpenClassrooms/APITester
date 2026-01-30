@@ -42,7 +42,7 @@ final class Suite
     private ?string $baseUrl = null;
 
     public function __construct(
-        private readonly string $name,
+        public readonly string $name,
         private readonly Definition $definition
     ) {
         $this->filters = new Filters();

@@ -10,7 +10,6 @@ use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
 use APITester\Preparator\Config\Error405PreparatorConfig;
 use APITester\Test\TestCase;
-use Illuminate\Support\Collection;
 
 /**
  * @property Error405PreparatorConfig $config
@@ -22,10 +21,9 @@ final class Error405Preparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations->groupBy('path', true)
-            ->map(fn (Collection $pathOperations) => $pathOperations
-                ->select('method')
+            ->map(fn (Operations $pathOperations) => $pathOperations
+                ->pluck('method')
                 ->intersect($this->config->methods)
                 ->compare($this->config->methods)
                 ->crossJoin($pathOperations->take(1))

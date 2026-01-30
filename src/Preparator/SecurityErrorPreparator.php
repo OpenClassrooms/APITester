@@ -8,6 +8,8 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
+use APITester\Definition\Operation;
+use APITester\Definition\Response;
 use APITester\Definition\Security;
 use APITester\Test\TestCase;
 use Illuminate\Support\Collection;
@@ -19,17 +21,19 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations
-            ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
-            ->select('securities.*')
-            ->flatten()
-            ->map(function ($security) {
-                /** @var Security $security */
-                return $this->prepareTestCases($security);
-            })
-            ->flatten()
-        ;
+            ->filter(
+                fn (Operation $o) => $o->getResponses()
+                    ->filter(
+                        fn (Response $r) => $r->getStatusCode() === (int) $this->getStatusCode()
+                    )
+            )
+            ->map(
+                fn (Operation $operation) => $operation->getSecurities()
+                    ->map(fn (Security $security) => $this->prepareTestCases($operation, $security))
+                    ->flatten()
+            )
+            ->flatten();
     }
 
     abstract protected function getStatusCode(): string;
@@ -41,9 +45,8 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
     /**
      * @return Collection<array-key, TestCase>
      */
-    private function prepareTestCases(Security $security): iterable
+    private function prepareTestCases(Operation $operation, Security $security): iterable
     {
-        $operation = $security->getParent();
         $tokens = $this->getTestTokens($security);
         /** @var Collection<array-key, TestCase> $testCases */
         $testCases = collect();

@@ -19,7 +19,6 @@ final class RandomPreparator extends TestCasesPreparator
      */
     protected function prepare(Operations $operations): iterable
     {
-        /** @var iterable<array-key, TestCase> */
         return $operations
             ->map(fn (Operation $operation) => $this->prepareTestCases($operation))
             ->flatten()
@@ -27,9 +26,9 @@ final class RandomPreparator extends TestCasesPreparator
     }
 
     /**
-     * @return iterable<TestCase>
+     * @return TestCase[]
      */
-    private function prepareTestCases(Operation $operation): iterable
+    private function prepareTestCases(Operation $operation): array
     {
         $testCases = [];
         foreach (range(1, $this->config->casesCount) as $ignored) {

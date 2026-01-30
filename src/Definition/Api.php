@@ -104,9 +104,8 @@ final class Api
      */
     public function getScopes(): Collection
     {
-        /** @var Collection<array-key, string> */
         return $this->getSecurities()
-            ->select('scopes')
+            ->pluck('scopes')
             ->flatten()
             ->unique()
         ;
@@ -117,9 +116,8 @@ final class Api
      */
     public function getSecurities(): Collection
     {
-        /** @var Collection<array-key, Security> */
         return $this->getOperations()
-            ->select('securities.*')
+            ->pluck('securities.*')
             ->flatten()
         ;
     }

@@ -17,7 +17,7 @@ final class OperationExamples extends Collection
     /**
      * @var OperationExample[]
      */
-    protected array $examples;
+    public array $examples;
 
     /**
      * @param OperationExample[] $examples

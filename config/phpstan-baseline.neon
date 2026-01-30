@@ -1,86 +1,565 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^PHPDoc tag @var with type Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\), APITester\\\\Definition\\\\Security\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: Property APITester\Command\ExecutePlanCommand::$defaultName has no type specified.
+			identifier: missingType.property
+			count: 1
+			path: ../src/Command/ExecutePlanCommand.php
+
+		-
+			rawMessage: 'Method APITester\Config\Suite::getPreparators() should return array<string, array<string, mixed>> but returns array<mixed>.'
+			identifier: return.type
+			count: 1
+			path: ../src/Config/Suite.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Api::getScopes() should return Illuminate\Support\Collection<(int|string), string> but returns Illuminate\Support\Collection<int, mixed>.'
+			identifier: return.type
 			count: 1
 			path: ../src/Definition/Api.php
 
 		-
-			message: "#^PHPDoc tag @var with type Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\), string\\> is not subtype of type Illuminate\\\\Support\\\\Collection\\<int, mixed\\>\\.$#"
+			rawMessage: 'Method APITester\Definition\Api::getSecurities() should return Illuminate\Support\Collection<(int|string), APITester\Definition\Security> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Definition/Api.php
 
 		-
-			message: "#^Cannot cast APITester\\\\Definition\\\\Tag to string\\.$#"
+			rawMessage: 'Call to method __construct() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Definition/Body.php
+
+		-
+			rawMessage: 'Call to method generate() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Definition/Body.php
+
+		-
+			rawMessage: Instantiation of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Definition/Body.php
+
+		-
+			rawMessage: Cannot cast APITester\Definition\Tag to string.
+			identifier: cast.string
 			count: 1
 			path: ../src/Definition/Collection/Operations.php
 
 		-
-			message: "#^PHPDoc tag @var with type APITester\\\\Definition\\\\Example\\\\OperationExample is not subtype of type \\$this\\(APITester\\\\Definition\\\\Example\\\\OperationExample\\)\\.$#"
-			count: 2
-			path: ../src/Definition/Example/OperationExample.php
+			rawMessage: 'PHPDoc tag @return contains generic type static(APITester\Definition\Collection\Operations) but class APITester\Definition\Collection\Operations is not generic.'
+			identifier: generics.notGeneric
+			count: 1
+			path: ../src/Definition/Collection/Operations.php
 
 		-
-			message: "#^Cannot cast APITester\\\\Definition\\\\Example\\\\OperationExample\\|null to string\\.$#"
+			rawMessage: 'Parameter #1 $items of method Illuminate\Support\Collection<(int|string),APITester\Definition\Operation>::diff() expects Illuminate\Contracts\Support\Arrayable<(int|string), APITester\Definition\Operation>|iterable<(int|string), APITester\Definition\Operation>, iterable<(int|string), APITester\Definition\Collection\TValue> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Definition/Collection/Operations.php
+
+		-
+			rawMessage: 'Parameter $items of method APITester\Definition\Collection\Operations::compare() has invalid type APITester\Definition\Collection\TValue.'
+			identifier: class.notFound
+			count: 1
+			path: ../src/Definition/Collection/Operations.php
+
+		-
+			rawMessage: 'Call to method __construct() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Definition/Collection/Parameters.php
+
+		-
+			rawMessage: 'Call to method generate() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Definition/Collection/Parameters.php
+
+		-
+			rawMessage: Instantiation of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Definition/Collection/Parameters.php
+
+		-
+			rawMessage: 'PHPDoc tag @return contains generic type static(APITester\Definition\Collection\Responses) but class APITester\Definition\Collection\Responses is not generic.'
+			identifier: generics.notGeneric
+			count: 1
+			path: ../src/Definition/Collection/Responses.php
+
+		-
+			rawMessage: 'Parameter #1 $items of method Illuminate\Support\Collection<(int|string),APITester\Definition\Response>::diff() expects Illuminate\Contracts\Support\Arrayable<(int|string), APITester\Definition\Response>|iterable<(int|string), APITester\Definition\Response>, iterable<(int|string), APITester\Definition\Collection\TValue> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Definition/Collection/Responses.php
+
+		-
+			rawMessage: 'Parameter $items of method APITester\Definition\Collection\Responses::compare() has invalid type APITester\Definition\Collection\TValue.'
+			identifier: class.notFound
+			count: 1
+			path: ../src/Definition/Collection/Responses.php
+
+		-
+			rawMessage: 'Argument of an invalid type cebe\openapi\spec\SecurityRequirements supplied for foreach, only iterables are supported.'
+			identifier: foreach.nonIterable
+			count: 1
+			path: ../src/Definition/Loader/OpenApiDefinitionLoader.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Loader\OpenApiDefinitionLoader::extractDeepExamples() is invoked with named argument for parameter $path.'
+			identifier: ergebnis.noNamedArgument
+			count: 3
+			path: ../src/Definition/Loader/OpenApiDefinitionLoader.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Loader\OpenApiDefinitionLoader::getExample() has parameter $examples that is passed by reference.'
+			identifier: ergebnis.noParameterPassedByReference
+			count: 1
+			path: ../src/Definition/Loader/OpenApiDefinitionLoader.php
+
+		-
+			rawMessage: 'Parameter #1 $securityRequirements of method APITester\Definition\Loader\OpenApiDefinitionLoader::getSecurityRequirementsScopes() expects cebe\openapi\spec\SecurityRequirements, array<cebe\openapi\spec\SecurityRequirement>|cebe\openapi\spec\SecurityRequirements given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Definition/Loader/OpenApiDefinitionLoader.php
+
+		-
+			rawMessage: Cannot cast APITester\Definition\Example\OperationExample|null to string.
+			identifier: cast.string
 			count: 1
 			path: ../src/Definition/Operation.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Parameter #2 $replace of function str_replace expects array<string>|string, list<int|string> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Definition/Operation.php
+
+		-
+			rawMessage: Property APITester\Definition\Operation::$method on left side of ?? is not nullable nor uninitialized.
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: ../src/Definition/Operation.php
+
+		-
+			rawMessage: Readonly property APITester\Definition\Security::$scopes is assigned outside of its declaring class.
+			identifier: property.readOnlyAssignOutOfClass
+			count: 1
+			path: ../src/Definition/Security/OAuth2/OAuth2AuthorizationCodeSecurity.php
+
+		-
+			rawMessage: 'Method APITester\Preparator\Error400Preparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/Error400Preparator.php
 
 		-
-			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Scope\\>\\:\\:intersect\\(\\) expects Illuminate\\\\Contracts\\\\Support\\\\Arrayable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Scope\\>\\|iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Scope\\>, array\\<string\\> given\\.$#"
+			rawMessage: 'Parameter #1 $items of method Illuminate\Support\Collection<(int|string),APITester\Definition\Scope>::intersect() expects Illuminate\Contracts\Support\Arrayable<(int|string), APITester\Definition\Scope>|iterable<(int|string), APITester\Definition\Scope>, array<string> given.'
+			identifier: argument.type
 			count: 1
 			path: ../src/Preparator/Error403Preparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Method APITester\Preparator\Error404Preparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/Error404Preparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Method APITester\Preparator\Error405Preparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/Error405Preparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Parameter #1 $callback of method Illuminate\Support\Collection<(int|string),APITester\Definition\Operation>::map() expects callable(APITester\Definition\Operation, int|string): APITester\Definition\Collection\Operations, Closure(APITester\Definition\Collection\Operations): APITester\Definition\Collection\Operations given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/Error405Preparator.php
+
+		-
+			rawMessage: 'Parameter #1 $callback of method Illuminate\Support\Collection<(int|string),APITester\Definition\Operation>::map() expects callable(APITester\Definition\Operation, int|string): APITester\Test\TestCase, Closure(array): APITester\Test\TestCase given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/Error405Preparator.php
+
+		-
+			rawMessage: 'Parameter #1 $items of method APITester\Definition\Collection\Operations::compare() expects iterable<(int|string), APITester\Definition\Collection\TValue>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/Error405Preparator.php
+
+		-
+			rawMessage: 'Parameter #1 $items of method Illuminate\Support\Collection<(int|string),APITester\Definition\Operation>::intersect() expects Illuminate\Contracts\Support\Arrayable<(int|string), APITester\Definition\Operation>|iterable<(int|string), APITester\Definition\Operation>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/Error405Preparator.php
+
+		-
+			rawMessage: 'Method APITester\Preparator\Error406Preparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/Error406Preparator.php
 
 		-
-			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Response\\>\\:\\:compare\\(\\) expects iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>, array\\<string\\> given\\.$#"
+			rawMessage: 'Parameter #1 $callback of method Illuminate\Support\Collection<(int|string),APITester\Definition\Response>::map() expects callable(APITester\Definition\Response, int|string): APITester\Test\TestCase, Closure(string): APITester\Test\TestCase given.'
+			identifier: argument.type
 			count: 1
 			path: ../src/Preparator/Error406Preparator.php
 
 		-
-			message: "#^Parameter \\#1 \\$items of method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),APITester\\\\Definition\\\\Response\\>\\:\\:intersect\\(\\) expects Illuminate\\\\Contracts\\\\Support\\\\Arrayable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>\\|iterable\\<\\(int\\|string\\), APITester\\\\Definition\\\\Response\\>, array\\<string\\> given\\.$#"
+			rawMessage: 'Parameter #1 $items of method APITester\Definition\Collection\Responses::compare() expects iterable<(int|string), APITester\Definition\Collection\TValue>, array<string> given.'
+			identifier: argument.type
 			count: 1
 			path: ../src/Preparator/Error406Preparator.php
 
 		-
-			message: "#^Method APITester\\\\Preparator\\\\ExamplesPreparator\\:\\:prepareTestCases\\(\\) should return iterable\\<APITester\\\\Test\\\\TestCase\\> but returns APITester\\\\Definition\\\\Collection\\\\OperationExamples\\.$#"
+			rawMessage: 'Parameter #1 $items of method Illuminate\Support\Collection<(int|string),APITester\Definition\Response>::intersect() expects Illuminate\Contracts\Support\Arrayable<(int|string), APITester\Definition\Response>|iterable<(int|string), APITester\Definition\Response>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/Error406Preparator.php
+
+		-
+			rawMessage: 'Method APITester\Preparator\ExamplesPreparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/ExamplesPreparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
-			count: 1
-			path: ../src/Preparator/ExamplesPreparator.php
-
-		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Method APITester\Preparator\PaginationErrorPreparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/PaginationErrorPreparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Method APITester\Preparator\RandomPreparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/RandomPreparator.php
 
 		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\TestCase\\> is not subtype of type APITester\\\\Definition\\\\Collection\\\\Operations\\.$#"
+			rawMessage: 'Method APITester\Preparator\SecurityErrorPreparator::prepare() should return iterable<(int|string), APITester\Test\TestCase> but returns APITester\Definition\Collection\Operations.'
+			identifier: return.type
 			count: 1
 			path: ../src/Preparator/SecurityErrorPreparator.php
+
+		-
+			rawMessage: 'PHPDoc tag @var with type Illuminate\Support\Collection<(int|string), APITester\Test\TestCase> is not subtype of type Illuminate\Support\Collection<*NEVER*, *NEVER*>.'
+			identifier: varTag.type
+			count: 1
+			path: ../src/Preparator/SecurityErrorPreparator.php
+
+		-
+			rawMessage: 'Parameter #1 $callback of method Illuminate\Support\Collection<(int|string),APITester\Definition\Operation>::filter() expects (callable(APITester\Definition\Operation, int|string): bool)|null, Closure(APITester\Definition\Operation): APITester\Definition\Collection\Responses given.'
+			identifier: argument.type
+			count: 1
+			path: ../src/Preparator/SecurityErrorPreparator.php
+
+		-
+			rawMessage: 'Call to method __construct() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Preparator/TestCasesPreparator.php
+
+		-
+			rawMessage: 'Call to method generate() of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker from outside its root namespace Vural.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Preparator/TestCasesPreparator.php
+
+		-
+			rawMessage: Instantiation of internal class Vural\OpenAPIFaker\SchemaFaker\SchemaFaker.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Preparator/TestCasesPreparator.php
+
+		-
+			rawMessage: 'Call to method then() of internal class Symfony\Component\HttpClient\Response\HttplugPromise from outside its root namespace Symfony.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Requester/HttpAsyncRequester.php
+
+		-
+			rawMessage: 'Call to method __construct() of internal class PHPUnit\TextUI\TestRunner from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method errorCount() of internal class PHPUnit\Framework\TestResult from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method errors() of internal class PHPUnit\Framework\TestResult from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method failedTest() of internal class PHPUnit\Framework\TestFailure from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method failureCount() of internal class PHPUnit\Framework\TestResult from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method failures() of internal class PHPUnit\Framework\TestResult from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method fromParameters() of internal class PHPUnit\TextUI\CliArguments\Builder from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method load() of internal class PHPUnit\TextUI\XmlConfiguration\Loader from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method mapToLegacyArray() of internal class PHPUnit\TextUI\CliArguments\Mapper from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method run() of internal class PHPUnit\TextUI\TestRunner from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Instantiation of internal class PHPUnit\TextUI\CliArguments\Builder.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Instantiation of internal class PHPUnit\TextUI\CliArguments\Mapper.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Instantiation of internal class PHPUnit\TextUI\TestRunner.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Instantiation of internal class PHPUnit\TextUI\XmlConfiguration\Loader.
+			identifier: new.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Loader\DefinitionLoader::load() is invoked with named argument for parameter $filters.'
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Property $results references internal class PHPUnit\Framework\TestResult in its type.
+			identifier: property.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: Property $runner references internal class PHPUnit\TextUI\TestRunner in its type.
+			identifier: property.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Return type of method APITester\Test\Plan::getResults() has typehint with internal class PHPUnit\Framework\TestResult.'
+			identifier: return.internalClass
+			count: 1
+			path: ../src/Test/Plan.php
+
+		-
+			rawMessage: 'Call to method __construct() of internal class PHPUnit\Framework\TestSuite from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: 'Call to method addTest() of internal class PHPUnit\Framework\TestSuite from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: 'Call to method run() of internal class PHPUnit\Framework\TestSuite from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: Class APITester\Test\Suite extends internal class PHPUnit\Framework\TestSuite.
+			identifier: class.extendsInternalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: 'PHPDoc tag @var with type Illuminate\Support\Collection<int, APITester\Test\TestCase> is not subtype of type Illuminate\Support\Collection<*NEVER*, *NEVER*>.'
+			identifier: varTag.type
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: 'Parameter $result of method APITester\Test\Suite::run() has typehint with internal class PHPUnit\Framework\TestResult.'
+			identifier: parameter.internalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: 'Return type of method APITester\Test\Suite::run() has typehint with internal class PHPUnit\Framework\TestResult.'
+			identifier: return.internalClass
+			count: 1
+			path: ../src/Test/Suite.php
+
+		-
+			rawMessage: Catching internal class PHPUnit\Framework\ExpectationFailedException.
+			identifier: catch.internalClass
+			count: 1
+			path: ../src/Test/TestCase.php
+
+		-
+			rawMessage: 'Method APITester\Util\Assert::objectsEqual() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Assert.php
+
+		-
+			rawMessage: 'Method APITester\Util\Json::deserialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Json.php
+
+		-
+			rawMessage: 'Method APITester\Util\Json::serialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Json.php
+
+		-
+			rawMessage: PHPDoc tag @param for parameter $format with type mixed is not subtype of native type string|null.
+			identifier: parameter.phpDocType
+			count: 2
+			path: ../src/Util/Normalizer/PsrRequestNormalizer.php
+
+		-
+			rawMessage: PHPDoc tag @param for parameter $format with type mixed is not subtype of native type string|null.
+			identifier: parameter.phpDocType
+			count: 2
+			path: ../src/Util/Normalizer/PsrResponseNormalizer.php
+
+		-
+			rawMessage: 'Call to method getTestName() of internal class PHPUnit\Framework\TestFailure from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/DefaultPrinter.php
+
+		-
+			rawMessage: 'Call to method write() of internal class PHPUnit\Util\Printer from outside its root namespace PHPUnit.'
+			identifier: method.internalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/DefaultPrinter.php
+
+		-
+			rawMessage: Class APITester\Util\TestCase\Printer\DefaultPrinter extends internal class PHPUnit\TextUI\DefaultResultPrinter.
+			identifier: class.extendsInternalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/DefaultPrinter.php
+
+		-
+			rawMessage: 'Parameter $defect of method APITester\Util\TestCase\Printer\DefaultPrinter::printDefectHeader() has typehint with internal class PHPUnit\Framework\TestFailure.'
+			identifier: parameter.internalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/DefaultPrinter.php
+
+		-
+			rawMessage: 'Parameter $defect of method APITester\Util\TestCase\Printer\DefaultPrinter::printDefectTrace() has typehint with internal class PHPUnit\Framework\TestFailure.'
+			identifier: parameter.internalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/DefaultPrinter.php
+
+		-
+			rawMessage: Class APITester\Util\TestCase\Printer\TestDoxPrinter extends internal class PHPUnit\Util\TestDox\CliTestDoxPrinter.
+			identifier: class.extendsInternalClass
+			count: 1
+			path: ../src/Util/TestCase/Printer/TestDoxPrinter.php
+
+		-
+			rawMessage: 'Method APITester\Util\Yaml::deserialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Yaml.php
+
+		-
+			rawMessage: 'Method APITester\Util\Yaml::serialize() throws checked exception Symfony\Component\Serializer\Exception\ExceptionInterface but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: ../src/Util/Yaml.php
+
+		-
+			rawMessage: Constructor of APITester\Config\Filters is invoked with named argument for parameter $include.
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Preparator/ExamplesPreparatorTest.php
+
+		-
+			rawMessage: Constructor of APITester\Config\Filters is invoked with named argument for parameter $schemaValidationBaseline.
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Preparator/ExamplesPreparatorTest.php
+
+		-
+			rawMessage: Constructor of APITester\Definition\Token is invoked with named argument for parameter $filters.
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Preparator/ExamplesPreparatorTest.php
+
+		-
+			rawMessage: Constructor of APITester\Test\TestCase is invoked with named argument for parameter $schemaValidation.
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Preparator/ExamplesPreparatorTest.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Security\HttpSecurity::create() is invoked with named argument for parameter $scopes.'
+			identifier: ergebnis.noNamedArgument
+			count: 2
+			path: ../tests/Preparator/ExamplesPreparatorTest.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Example\OperationExample::create() is invoked with named argument for parameter $name.'
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Test/TestCaseTest.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Example\OperationExample::create() is invoked with named argument for parameter $operation.'
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Test/TestCaseTest.php
+
+		-
+			rawMessage: 'Method APITester\Definition\Example\OperationExample::create() is invoked with named argument for parameter $statusCode.'
+			identifier: ergebnis.noNamedArgument
+			count: 1
+			path: ../tests/Test/TestCaseTest.php

@@ -7,7 +7,7 @@ namespace APITester\Definition;
 final class Server
 {
     public function __construct(
-        private readonly string $url
+        public readonly string $url
     ) {
     }
 

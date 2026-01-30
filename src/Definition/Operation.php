@@ -19,39 +19,37 @@ final class Operation implements Filterable
 {
     use FilterableTrait;
 
-    private string $description = '';
+    public Parameters $headers;
 
-    private Parameters $headers;
+    public Bodies $bodies;
+
+    public readonly Responses $responses;
+
+    public readonly Securities $securities;
+
+    public Tags $tags;
+
+    public OperationExamples $examples;
+
+    /**
+     * @var array<string, mixed>
+     */
+    public array $extensions;
+
+    private string $description = '';
 
     private Api $parent;
 
     private Parameters $pathParameters;
 
-    private string $preparator;
-
     private Parameters $queryParameters;
-
-    private Bodies $bodies;
-
-    private Responses $responses;
-
-    private Securities $securities;
 
     private string $summary = '';
 
-    private Tags $tags;
-
-    private OperationExamples $examples;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $extensions;
-
     public function __construct(
-        private readonly string $id,
-        private readonly string $path,
-        private string $method
+        public readonly string $id,
+        public readonly string $path,
+        public string $method
     ) {
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
@@ -197,10 +195,11 @@ final class Operation implements Filterable
 
     public function setResponses(Responses $responses): self
     {
+        $this->responses->forget($this->responses->keys());
+
         foreach ($responses as $response) {
-            $response->setParent($this);
+            $this->responses->add($response);
         }
-        $this->responses = $responses;
 
         return $this;
     }
@@ -220,7 +219,6 @@ final class Operation implements Filterable
 
     public function addResponse(Response $response): self
     {
-        $response->setParent($this);
         $this->responses->add($response);
 
         return $this;
@@ -228,7 +226,6 @@ final class Operation implements Filterable
 
     public function addSecurity(Security $security): self
     {
-        $security->setParent($this);
         $this->securities->add($security);
 
         return $this;
@@ -363,18 +360,6 @@ final class Operation implements Filterable
         $this->parent = $parent;
     }
 
-    public function getPreparator(): string
-    {
-        return $this->preparator;
-    }
-
-    public function setPreparator(string $string): self
-    {
-        $this->preparator = $string;
-
-        return $this;
-    }
-
     public function getSecurities(): Securities
     {
         return $this->securities;
@@ -382,10 +367,11 @@ final class Operation implements Filterable
 
     public function setSecurities(Securities $securities): self
     {
+        $this->securities->forget($this->securities->keys());
+
         foreach ($securities as $security) {
-            $security->setParent($this);
+            $this->securities->add($security);
         }
-        $this->securities = $securities;
 
         return $this;
     }

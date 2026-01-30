@@ -24,6 +24,8 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 abstract class TestCasesPreparator
 {
+    public readonly string $name;
+
     protected Tokens $tokens;
 
     protected PreparatorConfig $config;
@@ -41,6 +43,8 @@ abstract class TestCasesPreparator
         $this->config = $this->newConfigInstance(static::getConfigFQCN());
         $this->logger = new NullLogger();
         $this->schemaValidationBaseline = [];
+
+        $this->name = static::getName();
     }
 
     /**

@@ -16,18 +16,18 @@ final class Parameter
 
     public const TYPES = [self::TYPE_QUERY, self::TYPE_PATH, self::TYPE_HEADER];
 
+    public string $in;
+
+    public ?Schema $schema;
+
     private Operation $parent;
-
-    private string $in;
-
-    private ?Schema $schema;
 
     /**
      * @param Schema|array<string, string|int>|null $schema
      */
     public function __construct(
-        private readonly string $name,
-        private bool $required = true,
+        public readonly string $name,
+        public bool $required = true,
         $schema = null
     ) {
         if (\is_array($schema)) {

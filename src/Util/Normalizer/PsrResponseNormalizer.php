@@ -14,10 +14,9 @@ final class PsrResponseNormalizer implements NormalizerInterface
     /**
      * @inerhitDoc
      *
-     * @param mixed      $data
      * @param mixed|null $format
      */
-    public function supportsNormalization($data, $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Response;
     }
@@ -25,7 +24,6 @@ final class PsrResponseNormalizer implements NormalizerInterface
     /**
      * @inerhitDoc
      *
-     * @param mixed      $object
      * @param mixed|null $format
      *
      * @return array{
@@ -34,15 +32,15 @@ final class PsrResponseNormalizer implements NormalizerInterface
      *          'headers': array<string, string>
      * }
      */
-    public function normalize($object, $format = null, array $context = []): array
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array
     {
-        /** @var Response $object */
+        /** @var Response $data */
         $result = [
-            'body' => Json::isJson((string) $object->getBody()) ? Json::decode(
-                (string) $object->getBody()
-            ) : (string) $object->getBody(),
-            'headers' => $object->getHeaders(),
-            'status' => $object->getStatusCode(),
+            'body' => Json::isJson((string) $data->getBody()) ? Json::decode(
+                (string) $data->getBody()
+            ) : (string) $data->getBody(),
+            'headers' => $data->getHeaders(),
+            'status' => $data->getStatusCode(),
         ];
 
         if (isset($context[AbstractNormalizer::IGNORED_ATTRIBUTES])) {
@@ -59,5 +57,12 @@ final class PsrResponseNormalizer implements NormalizerInterface
          * }
          */
         return $result;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Response::class => true,
+        ];
     }
 }
