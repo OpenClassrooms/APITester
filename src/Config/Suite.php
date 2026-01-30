@@ -196,16 +196,6 @@ final class Suite
         $this->testCaseClass = $testCaseClass;
     }
 
-    public function getPhpunitConfig(): ?string
-    {
-        return $this->phpunitConfig;
-    }
-
-    public function setPhpunitConfig(?string $phpunitConfig): void
-    {
-        $this->phpunitConfig = $phpunitConfig;
-    }
-
     public function getBaseUrl(): ?string
     {
         return $this->baseUrl;

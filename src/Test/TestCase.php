@@ -217,7 +217,9 @@ final class TestCase implements \JsonSerializable, Filterable
         $testCaseName = $this->getName();
         $this->declareTestCaseClass($className, $testCaseClass);
 
-        return new $className($this, $testCaseName);
+        return (new $className('test'))
+            ->setName($testCaseName)
+            ->setTestCase($this);
     }
 
     public function withRequestBody(Body $request): self
@@ -347,11 +349,21 @@ final class TestCase implements \JsonSerializable, Filterable
                 class {$name} extends {$parent} {
                     private \\APITester\\Test\\TestCase \$testCase;
                     private string \$name;
-                    public function __construct(\$testCase, \$name) {
-                        parent::__construct('test');
+                    
+                    public function setName(string \$name): static
+                    {
                         \$this->name = \$name;
-                        \$this->testCase = \$testCase;
+                        
+                        return \$this;
                     }
+                    
+                    public function setTestCase(\$testCase): static
+                    {
+                        \$this->testCase = \$testCase;
+                        
+                        return \$this;
+                    }
+                    
                     public function getName(bool \$withDataSet = true): string
                     {
                         return \$this->name;

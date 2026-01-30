@@ -21,6 +21,7 @@ use APITester\Preparator\ExamplesPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @internal
@@ -39,10 +40,9 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider getExpectedTestSuites
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getExpectedTestSuites')]
     public function testPrepare(Api $api, array $expected): void
     {
         $preparator = new ExamplesPreparator();
@@ -59,7 +59,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getExpectedTestSuites(): iterable
+    public static function getExpectedTestSuites(): iterable
     {
         yield 'with 1 query param' => [
             Api::create()->addOperation(

@@ -11,14 +11,14 @@ use APITester\Definition\Operation;
 use APITester\Preparator\Error405Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error405Preparator();
@@ -35,7 +35,7 @@ final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<int, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield [
             Api::create()

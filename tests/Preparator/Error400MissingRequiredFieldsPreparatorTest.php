@@ -15,15 +15,15 @@ use APITester\Preparator\Error400MissingRequiredFieldsPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param array<string, array<mixed>> $config
      * @param TestCase[]                  $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected, array $config = []): void
     {
         $preparator = new Error400MissingRequiredFieldsPreparator();
@@ -38,7 +38,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'Required body param and query param' => [
             Api::create()

@@ -12,15 +12,15 @@ use APITester\Definition\Parameter;
 use APITester\Preparator\Error413Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param array<string, array<mixed>> $config
      * @param TestCase[]                  $expected
      */
+    #[DataProvider('getData')]
     public function test(array $config, Api $api, array $expected): void
     {
         $preparator = new Error413Preparator();
@@ -36,7 +36,7 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{array<string, mixed>,Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'Query param range in Api && query param defined in config' => [
             [

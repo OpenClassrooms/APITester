@@ -15,14 +15,14 @@ use APITester\Preparator\Error404Preparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error404Preparator();
@@ -37,7 +37,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<array-key, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'with param' => [
             Api::create()

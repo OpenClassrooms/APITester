@@ -15,14 +15,14 @@ use APITester\Preparator\Error400BadTypesPreparator;
 use APITester\Test\TestCase;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error400BadTypesPreparator();
@@ -36,7 +36,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'For string query param' => [
             Api::create()

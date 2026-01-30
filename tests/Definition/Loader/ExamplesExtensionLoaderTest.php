@@ -14,13 +14,12 @@ use APITester\Definition\Parameter;
 use APITester\Definition\Response;
 use APITester\Tests\Fixtures\FixturesLocation;
 use APITester\Util\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class ExamplesExtensionLoaderTest extends TestCase
 {
-    /**
-     * @dataProvider getLoadAndAppendData
-     */
+    #[DataProvider('getLoadAndAppendData')]
     public function testLoadAndAppend(string $path, Operations $operations, Operations $expected): void
     {
         $operations = ExamplesExtensionLoader::load(

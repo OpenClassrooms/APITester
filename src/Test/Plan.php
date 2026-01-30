@@ -9,11 +9,14 @@ use APITester\Authenticator\Exception\AuthenticationException;
 use APITester\Authenticator\Exception\AuthenticationLoadingException;
 use APITester\Config;
 use APITester\Definition\Api;
+use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Loader\DefinitionLoader;
 use APITester\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Definition\Operation;
 use APITester\Preparator\Exception\InvalidPreparatorConfigException;
+use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Exception\RequesterNotFoundException;
 use APITester\Requester\Requester;
@@ -21,10 +24,16 @@ use APITester\Test\Exception\SuiteNotFoundException;
 use APITester\Util\Object_;
 use APITester\Util\TestCase\Printer\DefaultPrinter;
 use APITester\Util\TestCase\Printer\TestDoxPrinter;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestResult;
+use PHPUnit\Framework\TestSuite;
+use PHPUnit\Runner\ResultCache\NullResultCache;
 use PHPUnit\TextUI\CliArguments\Builder;
+use PHPUnit\TextUI\CliArguments\Configuration;
 use PHPUnit\TextUI\CliArguments\Mapper;
+use PHPUnit\TextUI\Configuration\Merger;
 use PHPUnit\TextUI\TestRunner;
+use PHPUnit\TextUI\XmlConfiguration\DefaultConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\Loader;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -119,13 +128,7 @@ final class Plan
                 $this->resetBaseLine($suiteConfig);
             }
             $testSuite = $this->prepareSuite($suiteConfig, $options);
-            if (!empty($options['ignore-baseline'])) {
-                $testSuite->setIgnoreBaseLine(true);
-            }
-            if (!empty($options['only-baseline'])) {
-                $testSuite->setOnlyBaseLine(true);
-                $testSuite->setIgnoreBaseLine(true);
-            }
+
             $this->runSuite($suiteConfig, $testSuite, $options);
             if (!empty($options['update-baseline']) || !empty($options['set-baseline'])) {
                 $this->updateBaseLine($suiteConfig);
@@ -193,7 +196,7 @@ final class Plan
      *
      * @return Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface>
      */
-    private function prepareSuite(Config\Suite $suiteConfig, array $options = []): Suite
+    private function prepareSuite(Config\Suite $suiteConfig, array $options = []): TestSuite
     {
         $testCaseClass = Object_::validateClass(
             $suiteConfig->getTestCaseClass(),
@@ -208,34 +211,163 @@ final class Plan
         );
         $tokens = $this->authenticate($suiteConfig, $definition, $requester);
         $preparators = $this->loadPreparators($suiteConfig->getPreparators(), $tokens);
-        $testSuite = new Suite(
-            $suiteConfig->getName(),
-            $definition,
-            $preparators,
-            $requester,
-            $suiteConfig->getFilters(),
-            $this->logger,
-            $testCaseClass,
-        );
-        $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
-        $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
 
-        return $testSuite;
+        $suite = TestSuite::empty($suiteConfig->getName());
+        foreach ($this->prepareTestCases($definition, $preparators, $options, $suiteConfig, $requester, $testCaseClass) as $test) {
+            $suite->addTest($test);
+        }
+
+        return $suite;
+    }
+
+    private function prepareTestCases(Api $definition, array $preparators, array $options, Config\Suite $config, Requester $requester, string $testCaseClass): Collection
+    {
+        /** @var Collection<int, TestCase> $allTests */
+        $allTests = collect();
+        foreach ($preparators as $preparator) {
+            $preparator->setLogger($this->logger);
+            $preparator->setSchemaValidationBaseline($config->getFilters()->getSchemaValidationBaseline());
+            $operations = $definition->getOperations();
+            try {
+                $operations = $this->filterOperation($operations, $config);
+                $tests = $preparator->doPrepare($operations);
+
+                if (!empty($options['ignore-baseline'])) {
+                    $tests = $this->filterTestCases($tests, $config);
+                }
+                if (!empty($options['only-baseline'])) {
+                    $tests = $this->filterOnlyTestCases($tests, $config);
+                }
+
+                foreach ($tests as $testCase) {
+                    $testCase->setRequester($requester);
+                    $testCase->setLogger($this->logger);
+                    $testCase->setBeforeCallbacks($config->getBeforeTestCaseCallbacks());
+                    $testCase->setAfterCallbacks($config->getAfterTestCaseCallbacks());
+                    $testCase->setSpecification($definition->getSpecification());
+                    $allTests->add($testCase);
+                }
+            } catch (PreparatorLoadingException $e) {
+                $this->logger->error($e->getMessage());
+            }
+        }
+
+        return $allTests
+            ->sortBy('operation')
+            ->values()
+            ->filter(fn (TestCase $testCase, int $index) => $this->indexInPart(
+                $this->part,
+                $index,
+                $allTests->count(),
+            ))
+            ->map(
+                fn (TestCase $testCase) => $testCase->toPhpUnitTestCase($testCaseClass)
+            )
+        ;
+    }
+
+    private function filterOperation(Operations $operations, Config\Suite $config): Operations
+    {
+        return $operations->filter(fn (Operation $operation) => $config->getFilters()->includes($operation));
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterTestCases(iterable $tests, Config\Suite $config): iterable
+    {
+        $excludedTests = array_column(
+            $this->toTestCaseFilter($config->getFilters()->getBaseLineExclude()),
+            'name'
+        );
+
+        return collect($tests)->filter(static fn (TestCase $test) => !\in_array(
+            $test->getName(),
+            $excludedTests,
+            true
+        ));
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterOnlyTestCases(iterable $tests, Config\Suite $config): iterable
+    {
+        $includedTests = array_column(
+            $this->toTestCaseFilter($config->getFilters()->getBaseLineExclude()),
+            'name'
+        );
+
+        return collect($tests)->filter(static fn (TestCase $test) => \in_array(
+            $test->getName(),
+            $includedTests,
+            true
+        ));
+    }
+
+
+    private function indexInPart(?string $part, int $index, int $total): bool
+    {
+        if ($part === null) {
+            return true;
+        }
+
+        [$partIndex, $partsCount] = explode('/', $part);
+
+        $partIndex = (int) $partIndex;
+        $partsCount = (int) $partsCount;
+
+        if ($partsCount > 0 && $index <= $total) {
+            $span = (int) ceil($total / $partsCount);
+            $from = $span * ($partIndex - 1);
+            $to = $span * $partIndex;
+
+            return $from <= $index && $index < $to;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<array<string, string>> $filter
+     *
+     * @return array<iterable<string, string>>
+     */
+    private function toTestCaseFilter(array $filter): array
+    {
+        /** @var array<iterable<string, string>> */
+        return collect($filter)
+            ->map(
+                static fn ($value) => collect($value)
+                    ->filter(static fn ($value, $key) => str_starts_with(
+                        $key,
+                        'testcase.'
+                    ))
+                    ->mapWithKeys(
+                        static fn ($value, $key) => [
+                            str_replace('testcase.', '', $key) => $value,
+                        ]
+                    )
+            )
+            ->filter()
+            ->toArray()
+        ;
     }
 
     /**
      * @param Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface> $testSuite
      * @param array<string, mixed>                                    $options
      */
-    private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
+    private function runSuite(Config\Suite $suiteConfig, TestSuite $testSuite, array $options): void
     {
-        $part = $options['part'] ?? null;
-        $testSuite->setPart($part !== null ? (string) $part : null);
-        $this->results[$suiteConfig->getName()] = $this->runner->run(
+        $this->runner->run(
+            (new Merger())->merge($this->getPhpUnitArguments($options), DefaultConfiguration::create()),
+            new NullResultCache(),
             $testSuite,
-            $this->getPhpUnitArguments($options, $suiteConfig),
-            [],
-            false
         );
         restore_exception_handler();
     }
@@ -388,16 +520,10 @@ final class Plan
      *
      * @return string[]
      */
-    private function getPhpUnitArguments(array $options, Config\Suite $suiteConfig): array
+    private function getPhpUnitArguments(array $options): Configuration
     {
         $options = $this->getPhpUnitOptions($options);
         $arguments = (new Builder())->fromParameters($options, []);
-        $arguments = (new Mapper())->mapToLegacyArray($arguments);
-
-        $phpunitConfig = $suiteConfig->getPhpunitConfig();
-        if ($phpunitConfig !== null) {
-            $arguments['configurationObject'] = (new Loader())->load($phpunitConfig);
-        }
 
         return $arguments;
     }
@@ -470,7 +596,7 @@ final class Plan
     {
         $options['colors'] = 'always';
         if (!isset($options['verbose']) || $options['verbose'] === false) {
-            $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+            //$options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
         }
         $options = array_filter(
             $options,
