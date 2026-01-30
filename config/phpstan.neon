@@ -33,6 +33,8 @@ parameters:
         - '/Language construct empty\(\) should not be used./'
         - '/In method "APITester\\Requester\\SymfonyKernelRequester::request", caught "Throwable" must be rethrown.+/'
         - '/.+ APITester\\Test\\TestCase\|null is not subtype of type PHPUnit\\Framework\\Test\|null/'
+        - '/throws checked exception Symfony\\Component\\Serializer\\Exception\\ExceptionInterface/'
+        - '/APITester\\Command\\ExecutePlanCommand::\$defaultName has no type specified./'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
         - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Calling eval\(\) is forbidden, eval is evil, please write more code and do not use eval\(\)/'}
         - {paths: [ ../src/Test/TestCase.php, ../src/Test/Plan.php ], message: '/Language construct eval\(\) should not be used./'}

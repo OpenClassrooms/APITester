@@ -11,39 +11,28 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class PsrRequestNormalizer implements NormalizerInterface
 {
-    /**
-     * @inerhitDoc
-     *
-     * @param mixed      $data
-     * @param mixed|null $format
-     */
-    public function supportsNormalization($data, $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Request;
     }
 
     /**
-     * @inerhitDoc
-     *
-     * @param mixed      $object
-     * @param mixed|null $format
-     *
      * @return array{'method': string,
      *              'url': string,
      *              'body': string|array<mixed>,
      *              'headers': array<string, string>
      * }
      */
-    public function normalize($object, $format = null, array $context = []): array
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array
     {
-        /** @var Request $object */
+        /** @var Request $data */
         $result = [
-            'method' => $object->getMethod(),
-            'url' => (string) $object->getUri(),
-            'body' => Json::isJson((string) $object->getBody()) ? Json::decode(
-                (string) $object->getBody()
-            ) : (string) $object->getBody(),
-            'headers' => $object->getHeaders(),
+            'method' => $data->getMethod(),
+            'url' => (string) $data->getUri(),
+            'body' => Json::isJson((string) $data->getBody()) ? Json::decode(
+                (string) $data->getBody()
+            ) : (string) $data->getBody(),
+            'headers' => $data->getHeaders(),
         ];
 
         if (isset($context[AbstractNormalizer::IGNORED_ATTRIBUTES])) {
@@ -60,5 +49,12 @@ final class PsrRequestNormalizer implements NormalizerInterface
          * }
          */
         return $result;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Request::class => true,
+        ];
     }
 }
