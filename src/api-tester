@@ -8,17 +8,24 @@ $autoload = [
     __DIR__ . '/../vendor/autoload.php',
     __DIR__ . '/../../../autoload.php',
 ];
+
+$loaded = false;
 foreach ($autoload as $file) {
     if (is_file($file)) {
-        require $file;
+        require_once $file;
+        $loaded = true;
+        break;
     }
 }
 
+if (!$loaded) {
+    fwrite(STDERR, "Could not find Composer autoload.php.\n");
+    exit(1);
+}
+
 use APITester\Command\ExecutePlanCommand;
-use PHPUnit\Util\TestDox\CliTestDoxPrinter;
 use Symfony\Component\Console\Application;
 
-new CliTestDoxPrinter(); //hack should find a solution to autoload
 $application = new Application('api-tester', '0.1');
 $application->add(new ExecutePlanCommand());
 $application->setDefaultCommand('launch', true);

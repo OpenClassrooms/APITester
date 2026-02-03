@@ -8,7 +8,6 @@ use APITester\Definition\Example\ResponseExample;
 use APITester\Util\Normalizer\PsrRequestNormalizer;
 use APITester\Util\Normalizer\PsrResponseNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
-use PHPUnit\Framework\ExpectationFailedException;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -33,7 +32,6 @@ final class Assert
      * @param array<string>          $exclude
      *
      * @throws InvalidArgumentException
-     * @throws ExpectationFailedException
      */
     public static function objectsEqual(
         iterable|object $expected,
@@ -83,9 +81,6 @@ final class Assert
         BaseAssert::assertSame($expected, $actual, $message);
     }
 
-    /**
-     * @throws ExpectationFailedException
-     */
     public static function true(mixed $actual, string $message = ''): void
     {
         BaseAssert::assertTrue($actual, $message);

@@ -82,7 +82,7 @@ final class Object_
     public static function getSubTypesOf(string $interface): array
     {
         $finder = new Finder();
-        $finder->in(PROJECT_DIR . '/src')
+        $finder->in(\dirname(__DIR__))
             ->files()
             ->name('*.php')
         ;

@@ -117,7 +117,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
                 $responses = $operation->responses;
-                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
+                $security = $operation->security ?? [];
+                if ($security instanceof \cebe\openapi\spec\SecurityRequirements) {
+                    $security = $security->getRequirements() ?? [];
+                }
+                $requirements = $this->getSecurityRequirementsScopes($security);
 
                 $operations->add(
                     Operation::create(

@@ -9,23 +9,20 @@ use APITester\Authenticator\Exception\AuthenticationException;
 use APITester\Authenticator\Exception\AuthenticationLoadingException;
 use APITester\Config;
 use APITester\Definition\Api;
+use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Loader\DefinitionLoader;
 use APITester\Definition\Loader\Exception\DefinitionLoaderNotFoundException;
 use APITester\Definition\Loader\Exception\DefinitionLoadingException;
+use APITester\Definition\Operation;
 use APITester\Preparator\Exception\InvalidPreparatorConfigException;
+use APITester\Preparator\Exception\PreparatorLoadingException;
 use APITester\Preparator\TestCasesPreparator;
 use APITester\Requester\Exception\RequesterNotFoundException;
 use APITester\Requester\Requester;
 use APITester\Test\Exception\SuiteNotFoundException;
 use APITester\Util\Object_;
-use APITester\Util\TestCase\Printer\DefaultPrinter;
-use APITester\Util\TestCase\Printer\TestDoxPrinter;
-use PHPUnit\Framework\TestResult;
-use PHPUnit\TextUI\CliArguments\Builder;
-use PHPUnit\TextUI\CliArguments\Mapper;
-use PHPUnit\TextUI\TestRunner;
-use PHPUnit\TextUI\XmlConfiguration\Loader;
+use Illuminate\Support\Collection;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -33,21 +30,6 @@ use Symfony\Component\HttpKernel\Kernel;
 
 final class Plan
 {
-    private const NON_PHPUNIT_OPTIONS = [
-        'config',
-        'quiet',
-        'ansi',
-        'no-ansi',
-        'no-interaction',
-        'suite',
-        'set-baseline',
-        'update-baseline',
-        'ignore-baseline',
-        'only-baseline',
-        'part',
-        'operation-id',
-    ];
-
     private readonly Authenticator $authenticator;
 
     /**
@@ -65,12 +47,7 @@ final class Plan
      */
     private readonly array $requesters;
 
-    /**
-     * @var array<string, TestResult>
-     */
-    private array $results = [];
-
-    private readonly TestRunner $runner;
+    private LoggerInterface $logger;
 
     /**
      * @param TestCasesPreparator[]     $preparators
@@ -82,16 +59,13 @@ final class Plan
         ?array $requesters = null,
         ?array $definitionLoaders = null,
         Authenticator $authenticator = null,
-        private LoggerInterface $logger = new NullLogger()
+        ?LoggerInterface $logger = null
     ) {
-        if (!\defined('PROJECT_DIR')) {
-            \define('PROJECT_DIR', \dirname(__DIR__, 2));
-        }
+        $this->logger = $logger ?? new NullLogger();
         $this->preparators = $preparators ?? Object_::getImplementations(TestCasesPreparator::class);
         $this->requesters = $requesters ?? Object_::getImplementationsClasses(Requester::class);
         $this->definitionLoaders = $definitionLoaders ?? Object_::getImplementations(DefinitionLoader::class);
         $this->authenticator = $authenticator ?? new Authenticator();
-        $this->runner = new TestRunner();
     }
 
     /**
@@ -99,107 +73,22 @@ final class Plan
      *
      * @throws DefinitionLoaderNotFoundException
      * @throws DefinitionLoadingException
-     * @throws RequesterNotFoundException
      * @throws InvalidPreparatorConfigException
+     * @throws RequesterNotFoundException
      * @throws SuiteNotFoundException
+     *
+     * @return TestCase[]
      */
-    public function execute(
-        Config\Plan $testPlanConfig,
-        string $suiteName = '',
-        array $options = []
-    ): bool {
+    public function getTestCases(Config\Plan $testPlanConfig, string $suiteName = '', array $options = []): array
+    {
+        $suiteConfig = $this->getSuiteConfig($testPlanConfig, $suiteName);
+
         $bootstrap = $testPlanConfig->getBootstrap();
         if ($bootstrap !== null) {
             require_once $bootstrap;
         }
-        $suites = $testPlanConfig->getSuites();
-        $suites = $this->selectSuite($suiteName, $suites);
-        foreach ($suites as $suiteConfig) {
-            if (!empty($options['set-baseline'])) {
-                $this->resetBaseLine($suiteConfig);
-            }
-            $testSuite = $this->prepareSuite($suiteConfig, $options);
-            if (!empty($options['ignore-baseline'])) {
-                $testSuite->setIgnoreBaseLine(true);
-            }
-            if (!empty($options['only-baseline'])) {
-                $testSuite->setOnlyBaseLine(true);
-                $testSuite->setIgnoreBaseLine(true);
-            }
-            $this->runSuite($suiteConfig, $testSuite, $options);
-            if (!empty($options['update-baseline']) || !empty($options['set-baseline'])) {
-                $this->updateBaseLine($suiteConfig);
-            }
-            break;
-        }
 
-        return $this->isSuccessful();
-    }
-
-    /**
-     * @return array<string, TestResult>
-     */
-    public function getResults(): array
-    {
-        return $this->results;
-    }
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    /**
-     * @param array<Config\Suite> $suites
-     *
-     * @throws SuiteNotFoundException
-     *
-     * @return iterable<Config\Suite>
-     */
-    private function selectSuite(string $suiteName, array $suites): iterable
-    {
-        if ($suiteName !== '') {
-            $indexSuites = collect($suites)
-                ->keyBy('name')
-            ;
-            if ($indexSuites->has($suiteName)) {
-                $suites = $indexSuites->where('name', $suiteName);
-            } else {
-                throw new SuiteNotFoundException();
-            }
-        }
-
-        return $suites;
-    }
-
-    private function resetBaseLine(Config\Suite $suiteConfig): void
-    {
-        $baselineFile = $suiteConfig
-            ->getFilters()
-            ->getBaseline()
-        ;
-        if (file_exists($suiteConfig->getFilters()->getBaseline())) {
-            unlink($baselineFile);
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $options
-     *
-     * @throws DefinitionLoaderNotFoundException
-     * @throws DefinitionLoadingException
-     * @throws InvalidPreparatorConfigException
-     * @throws RequesterNotFoundException
-     *
-     * @return Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface>
-     */
-    private function prepareSuite(Config\Suite $suiteConfig, array $options = []): Suite
-    {
-        $testCaseClass = Object_::validateClass(
-            $suiteConfig->getTestCaseClass(),
-            \PHPUnit\Framework\TestCase::class
-        );
-        $kernel = $this->loadSymfonyKernel($suiteConfig, $testCaseClass);
+        $kernel = $this->loadSymfonyKernel($suiteConfig);
         $definition = $this->loadApiDefinition($suiteConfig, $options);
         $requester = $this->loadRequester(
             $suiteConfig->getRequester(),
@@ -208,74 +97,44 @@ final class Plan
         );
         $tokens = $this->authenticate($suiteConfig, $definition, $requester);
         $preparators = $this->loadPreparators($suiteConfig->getPreparators(), $tokens);
-        $testSuite = new Suite(
-            $suiteConfig->getName(),
-            $definition,
-            $preparators,
-            $requester,
-            $suiteConfig->getFilters(),
-            $this->logger,
-            $testCaseClass,
-        );
-        $testSuite->setBeforeTestCaseCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
-        $testSuite->setAfterTestCaseCallbacks($suiteConfig->getAfterTestCaseCallbacks());
 
-        return $testSuite;
+        return $this->prepareTestCases($suiteConfig, $definition, $preparators, $requester, $options);
     }
 
     /**
-     * @param Suite<\PHPUnit\Framework\TestCase, HttpKernelInterface> $testSuite
-     * @param array<string, mixed>                                    $options
+     * @throws SuiteNotFoundException
      */
-    private function runSuite(Config\Suite $suiteConfig, Suite $testSuite, array $options): void
+    public function getSuiteConfig(Config\Plan $testPlanConfig, string $suiteName = ''): Config\Suite
     {
-        $part = $options['part'] ?? null;
-        $testSuite->setPart($part !== null ? (string) $part : null);
-        $this->results[$suiteConfig->getName()] = $this->runner->run(
-            $testSuite,
-            $this->getPhpUnitArguments($options, $suiteConfig),
-            [],
-            false
-        );
-        restore_exception_handler();
-    }
-
-    private function updateBaseLine(Config\Suite $suiteConfig): void
-    {
-        $exclude = [];
-        foreach ($this->results as $result) {
-            foreach (array_merge($result->failures(), $result->errors()) as $failure) {
-                /** @var TestCase|null $testCase */
-                $testCase = $failure->failedTest();
-                if ($testCase === null) {
-                    continue;
-                }
-                $exclude[] = [
-                    'testcase.name' => $testCase->getName(),
-                ];
+        $suites = $testPlanConfig->getSuites();
+        if ($suiteName !== '') {
+            /** @var Collection<string, Config\Suite> $indexSuites */
+            $indexSuites = collect($suites)
+                ->keyBy('name')
+            ;
+            if (!$indexSuites->has($suiteName)) {
+                throw new SuiteNotFoundException();
             }
-        }
-        $suiteConfig
-            ->getFilters()
-            ->writeBaseline($exclude)
-        ;
-    }
 
-    private function isSuccessful(): bool
-    {
-        foreach ($this->results as $suiteResult) {
-            if ($suiteResult->failureCount() > 0 || $suiteResult->errorCount() > 0) {
-                return false;
-            }
+            /** @var Config\Suite $suite */
+            $suite = $indexSuites->get($suiteName);
+
+            return $suite;
         }
 
-        return true;
+        if (\count($suites) === 0) {
+            throw new SuiteNotFoundException();
+        }
+
+        return $suites[0];
     }
 
-    /**
-     * @param class-string<\PHPUnit\Framework\TestCase> $testCaseClass
-     */
-    private function loadSymfonyKernel(Config\Suite $suiteConfig, string $testCaseClass): ?Kernel
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    private function loadSymfonyKernel(Config\Suite $suiteConfig): ?Kernel
     {
         $kernel = null;
         if ($suiteConfig->getSymfonyKernelClass() !== null) {
@@ -283,11 +142,7 @@ final class Plan
                 $suiteConfig->getSymfonyKernelClass(),
                 HttpKernelInterface::class
             );
-            if (method_exists($testCaseClass, 'getKernel')) {
-                $kernel = $this->getTestCaseKernel($testCaseClass, $kernelClass);
-            } else {
-                $kernel = $this->bootSymfonyKernel($kernelClass);
-            }
+            $kernel = $this->bootSymfonyKernel($kernelClass);
         }
 
         return $kernel;
@@ -384,56 +239,6 @@ final class Plan
     }
 
     /**
-     * @param array<string, mixed> $options
-     *
-     * @return string[]
-     */
-    private function getPhpUnitArguments(array $options, Config\Suite $suiteConfig): array
-    {
-        $options = $this->getPhpUnitOptions($options);
-        $arguments = (new Builder())->fromParameters($options, []);
-        $arguments = (new Mapper())->mapToLegacyArray($arguments);
-
-        $phpunitConfig = $suiteConfig->getPhpunitConfig();
-        if ($phpunitConfig !== null) {
-            $arguments['configurationObject'] = (new Loader())->load($phpunitConfig);
-        }
-
-        return $arguments;
-    }
-
-    /**
-     * @param class-string $testCaseClass
-     * @param class-string $kernelClass
-     */
-    private function getTestCaseKernel(string $testCaseClass, string $kernelClass): Kernel
-    {
-        $className = 'TestCaseKernelProvider';
-        if (!class_exists('TestCaseKernelProvider')) {
-            $code = <<<CODE_SAMPLE
-                class {$className} extends {$testCaseClass} {
-                    public function __construct() {
-                        parent::__construct('test');
-                        self::\$kernelClass = '{$kernelClass}';
-                        if (method_exists(\$this, 'resetDatabase'))
-                            \$this->resetDatabase();
-                        if (method_exists(\$this, 'bootKernel'))
-                            \$this->bootKernel();
-                    }
-                    public function getTestCaseKernel() {
-                        return \$this->getKernel();
-                    }
-                }
-                CODE_SAMPLE;
-            eval($code);
-        }
-        $className = '\\' . $className;
-        $kernelProvider = new $className();
-
-        return $kernelProvider->getTestCaseKernel();
-    }
-
-    /**
      * @param class-string<HttpKernelInterface> $symfonyKernelClass
      */
     private function bootSymfonyKernel(string $symfonyKernelClass): Kernel
@@ -462,41 +267,167 @@ final class Plan
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param TestCasesPreparator[] $preparators
+     * @param array<string, mixed>  $options
      *
-     * @return array<array-key, string>
+     * @return TestCase[]
      */
-    private function getPhpUnitOptions(array $options): array
-    {
-        $options['colors'] = 'always';
-        if (!isset($options['verbose']) || $options['verbose'] === false) {
-            $options['printer'] = ($options['testdox'] ?? false) === true ? TestDoxPrinter::class : DefaultPrinter::class;
+    private function prepareTestCases(
+        Config\Suite $suiteConfig,
+        Api $api,
+        array $preparators,
+        Requester $requester,
+        array $options = []
+    ): array {
+        $ignoreBaseline = !empty($options['ignore-baseline']);
+        $onlyBaseline = !empty($options['only-baseline']);
+        $part = isset($options['part']) ? (string) $options['part'] : null;
+
+        /** @var Collection<int, TestCase> $allTests */
+        $allTests = collect();
+
+        foreach ($preparators as $preparator) {
+            $preparator->setLogger($this->logger);
+            $preparator->setSchemaValidationBaseline($suiteConfig->getFilters()->getSchemaValidationBaseline());
+
+            $operations = $api->getOperations()
+                ->map(static fn (Operation $op) => $op->setPreparator($preparator::getName()))
+            ;
+
+            try {
+                $operations = $this->filterOperation($suiteConfig, $operations);
+                $tests = $preparator->doPrepare($operations);
+
+                if (!$ignoreBaseline) {
+                    $tests = $this->filterTestCases($suiteConfig, $tests);
+                }
+                if ($onlyBaseline) {
+                    $tests = $this->filterOnlyTestCases($suiteConfig, $tests);
+                }
+
+                foreach ($tests as $testCase) {
+                    $testCase->setRequester($requester);
+                    $testCase->setLogger($this->logger);
+                    $testCase->setBeforeCallbacks($suiteConfig->getBeforeTestCaseCallbacks());
+                    $testCase->setAfterCallbacks($suiteConfig->getAfterTestCaseCallbacks());
+                    $testCase->setSpecification($api->getSpecification());
+                    $allTests->add($testCase);
+                }
+            } catch (PreparatorLoadingException $e) {
+                $this->logger->error($e->getMessage());
+            }
         }
-        $options = array_filter(
-            $options,
-            static fn ($key) => !\in_array($key, self::NON_PHPUNIT_OPTIONS, true),
-            ARRAY_FILTER_USE_KEY
+
+        /** @var TestCase[] $sorted */
+        $sorted = $allTests
+            ->sortBy(static fn (TestCase $testCase) => $testCase->getOperation() ?? '')
+            ->values()
+            ->toArray()
+        ;
+
+        if ($part === null) {
+            return $sorted;
+        }
+
+        $filtered = [];
+        $total = \count($sorted);
+        foreach ($sorted as $index => $testCase) {
+            if ($this->indexInPart($part, $index, $total)) {
+                $filtered[] = $testCase;
+            }
+        }
+
+        return $filtered;
+    }
+
+    private function filterOperation(Config\Suite $suiteConfig, Operations $operations): Operations
+    {
+        return $operations->filter(
+            static fn (Operation $operation) => $suiteConfig->getFilters()
+                ->includes($operation)
+        );
+    }
+
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterTestCases(Config\Suite $suiteConfig, iterable $tests): iterable
+    {
+        $excludedTests = array_column(
+            $this->toTestCaseFilter($suiteConfig->getFilters()->getBaseLineExclude()),
+            'name'
         );
 
-        return array_filter(
-            array_map(
-                static function (string $key, $value) {
-                    if ($value === null) {
-                        return null;
-                    }
-                    if ($value === true) {
-                        return "--{$key}";
-                    }
+        return collect($tests)->filter(static fn (TestCase $test) => !\in_array(
+            $test->getName(),
+            $excludedTests,
+            true
+        ));
+    }
 
-                    if (!\is_scalar($value)) {
-                        throw new \InvalidArgumentException('Options must be scalar');
-                    }
+    /**
+     * @param iterable<array-key, TestCase> $tests
+     *
+     * @return iterable<array-key, TestCase>
+     */
+    private function filterOnlyTestCases(Config\Suite $suiteConfig, iterable $tests): iterable
+    {
+        $includedTests = array_column(
+            $this->toTestCaseFilter($suiteConfig->getFilters()->getBaseLineExclude()),
+            'name'
+        );
 
-                    return $value !== false ? "--{$key}={$value}" : null;
-                },
-                array_keys($options),
-                array_values($options),
+        return collect($tests)->filter(static fn (TestCase $test) => \in_array(
+            $test->getName(),
+            $includedTests,
+            true
+        ));
+    }
+
+    /**
+     * @param array<array<string, string>> $filter
+     *
+     * @return array<iterable<string, string>>
+     */
+    private function toTestCaseFilter(array $filter): array
+    {
+        /** @var array<iterable<string, string>> */
+        return collect($filter)
+            ->map(
+                static fn ($value) => collect($value)
+                    ->filter(static fn ($value, $key) => str_starts_with($key, 'testcase.'))
+                    ->mapWithKeys(
+                        static fn ($value, $key) => [
+                            str_replace('testcase.', '', $key) => $value,
+                        ]
+                    )
             )
-        );
+            ->filter()
+            ->toArray()
+        ;
+    }
+
+    private function indexInPart(?string $part, int $index, int $total): bool
+    {
+        if ($part === null) {
+            return true;
+        }
+
+        [$partIndex, $partsCount] = explode('/', $part);
+
+        $partIndex = (int) $partIndex;
+        $partsCount = (int) $partsCount;
+
+        if ($partsCount > 0 && $index <= $total) {
+            $span = (int) ceil($total / $partsCount);
+            $from = $span * ($partIndex - 1);
+            $to = $span * $partIndex;
+
+            return $from <= $index && $index < $to;
+        }
+
+        return false;
     }
 }
