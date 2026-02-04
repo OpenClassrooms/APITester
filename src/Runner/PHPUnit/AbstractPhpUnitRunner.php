@@ -46,6 +46,8 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             use APITester\Config\Loader\PlanConfigLoader;
             use APITester\Test\Plan;
             use APITester\Test\TestCase;
+            use Symfony\Component\Console\Logger\ConsoleLogger;
+            use Symfony\Component\Console\Output\ConsoleOutput;
             use Symfony\Component\HttpKernel\HttpKernelInterface;
 
             final class ApiTesterRunnerTest extends __APITESTER_PARENT__
@@ -61,6 +63,9 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                 {
                     $config = PlanConfigLoader::load(self::CONFIG_PATH);
                     $plan = new Plan();
+
+                    $verbosity = self::OPTIONS['verbosity'] ?? 32;
+                    $plan->setLogger(new ConsoleLogger(new ConsoleOutput($verbosity)));
 
                     foreach ($plan->getTestCases($config, self::SUITE_NAME, self::OPTIONS) as $testCase) {
                         yield $testCase->getName() => [$testCase];
@@ -127,7 +132,7 @@ abstract class AbstractPhpUnitRunner implements TestRunner
     }
 
     /**
-     * @param array<string, mixed>   $passThroughOptions
+     * @param array<string, mixed> $passThroughOptions
      * @param callable(string): void $writeOutput
      */
     final public function run(

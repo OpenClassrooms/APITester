@@ -16,14 +16,17 @@ final class HttpDumpRequester extends Requester
      */
     private array $responses = [];
 
-    public function request(RequestInterface $request, string $id): void
+    public function request(RequestInterface $request, string $id): RequestInterface
     {
+        $request = $this->resolveUri($request);
         $httpDump = $this->requestToHttp($request, $id);
 
         echo "\n" . $httpDump . "\n";
 
         $response = new Response($request->getMethod() === 'POST' ? 201 : 200);
         $this->responses[$id] = $response;
+
+        return $request;
     }
 
     public function getResponse(string $id): ResponseInterface

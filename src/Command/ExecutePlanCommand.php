@@ -73,7 +73,8 @@ final class ExecutePlanCommand extends Command
         $testFile = $runner->createRunnerFile($suiteConfig, $configPath, $suiteName, $runnerOptions);
 
         if ($setBaseline) {
-            $baselineFile = $suiteConfig->getFilters()->getBaseline();
+            $baselineFile = $suiteConfig->getFilters()
+                ->getBaseline();
             if (file_exists($baselineFile)) {
                 unlink($baselineFile);
             }
@@ -334,6 +335,7 @@ final class ExecutePlanCommand extends Command
             $runnerOptions['only-baseline'] = true;
             $runnerOptions['ignore-baseline'] = true;
         }
+        $runnerOptions['verbosity'] = $this->output->getVerbosity();
 
         return $runnerOptions;
     }
@@ -351,7 +353,8 @@ final class ExecutePlanCommand extends Command
             'testcase.name' => $name,
         ], $failed);
 
-        $suiteConfig->getFilters()->writeBaseline($exclude);
+        $suiteConfig->getFilters()
+            ->writeBaseline($exclude);
     }
 
     /**
@@ -381,8 +384,9 @@ final class ExecutePlanCommand extends Command
                 continue;
             }
 
-            $hasFailure = $testcase->getElementsByTagName('failure')->length > 0
-                || $testcase->getElementsByTagName('error')->length > 0;
+            $failures = $testcase->getElementsByTagName('failure');
+            $errors = $testcase->getElementsByTagName('error');
+            $hasFailure = $failures->length > 0 || $errors->length > 0;
             if (!$hasFailure) {
                 continue;
             }

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace APITester\Requester;
 
-use Nyholm\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpClient\HttplugClient;
 
 final class HttpAsyncRequester extends Requester
 {
-    private string $baseUri;
-
     /**
      * @var ResponseInterface[]
      */
@@ -27,7 +24,7 @@ final class HttpAsyncRequester extends Requester
 
     public function __construct(string $baseUri = '')
     {
-        $this->baseUri = rtrim($baseUri, '/');
+        $this->setBaseUri($baseUri);
     }
 
     public static function getName(): string
@@ -38,10 +35,13 @@ final class HttpAsyncRequester extends Requester
     /**
      * @inheritDoc
      */
-    public function request(RequestInterface $request, string $id): void
+    public function request(RequestInterface $request, string $id): RequestInterface
     {
+        $request = $this->resolveUri($request);
         $this->launched = false;
         $this->requests[$id] = $request;
+
+        return $request;
     }
 
     public function getResponse(string $id): ResponseInterface
@@ -54,20 +54,10 @@ final class HttpAsyncRequester extends Requester
         return $this->responses[$id];
     }
 
-    public function setBaseUri(string $baseUri): void
-    {
-        $this->baseUri = $baseUri;
-    }
-
     private function call(): void
     {
         $httpClient = new HttplugClient();
         foreach ($this->requests as $id => $request) {
-            $request = $request->withUri(
-                str_contains((string) $request->getUri(), 'https://') ? $request->getUri() : new Uri(
-                    trim($this->baseUri, '/') . '/' . trim((string) $request->getUri(), '/')
-                )
-            );
             try {
                 $httpClient
                     ->sendAsyncRequest($request)

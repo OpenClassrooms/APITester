@@ -142,7 +142,7 @@ final class TestCase implements \JsonSerializable, Filterable
             ($callback)();
         }
         $this->startedAt = Carbon::now();
-        $this->requester->request($this->request, $this->id);
+        $this->request = $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
         foreach ($this->afterCallbacks as $callback) {
             ($callback)();
@@ -318,7 +318,7 @@ final class TestCase implements \JsonSerializable, Filterable
             'request' => Serializer::normalize($this->request),
             'response' => Serializer::normalize($this->response),
             'expected' => Serializer::normalize($this->operationExample->getResponse(), $this->excludedFields),
-        ], JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $this->logger->log($logLevel, $message);
     }
 
