@@ -17,6 +17,9 @@ final class PlanConfigLoader
      */
     public static function load(string $path): Plan
     {
+        if (!is_file($path)) {
+            throw new ConfigurationException("File '{$path}' does not exist.");
+        }
         $content = file_get_contents($path);
         if ($content === false) {
             throw new ConfigurationException("Could not load file '{$path}'");
