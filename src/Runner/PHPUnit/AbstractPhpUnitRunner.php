@@ -27,8 +27,8 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             PhpUnitTestCase::class
         );
 
-        $dir = sys_get_temp_dir() . '/api-tester-' . bin2hex(random_bytes(8));
-        if (!mkdir($dir) && !is_dir($dir)) {
+        $dir = sys_get_temp_dir() . '/api-tester-runner';
+        if (!is_dir($dir) && !mkdir($dir)) {
             throw new \RuntimeException('Could not create a temporary directory for the runner file.');
         }
         $file = $dir . '/ApiTesterRunnerTest.php';
