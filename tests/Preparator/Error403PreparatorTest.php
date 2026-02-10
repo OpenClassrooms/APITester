@@ -87,7 +87,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    Error403Preparator::getName() . ' - test1 - DeniedToken',
+                    Error403Preparator::getName() . ' - test1 - DeniedToken/test2',
                     OperationExample::create('test1')
                         ->setPath('/test/oauth2')
                         ->setHeaders([
@@ -96,7 +96,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('403')),
                 ),
                 new TestCase(
-                    Error403Preparator::getName() . ' - test1 - DeniedToken',
+                    Error403Preparator::getName() . ' - test1 - DeniedToken/test3',
                     OperationExample::create('test1')
                         ->setPath('/test/oauth2')
                         ->setHeaders([
