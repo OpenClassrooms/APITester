@@ -51,11 +51,10 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
             if ($token->getAuthType() !== $security->getType()) {
                 continue;
             }
-            $testCaseName = $this->getTestCaseName() . '/' . $token->getName();
             if ($operation->getRequestBodies()->count() === 0) {
                 $testCases->add(
                     $this->buildTestCase(
-                        OperationExample::create($testCaseName, $operation)
+                        OperationExample::create($this->getTestCaseName(), $operation)
                             ->setAuthenticationHeaders(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,
@@ -65,7 +64,7 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
             foreach ($operation->getRequestBodies() as $ignored) {
                 $testCases->add(
                     $this->buildTestCase(
-                        OperationExample::create($testCaseName, $operation)
+                        OperationExample::create($this->getTestCaseName(), $operation)
                             ->setAuthenticationHeaders(new Tokens([$token]), true)
                             ->setResponse(ResponseExample::create()->setStatusCode($this->getStatusCode())),
                         false,

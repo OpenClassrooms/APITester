@@ -117,7 +117,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             [
                 new TestCase(
-                    Error401Preparator::getName() . ' - test1 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test1 - InvalidToken',
                     OperationExample::create('test1')
                         ->setPath('/test/oauth2/toto')
                         ->setHeaders([
@@ -128,7 +128,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test2 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test2 - InvalidToken',
                     OperationExample::create('test1')
                         ->setPath('/test/api/key/header')
                         ->setHeaders([
@@ -137,7 +137,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test3 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test3 - InvalidToken',
                     OperationExample::create('test3')
                         ->setPath('/test/api/key/cookie')
                         ->setHeaders([
@@ -146,13 +146,13 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test4 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test4 - InvalidToken',
                     OperationExample::create('test4')
                         ->setPath('/test/api/key/query?api_key=' . Error401Preparator::FAKE_API_KEY)
                         ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test5 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test5 - InvalidToken',
                     OperationExample::create('test5')
                         ->setPath('/test/basic')
                         ->setHeaders([
@@ -161,7 +161,7 @@ final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('401'))
                 ),
                 new TestCase(
-                    Error401Preparator::getName() . ' - test6 - InvalidToken/401_false_token',
+                    Error401Preparator::getName() . ' - test6 - InvalidToken',
                     OperationExample::create('test5')
                         ->setPath('/test/bearer')
                         ->setHeaders([
