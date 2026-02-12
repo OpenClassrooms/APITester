@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace APITester\Preparator;
 
 use APITester\Definition\Collection\Tokens;
+use APITester\Definition\Scope;
 use APITester\Definition\Security;
 use APITester\Definition\Security\OAuth2\OAuth2Security;
 use APITester\Definition\Token;
@@ -43,7 +44,14 @@ final class Error403Preparator extends SecurityErrorPreparator
                     sprintf(
                         'No token with invalid scope for 403 found for security "%s" (scopes: %s), skipping 403 test generation.',
                         $security->getName(),
-                        implode(', ', $security->getScopes()->select('name')->toArray())
+                        implode(
+                            ', ',
+                            array_map(
+                                static fn (Scope $scope): string => $scope->getName(),
+                                $security->getScopes()
+                                    ->all()
+                            )
+                        )
                     )
                 );
 

@@ -204,7 +204,7 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             return;
         }
 
-        @rmdir($dir);
+        rmdir($dir);
     }
 
     /**
@@ -270,13 +270,13 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             $emittedLinesCount = 0;
             $chunk = file_get_contents($progressFile, false, null, $progressOffset);
             if (is_string($chunk) && $chunk !== '') {
-                $progressOffset += strlen($chunk);
+                $progressOffset += mb_strlen($chunk);
                 $progressRemainder .= str_replace(["\r\n", "\r"], "\n", $chunk);
             }
 
-            while (($lineEnd = strpos($progressRemainder, "\n")) !== false) {
-                $line = substr($progressRemainder, 0, $lineEnd);
-                $progressRemainder = substr($progressRemainder, $lineEnd + 1);
+            while (($lineEnd = mb_strpos($progressRemainder, "\n")) !== false) {
+                $line = mb_substr($progressRemainder, 0, $lineEnd);
+                $progressRemainder = mb_substr($progressRemainder, $lineEnd + 1);
 
                 if ($line === '') {
                     continue;
