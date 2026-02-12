@@ -32,6 +32,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
         ]);
 
         static::assertFileExists($this->generatedFile);
+        static::assertStringContainsString('/api-tester-runner-', str_replace('\\', '/', $this->generatedFile));
         static::assertStringEndsWith('.php', $this->generatedFile);
 
         $content = file_get_contents($this->generatedFile);
@@ -59,6 +60,10 @@ final class AbstractPhpUnitRunnerTest extends TestCase
         static::assertStringContainsString('/path/to/config.yaml', $content);
         static::assertStringContainsString('test-suite', $content);
         static::assertStringContainsString('ApiTesterRunnerTest', $content);
+        static::assertStringContainsString('$seenDataSetNames = [];', $content);
+        static::assertStringContainsString('$dataSetName = $testCase->getName();', $content);
+        static::assertStringContainsString('self::reportRunningTestCase($testCase);', $content);
+        static::assertStringContainsString('private const PROGRESS_FILE =', $content);
     }
 
     public function testCleanupRunnerFileDeletesFile(): void
@@ -67,13 +72,36 @@ final class AbstractPhpUnitRunnerTest extends TestCase
         $suite = $this->createSuite();
 
         $file = $runner->createRunnerFile($suite, '/tmp/config.yaml', 'suite', []);
+        $directory = \dirname($file);
 
         static::assertFileExists($file);
+        static::assertDirectoryExists($directory);
 
         $runner->cleanupRunnerFile($file);
 
         static::assertFileDoesNotExist($file);
+        static::assertDirectoryDoesNotExist($directory);
         $this->generatedFile = null;
+    }
+
+    public function testCleanupRunnerFileKeepsDirectoryWhenItContainsOtherFiles(): void
+    {
+        $runner = new PhpUnitRunner();
+        $suite = $this->createSuite();
+
+        $file = $runner->createRunnerFile($suite, '/tmp/config.yaml', 'suite', []);
+        $directory = \dirname($file);
+        $otherFile = $directory . '/other.tmp';
+        file_put_contents($otherFile, 'tmp');
+
+        $runner->cleanupRunnerFile($file);
+
+        static::assertFileDoesNotExist($file);
+        static::assertFileExists($otherFile);
+        static::assertDirectoryExists($directory);
+
+        unlink($otherFile);
+        rmdir($directory);
     }
 
     /**
@@ -121,7 +149,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
                 'verbose' => true,
             ],
             null,
-            ['--verbose', '--colors=always'],
+            ['--verbose', '--colors=auto'],
             [],
         ];
 
@@ -131,7 +159,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
                 'also-skip' => false,
             ],
             null,
-            ['--colors=always'],
+            ['--colors=auto'],
             ['--skip-me', '--also-skip'],
         ];
 
@@ -140,14 +168,14 @@ final class AbstractPhpUnitRunnerTest extends TestCase
                 'filter' => 'MyTest',
             ],
             null,
-            ['--filter=MyTest', '--colors=always'],
+            ['--filter=MyTest', '--colors=auto'],
             [],
         ];
 
         yield 'phpunit config is included' => [
             [],
             'custom-phpunit.xml',
-            ['--configuration=custom-phpunit.xml', '--colors=always'],
+            ['--configuration=custom-phpunit.xml', '--colors=auto'],
             [],
         ];
     }

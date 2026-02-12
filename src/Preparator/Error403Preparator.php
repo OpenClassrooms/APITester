@@ -39,7 +39,15 @@ final class Error403Preparator extends SecurityErrorPreparator
             ;
 
             if ($tokens->count() === 0) {
-                throw new \LogicException('No token with invalid scope for 403 found.');
+                $this->logger->warning(
+                    sprintf(
+                        'No token with invalid scope for 403 found for security "%s" (scopes: %s), skipping 403 test generation.',
+                        $security->getName(),
+                        implode(', ', $security->getScopes()->select('name')->toArray())
+                    )
+                );
+
+                return new Tokens();
             }
 
             return $tokens;
