@@ -558,7 +558,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
     /**
      * @param array<OperationExample> $examples
      */
-    private function getExample(string $name, array &$examples, ?int $statusCode = null): OperationExample
+    private function getExample(string|int $name, array &$examples, ?int $statusCode = null): OperationExample
     {
         if (!isset($examples[$name])) {
             $examples[$name] = new OperationExample($name, null, $statusCode);

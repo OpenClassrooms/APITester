@@ -442,12 +442,12 @@ final class Operation implements Filterable
         return $this;
     }
 
-    public function getExample(?string $name = null): OperationExample
+    public function getExample(?string $name = null, mixed $default = null): OperationExample
     {
         $examples = $this->getExamples();
         if ($name !== null) {
             return $examples
-                ->get($name)
+                ->get($name, $default)
             ;
         }
 
