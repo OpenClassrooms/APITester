@@ -8,14 +8,11 @@ use APITester\Runner\PHPUnit\AbstractPhpUnitRunner;
 
 final class ParaTestRunner extends AbstractPhpUnitRunner
 {
-    public function __construct(
-        private readonly int $processes
-    ) {
-    }
+    public function __construct(private readonly int $processes) {}
 
     protected function getBinaryName(): string
     {
-        return 'paratest';
+        return "paratest";
     }
 
     /**
@@ -24,9 +21,11 @@ final class ParaTestRunner extends AbstractPhpUnitRunner
     protected function getRunnerSpecificArgs(string $testFile): array
     {
         return [
-            '--runner=WrapperRunner',
-            '--processes=' . $this->processes,
-            '--bootstrap=' . $testFile,
+            "--runner=Runner",
+            "--processes=" . $this->processes,
+            "--bootstrap=" . $testFile,
+            "--functional",
+            "--max-batch-size=200",
         ];
     }
 }

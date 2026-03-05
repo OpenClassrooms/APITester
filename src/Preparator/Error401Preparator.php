@@ -43,7 +43,7 @@ final class Error401Preparator extends SecurityErrorPreparator
                     $security->getType(),
                     JWT::encode([
                         'test' => 1234,
-                    ], 'abcd', self::ALG)
+                    ], hash('sha256','abcd'), self::ALG)
                 ),
             );
         }
@@ -55,7 +55,7 @@ final class Error401Preparator extends SecurityErrorPreparator
                     $security->getType(),
                     JWT::encode([
                         'test' => 1234,
-                    ], 'abcd', self::ALG)
+                    ], hash('sha256','abcd'), self::ALG)
                 ),
             );
         }
