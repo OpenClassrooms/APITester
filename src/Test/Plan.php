@@ -58,7 +58,7 @@ final class Plan
         ?array $preparators = null,
         ?array $requesters = null,
         ?array $definitionLoaders = null,
-        Authenticator $authenticator = null,
+        ?Authenticator $authenticator = null,
         ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();

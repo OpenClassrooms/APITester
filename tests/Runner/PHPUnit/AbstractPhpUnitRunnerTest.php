@@ -142,7 +142,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
     /**
      * @return iterable<string, array{0: array<string, mixed>, 1: ?string, 2: list<string>, 3: list<string>}>
      */
-    public function buildArgumentsProvider(): iterable
+    public static function buildArgumentsProvider(): iterable
     {
         yield 'boolean true produces flag' => [
             [

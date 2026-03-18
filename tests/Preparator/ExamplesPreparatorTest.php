@@ -59,7 +59,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getExpectedTestSuites(): iterable
+    public static function getExpectedTestSuites(): iterable
     {
         yield 'with 1 query param' => [
             Api::create()->addOperation(

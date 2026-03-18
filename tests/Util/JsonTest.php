@@ -20,7 +20,7 @@ final class JsonTest extends TestCase
     /**
      * @return iterable<string, array{0: string, 1: bool}>
      */
-    public function isJsonProvider(): iterable
+    public static function isJsonProvider(): iterable
     {
         yield 'valid object' => ['{"key":"value"}', true];
         yield 'valid array' => ['[1,2,3]', true];

@@ -69,7 +69,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<int, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield [
             Api::create()

@@ -84,7 +84,7 @@ final class RequesterTest extends TestCase
     /**
      * @return iterable<string, array{0: string, 1: string}>
      */
-    public function fillVarsProvider(): iterable
+    public static function fillVarsProvider(): iterable
     {
         yield 'single placeholder' => ['/users/{id}', '/users/42'];
         yield 'multiple placeholders' => ['{name} has id {id}', 'John has id 42'];

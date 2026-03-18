@@ -35,7 +35,7 @@ final class Error400BadFormatsPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'For email format in query param' => [
             Api::create()->addOperation(

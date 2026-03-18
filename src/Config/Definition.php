@@ -14,7 +14,7 @@ final class Definition
         string $path,
         private readonly string $format
     ) {
-        $path = trim($path, '/');
+        $path = mb_trim($path, '/');
         $fullPath = $path;
         if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
             $fullPath = Path::getBasePath() . '/' . $path;

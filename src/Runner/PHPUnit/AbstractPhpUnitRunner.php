@@ -28,7 +28,7 @@ abstract class AbstractPhpUnitRunner implements TestRunner
         array $runnerOptions
     ): string {
         $testCaseClass = Object_::validateClass(
-            ltrim($suiteConfig->getTestCaseClass(), '\\'),
+            mb_ltrim($suiteConfig->getTestCaseClass(), '\\'),
             PhpUnitTestCase::class
         );
 
@@ -170,7 +170,7 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             $content
         );
 
-        file_put_contents($file, ltrim($content));
+        file_put_contents($file, mb_ltrim($content));
         $this->progressFiles[$file] = $progressFile;
 
         return $file;

@@ -21,11 +21,11 @@ final class Path
 
         while (!in_array('vendor', (array) \scandir($dir), true)) {
             if ($dir === \dirname($dir)) {
-                return $dir . '/' . trim($path, '/');
+                return $dir . '/' . mb_trim($path, '/');
             }
             $dir = \dirname($dir);
         }
 
-        return $dir . '/' . trim($path, '/');
+        return $dir . '/' . mb_trim($path, '/');
     }
 }

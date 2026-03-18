@@ -200,7 +200,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     private function generateOperationId(string $path, string $method): string
     {
-        return trim(str_replace('/', '_', $path) . '_' . $method, '_');
+        return mb_trim(str_replace('/', '_', $path) . '_' . $method, '_');
     }
 
     /**

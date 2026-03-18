@@ -247,8 +247,8 @@ final class Operation implements Filterable
     }
 
     public function getExamplePath(
-        Parameters $pathParameters = null,
-        Parameters $queryParameters = null
+        ?Parameters $pathParameters = null,
+        ?Parameters $queryParameters = null
     ): string {
         if ($pathParameters === null) {
             $pathParameters = $this->getPathParameters();
@@ -333,7 +333,7 @@ final class Operation implements Filterable
             $path
         );
 
-        return rtrim($path . '?' . http_build_query($query), '?');
+        return mb_rtrim($path . '?' . http_build_query($query), '?');
     }
 
     public function getId(): string

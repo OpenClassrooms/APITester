@@ -35,7 +35,7 @@ abstract class Requester
 
     final public function setBaseUri(string $baseUri): void
     {
-        $this->baseUri = rtrim($baseUri, '/');
+        $this->baseUri = mb_rtrim($baseUri, '/');
     }
 
     final public function resolveUri(RequestInterface $request): RequestInterface

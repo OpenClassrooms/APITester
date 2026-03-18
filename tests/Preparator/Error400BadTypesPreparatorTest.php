@@ -36,7 +36,7 @@ final class Error400BadTypesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'For string query param' => [
             Api::create()

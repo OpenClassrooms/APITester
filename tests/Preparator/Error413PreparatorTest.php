@@ -36,7 +36,7 @@ final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{array<string, mixed>,Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'Query param range in Api && query param defined in config' => [
             [
