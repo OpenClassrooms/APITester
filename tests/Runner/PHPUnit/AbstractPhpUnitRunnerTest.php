@@ -62,8 +62,6 @@ final class AbstractPhpUnitRunnerTest extends TestCase
         static::assertStringContainsString('ApiTesterRunnerTest', $content);
         static::assertStringContainsString('$seenDataSetNames = [];', $content);
         static::assertStringContainsString('$dataSetName = $testCase->getName();', $content);
-        static::assertStringContainsString('self::reportRunningTestCase($testCase);', $content);
-        static::assertStringContainsString('private const PROGRESS_FILE =', $content);
     }
 
     public function testCleanupRunnerFileDeletesFile(): void
@@ -119,7 +117,6 @@ final class AbstractPhpUnitRunnerTest extends TestCase
     ): void {
         $ref = new \ReflectionClass(PhpUnitRunner::class);
         $method = $ref->getMethod('buildArguments');
-        $method->setAccessible(true);
 
         $suite = $this->createSuite();
         if ($phpunitConfig !== null) {

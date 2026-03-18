@@ -14,11 +14,6 @@ use Symfony\Component\Process\Process;
 abstract class AbstractPhpUnitRunner implements TestRunner
 {
     /**
-     * @var array<string, string>
-     */
-    private array $progressFiles = [];
-
-    /**
      * @param array<string, mixed> $runnerOptions
      */
     final public function createRunnerFile(
@@ -48,11 +43,6 @@ abstract class AbstractPhpUnitRunner implements TestRunner
         $configExport = var_export($configPath, true);
         $suiteExport = var_export($suiteName, true);
         $optionsExport = var_export($runnerOptions, true);
-        $progressFile = tempnam(sys_get_temp_dir(), 'api-tester-progress-');
-        if ($progressFile === false) {
-            throw new \RuntimeException('Could not create a temporary progress file.');
-        }
-        $progressFileExport = var_export($progressFile, true);
 
         $content = <<<'PHP'
             <?php
@@ -71,7 +61,6 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                 private const CONFIG_PATH = __APITESTER_CONFIG__;
                 private const SUITE_NAME = __APITESTER_SUITE__;
                 private const OPTIONS = __APITESTER_OPTIONS__;
-                private const PROGRESS_FILE = __APITESTER_PROGRESS_FILE__;
 
                 /**
                  * @return iterable<string, array{0: TestCase}>
@@ -119,7 +108,6 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                  */
                 public function testApi(TestCase $testCase): void
                 {
-                    self::reportRunningTestCase($testCase);
 
                     $kernel = null;
                     if (method_exists($this, 'getKernel')) {
@@ -131,30 +119,6 @@ abstract class AbstractPhpUnitRunner implements TestRunner
 
                     $testCase->test($kernel);
                 }
-
-                private static function reportRunningTestCase(TestCase $testCase): void
-                {
-                    $progressFile = self::PROGRESS_FILE;
-                    if ($progressFile === '') {
-                        return;
-                    }
-
-                    $handle = @fopen($progressFile, 'ab');
-                    if ($handle === false) {
-                        return;
-                    }
-
-                    if (!flock($handle, LOCK_EX)) {
-                        fclose($handle);
-
-                        return;
-                    }
-
-                    fwrite($handle, $testCase->getName() . PHP_EOL);
-                    fflush($handle);
-                    flock($handle, LOCK_UN);
-                    fclose($handle);
-                }
             }
             PHP;
 
@@ -164,28 +128,18 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                 '__APITESTER_CONFIG__',
                 '__APITESTER_SUITE__',
                 '__APITESTER_OPTIONS__',
-                '__APITESTER_PROGRESS_FILE__',
             ],
-            [$parent, $configExport, $suiteExport, $optionsExport, $progressFileExport],
+            [$parent, $configExport, $suiteExport, $optionsExport],
             $content
         );
 
         file_put_contents($file, mb_ltrim($content));
-        $this->progressFiles[$file] = $progressFile;
 
         return $file;
     }
 
     final public function cleanupRunnerFile(string $testFile): void
     {
-        if (isset($this->progressFiles[$testFile])) {
-            $progressFile = $this->progressFiles[$testFile];
-            if (is_file($progressFile)) {
-                unlink($progressFile);
-            }
-            unset($this->progressFiles[$testFile]);
-        }
-
         if (is_file($testFile)) {
             unlink($testFile);
         }
@@ -232,12 +186,8 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             [$testFile]
         );
 
-        $progressFile = $this->progressFiles[$testFile] ?? null;
-
         $process = new Process($command, Path::getBasePath());
         $process->setTimeout(null);
-        $runningPrefix = '[running]';
-        $statusPrefix = '[status]';
 
         $flushOutput = static function (string $buffer) use ($writeOutput): bool {
             if ($buffer === '') {
@@ -249,89 +199,21 @@ abstract class AbstractPhpUnitRunner implements TestRunner
             return true;
         };
 
-        $progressOffset = 0;
-        $progressRemainder = '';
-        $flushProgress = static function (bool $flushRemainder = false) use (
-            $progressFile,
-            $writeOutput,
-            $runningPrefix,
-            &$progressOffset,
-            &$progressRemainder
-        ): int {
-            if (!is_string($progressFile) || $progressFile === '') {
-                return 0;
-            }
+        $process->start();
 
-            clearstatcache(true, $progressFile);
-            if (!is_file($progressFile)) {
-                return 0;
-            }
+        while ($process->isRunning()) {
+            $hasOutput = $flushOutput($process->getIncrementalOutput());
+            $hasOutput = $flushOutput($process->getIncrementalErrorOutput()) || $hasOutput;
 
-            $emittedLinesCount = 0;
-            $chunk = file_get_contents($progressFile, false, null, $progressOffset);
-            if (is_string($chunk) && $chunk !== '') {
-                $progressOffset += mb_strlen($chunk);
-                $progressRemainder .= str_replace(["\r\n", "\r"], "\n", $chunk);
-            }
-
-            while (($lineEnd = mb_strpos($progressRemainder, "\n")) !== false) {
-                $line = mb_substr($progressRemainder, 0, $lineEnd);
-                $progressRemainder = mb_substr($progressRemainder, $lineEnd + 1);
-
-                if ($line === '') {
-                    continue;
-                }
-
-                $writeOutput("{$runningPrefix} {$line}\n");
-                ++$emittedLinesCount;
-            }
-
-            if ($flushRemainder && $progressRemainder !== '') {
-                $writeOutput("{$runningPrefix} {$progressRemainder}\n");
-                $progressRemainder = '';
-                ++$emittedLinesCount;
-            }
-
-            return $emittedLinesCount;
-        };
-
-        try {
-            $process->start();
-            $lastActivityAt = microtime(true);
-            $startedTestsCount = 0;
-            $statusIntervalSeconds = 10;
-
-            while ($process->isRunning()) {
-                $hasOutput = $flushOutput($process->getIncrementalOutput());
-                $hasOutput = $flushOutput($process->getIncrementalErrorOutput()) || $hasOutput;
-
-                $progressLinesCount = $flushProgress();
-                if ($progressLinesCount > 0) {
-                    $startedTestsCount += $progressLinesCount;
-                    $hasOutput = true;
-                }
-
-                if ($hasOutput) {
-                    $lastActivityAt = microtime(true);
-                } elseif ((microtime(true) - $lastActivityAt) >= $statusIntervalSeconds) {
-                    $writeOutput("{$statusPrefix} still running ({$startedTestsCount} tests started)\n");
-                    $lastActivityAt = microtime(true);
-                }
-
+            if (!$hasOutput) {
                 usleep(200000);
             }
-
-            $flushOutput($process->getIncrementalOutput());
-            $flushOutput($process->getIncrementalErrorOutput());
-            $flushProgress(true);
-
-            return $process->getExitCode() ?? 1;
-        } finally {
-            if (is_string($progressFile) && is_file($progressFile)) {
-                unlink($progressFile);
-            }
-            unset($this->progressFiles[$testFile]);
         }
+
+        $flushOutput($process->getIncrementalOutput());
+        $flushOutput($process->getIncrementalErrorOutput());
+
+        return $process->getExitCode() ?? 1;
     }
 
     abstract protected function getBinaryName(): string;

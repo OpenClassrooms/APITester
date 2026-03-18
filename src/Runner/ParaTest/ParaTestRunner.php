@@ -24,9 +24,10 @@ final class ParaTestRunner extends AbstractPhpUnitRunner
     protected function getRunnerSpecificArgs(string $testFile): array
     {
         return [
-            '--runner=WrapperRunner',
             '--processes=' . $this->processes,
             '--bootstrap=' . $testFile,
+            '--functional',
+            '--max-batch-size=200',
         ];
     }
 }
