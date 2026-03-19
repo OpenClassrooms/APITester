@@ -117,7 +117,11 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
                 /** @var RequestBody $requestBody */
                 $requestBody = $operation->requestBody;
                 $responses = $operation->responses;
-                $requirements = $this->getSecurityRequirementsScopes($operation->security ?? []);
+                $security = $operation->security ?? [];
+                if ($security instanceof \cebe\openapi\spec\SecurityRequirements) {
+                    $security = $security->getRequirements() ?? [];
+                }
+                $requirements = $this->getSecurityRequirementsScopes($security);
 
                 $operations->add(
                     Operation::create(
@@ -196,7 +200,7 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
 
     private function generateOperationId(string $path, string $method): string
     {
-        return trim(str_replace('/', '_', $path) . '_' . $method, '_');
+        return mb_trim(str_replace('/', '_', $path) . '_' . $method, '_');
     }
 
     /**

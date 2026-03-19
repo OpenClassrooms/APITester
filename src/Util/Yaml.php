@@ -34,7 +34,7 @@ final class Yaml
             return [];
         }
 
-        $directory = \dirname(__DIR__, 2) . '/' . trim($path, '/');
+        $directory = \dirname(__DIR__, 2) . '/' . mb_trim($path, '/');
 
         $data = [];
         /** @var DirectoryIterator $fileInfo */

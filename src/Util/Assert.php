@@ -8,8 +8,6 @@ use APITester\Definition\Example\ResponseExample;
 use APITester\Util\Normalizer\PsrRequestNormalizer;
 use APITester\Util\Normalizer\PsrResponseNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;
-use PHPUnit\Framework\ExpectationFailedException;
-use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -31,9 +29,6 @@ final class Assert
      * @param object|iterable<mixed> $expected
      * @param object|iterable<mixed> $actual
      * @param array<string>          $exclude
-     *
-     * @throws InvalidArgumentException
-     * @throws ExpectationFailedException
      */
     public static function objectsEqual(
         iterable|object $expected,
@@ -83,9 +78,6 @@ final class Assert
         BaseAssert::assertSame($expected, $actual, $message);
     }
 
-    /**
-     * @throws ExpectationFailedException
-     */
     public static function true(mixed $actual, string $message = ''): void
     {
         BaseAssert::assertTrue($actual, $message);
@@ -171,7 +163,7 @@ final class Assert
      *
      * @return array<string>
      */
-    private static function getPaths(array $array, array $excludedFields = [], string $prefix = null): array
+    private static function getPaths(array $array, array $excludedFields = [], ?string $prefix = null): array
     {
         self::initAccessor();
         $paths = [];

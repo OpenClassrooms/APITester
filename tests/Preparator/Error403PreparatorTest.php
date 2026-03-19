@@ -69,7 +69,7 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<int, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield [
             Api::create()
@@ -105,6 +105,24 @@ final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase
                         ->setResponse(ResponseExample::create('403')),
                 ),
             ],
+        ];
+
+        yield [
+            Api::create()
+                ->addOperation(
+                    Operation::create('testNoInvalidScopeToken', '/test/oauth2/no-invalid-token')
+                        ->addResponse(DefinitionResponse::create(403))
+                        ->addSecurity(
+                            OAuth2ImplicitSecurity::create(
+                                'oauth2_test_no_invalid_scope_token',
+                                'https://petstore3.swagger.io/oauth/authorize',
+                            )
+                                ->addScopeFromString('scope1')
+                                ->addScopeFromString('scope3')
+                                ->addScopeFromString('scope5')
+                        )
+                ),
+            [],
         ];
     }
 }

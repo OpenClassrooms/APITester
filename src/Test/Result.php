@@ -22,12 +22,12 @@ final class Result implements \JsonSerializable, \Stringable
         return $this->code !== null ? $this->code . ': ' . $this->message : $this->message;
     }
 
-    public static function success(string $message = null, string $code = null): self
+    public static function success(?string $message = null, ?string $code = null): self
     {
         return new self(self::STATUS_SUCCESS, $message ?? 'Succeeded.', $code);
     }
 
-    public static function failed(string $message, string $code = null): self
+    public static function failed(string $message, ?string $code = null): self
     {
         return new self(self::STATUS_FAILED, $message, $code);
     }

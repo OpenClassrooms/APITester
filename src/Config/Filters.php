@@ -31,8 +31,8 @@ final class Filters
     public function __construct(
         ?array $include = null,
         ?array $exclude = null,
-        string $baseline = null,
-        string $schemaValidationBaseline = null
+        ?string $baseline = null,
+        ?string $schemaValidationBaseline = null
     ) {
         $this->include = $include ?? [];
         $this->exclude = $exclude ?? [];

@@ -28,7 +28,6 @@ use OpenClassrooms\OpenAPIValidation\PSR7\ResponseValidator;
 use OpenClassrooms\OpenAPIValidation\Schema\Exception\SchemaMismatch;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
-use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -143,7 +142,7 @@ final class TestCase implements \JsonSerializable, Filterable
             ($callback)();
         }
         $this->startedAt = Carbon::now();
-        $this->requester->request($this->request, $this->id);
+        $this->request = $this->requester->request($this->request, $this->id);
         $this->finishedAt = Carbon::now();
         foreach ($this->afterCallbacks as $callback) {
             ($callback)();
@@ -166,7 +165,7 @@ final class TestCase implements \JsonSerializable, Filterable
                 ResponseExample::fromPsrResponse($this->response),
                 $this->excludedFields
             );
-        } catch (ExpectationFailedException $e) {
+        } catch (\Throwable $e) {
             $this->log(LogLevel::NOTICE);
             throw $e;
         }
@@ -202,22 +201,6 @@ final class TestCase implements \JsonSerializable, Filterable
     public function setRequester(Requester $requester): void
     {
         $this->requester = $requester;
-    }
-
-    /**
-     * @template T of \PHPUnit\Framework\TestCase
-     *
-     * @param class-string<T> $testCaseClass
-     *
-     * @return T
-     */
-    public function toPhpUnitTestCase(string $testCaseClass): \PHPUnit\Framework\TestCase
-    {
-        $className = '\ApiTestCase';
-        $testCaseName = $this->getName();
-        $this->declareTestCaseClass($className, $testCaseClass);
-
-        return new $className($this, $testCaseName);
     }
 
     public function withRequestBody(Body $request): self
@@ -335,43 +318,8 @@ final class TestCase implements \JsonSerializable, Filterable
             'request' => Serializer::normalize($this->request),
             'response' => Serializer::normalize($this->response),
             'expected' => Serializer::normalize($this->operationExample->getResponse(), $this->excludedFields),
-        ], JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $this->logger->log($logLevel, $message);
-    }
-
-    private function declareTestCaseClass(string $name, string $parent): void
-    {
-        if (!class_exists($name)) {
-            $name = str_replace('\\', '', $name);
-            $code = <<<CODE_SAMPLE
-                class {$name} extends {$parent} {
-                    private \\APITester\\Test\\TestCase \$testCase;
-                    private string \$name;
-                    public function __construct(\$testCase, \$name) {
-                        parent::__construct('test');
-                        \$this->name = \$name;
-                        \$this->testCase = \$testCase;
-                    }
-                    public function getName(bool \$withDataSet = true): string
-                    {
-                        return \$this->name;
-                    }
-                    public function getMetadata(): array
-                    {
-                        return \$this->testCase->getMetadata();
-                    }
-                    public function test(): void
-                    {
-                        \$kernel = null;
-                        if (method_exists(\$this, 'getKernel')) {
-                            \$kernel = \$this->getKernel();
-                        }
-                        \$this->testCase->test(\$kernel);
-                    }
-                }
-            CODE_SAMPLE;
-            eval($code);
-        }
     }
 
     /**

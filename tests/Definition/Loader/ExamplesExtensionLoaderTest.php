@@ -34,7 +34,7 @@ final class ExamplesExtensionLoaderTest extends TestCase
     /**
      * @return iterable<array{0: string, 1: Operations, 2: Operations}>
      */
-    public function getLoadAndAppendData(): iterable
+    public static function getLoadAndAppendData(): iterable
     {
         yield 'Nominal case' => [
             FixturesLocation::CONFIG_EXAMPLES_EXTENSION,

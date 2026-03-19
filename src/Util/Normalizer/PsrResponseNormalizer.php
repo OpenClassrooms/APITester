@@ -11,12 +11,17 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class PsrResponseNormalizer implements NormalizerInterface
 {
+    /**
+     * @param array<mixed, mixed> $context
+     */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Response;
     }
 
     /**
+     * @param array<mixed, mixed> $context
+     *
      * @return array{
      *          'body': string|array<mixed>,
      *          'status': int,
@@ -50,6 +55,9 @@ final class PsrResponseNormalizer implements NormalizerInterface
         return $result;
     }
 
+    /**
+     * @return array<class-string, bool>
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [

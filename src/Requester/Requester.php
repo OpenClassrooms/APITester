@@ -17,14 +17,35 @@ abstract class Requester
      */
     private array $vars = [];
 
+    private string $baseUri = '';
+
     abstract public static function getName(): string;
 
     /**
      * @throws ClientExceptionInterface
      */
-    abstract public function request(RequestInterface $request, string $id): void;
+    abstract public function request(RequestInterface $request, string $id): RequestInterface;
 
     abstract public function getResponse(string $id): ResponseInterface;
+
+    final public function getBaseUri(): string
+    {
+        return $this->baseUri;
+    }
+
+    final public function setBaseUri(string $baseUri): void
+    {
+        $this->baseUri = mb_rtrim($baseUri, '/');
+    }
+
+    final public function resolveUri(RequestInterface $request): RequestInterface
+    {
+        if ($this->baseUri !== '' && !str_starts_with((string) $request->getUri(), 'http')) {
+            return $request->withUri(new Uri($this->baseUri . $request->getUri()));
+        }
+
+        return $request;
+    }
 
     protected function fillRequestVars(RequestInterface $request): void
     {

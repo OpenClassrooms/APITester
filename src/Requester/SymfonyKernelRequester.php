@@ -7,7 +7,6 @@ namespace APITester\Requester;
 use APITester\Util\Json;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
-use Nyholm\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
@@ -18,8 +17,6 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class SymfonyKernelRequester extends Requester
 {
-    private string $baseUri;
-
     private HttpKernelInterface $kernel;
 
     /**
@@ -29,28 +26,25 @@ final class SymfonyKernelRequester extends Requester
 
     public function __construct(string $baseUri = '')
     {
-        $this->baseUri = rtrim($baseUri, '/');
+        $this->setBaseUri($baseUri);
     }
 
     /**
      * @inheritDoc
      */
-    public function request(RequestInterface $request, string $id): void
+    public function request(RequestInterface $request, string $id): RequestInterface
     {
-        if (!str_starts_with((string) $request->getUri(), 'http')) {
-            $request = $request->withUri(new Uri(trim($this->baseUri . $request->getUri())));
-        }
+        $request = $this->resolveUri($request);
         try {
-            $request = $this->psrToSymfonyRequest($request);
-            $response = $this->kernel->handle($request);
-            //            $this->kernel->terminate($request, $response);
+            $sfRequest = $this->psrToSymfonyRequest($request);
+            $response = $this->kernel->handle($sfRequest);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
         } catch (\Throwable $e) {
-            //            print_r($e->getTrace()[0]);
-            //            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
             $response = new Response(Json::encode($e), 500);
             $this->responses[$id] = $this->symfonyToPsrResponse($response);
         }
+
+        return $request;
     }
 
     public function getResponse(string $id): ResponseInterface
@@ -61,11 +55,6 @@ final class SymfonyKernelRequester extends Requester
     public static function getName(): string
     {
         return 'symfony-kernel';
-    }
-
-    public function setBaseUri(string $baseUri): void
-    {
-        $this->baseUri = $baseUri;
     }
 
     public function setKernel(HttpKernelInterface $kernel): void
