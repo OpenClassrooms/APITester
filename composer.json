@@ -39,12 +39,12 @@
     }
   },
   "require": {
-    "php": "^8.3.5",
+    "php": "^8.4.2",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
-    "canvural/php-openapi-faker": "^2.0",
+    "canvural/php-openapi-faker": "dev-main",
     "cebe/php-openapi": "^1.5",
     "fakerphp/faker": "^1.9",
     "firebase/php-jwt": "^6.0 || ^7.0",
@@ -104,6 +104,10 @@
     {
       "type": "vcs",
       "url": "https://github.com/OpenClassrooms/openapi-psr7-validator"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/OpenClassrooms/php-openapi-faker"
     }
   ],
   "scripts": {
