@@ -6,6 +6,7 @@ namespace APITester\Tests\Preparator;
 
 use APITester\Definition\Api;
 use APITester\Definition\Body;
+use APITester\Definition\Example\BodyExample;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
@@ -31,6 +32,81 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             $expected,
             $preparator->doPrepare($api->getOperations()),
             ['parent', 'body']
+        );
+    }
+
+    public function testReusesValidExampleData(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('updateTest', '/test/{id}', 'PUT')
+                    ->addPathParameter(
+                        Parameter::create('id')->setSchema(
+                            new Schema([
+                                'type' => 'integer',
+                                'minimum' => 1,
+                                'maximum' => 1,
+                            ])
+                        )
+                    )
+                    ->addQueryParameter(
+                        Parameter::create('lang')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                            ])
+                        )
+                    )
+                    ->addRequestBody(
+                        Body::create(
+                            new Schema([
+                                'type' => 'object',
+                                'required' => ['name'],
+                                'properties' => [
+                                    'name' => [
+                                        'type' => 'string',
+                                    ],
+                                ],
+                            ]),
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(
+                        DefinitionResponse::create(404)
+                            ->setDescription('description test')
+                    )
+                    ->addExample(
+                        OperationExample::create('200')
+                            ->setQueryParameter('lang', 'en')
+                            ->setBody(
+                                BodyExample::create([
+                                    'name' => 'John Doe',
+                                ])
+                            )
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        $expected = [
+            new TestCase(
+                Error404Preparator::getName() . ' - updateTest - RandomPath',
+                OperationExample::create('test')
+                    ->setPath('/test/{id}')
+                    ->setMethod('PUT')
+                    ->setPathParameter('id', '1')
+                    ->setQueryParameter('lang', 'en')
+                    ->setBodyContent([
+                        'name' => 'John Doe',
+                    ])
+                    ->setResponse(ResponseExample::create('404', 'description test')),
+            ),
+        ];
+
+        $preparator = new Error404Preparator();
+
+        Assert::objectsEqual(
+            $expected,
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
         );
     }
 
