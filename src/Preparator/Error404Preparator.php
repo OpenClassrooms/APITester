@@ -7,6 +7,8 @@ namespace APITester\Preparator;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Test\TestCase;
 
@@ -36,36 +38,80 @@ final class Error404Preparator extends TestCasesPreparator
      */
     private function prepareTestCase(DefinitionResponse $response): array
     {
+        $testCase = $this->buildError404TestCase($response);
+
+        return $testCase === null ? [] : [$testCase];
+    }
+
+    private function buildError404TestCase(DefinitionResponse $response): ?TestCase
+    {
         $operation = $response->getParent();
+        $example = $this->buildMissingResourceExample($operation);
+        $this->completeConfiguredRequestParameters($example);
 
-        $testcases = [];
+        $missingExampleReason = $this->getMissingRequiredExampleReason($operation, $example);
 
-        if ($operation->getRequestBodies()->count() === 0) {
-            $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
-                    ->setResponse(
-                        ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
-                            ->setHeaders($this->config->response->headers ?? [])
-                            ->setContent($this->config->response->body ?? $response->getDescription())
-                    )
+        if ($missingExampleReason !== null) {
+            $this->logger->warning(
+                "Skipping 404 test for operation {$operation->getId()}: {$missingExampleReason}."
             );
+
+            return null;
         }
 
-        foreach ($operation->getRequestBodies() as $ignored) {
-            $testcases[] = $this->buildTestCase(
-                OperationExample::create('RandomPath', $operation)
-                    ->setForceRandom()
-                    ->setResponse(
-                        ResponseExample::create()
-                            ->setStatusCode($this->config->response->getStatusCode() ?? '404')
-                            ->setHeaders($this->config->response->headers ?? [])
-                            ->setContent($this->config->response->body ?? $response->getDescription())
-                    )
-            );
+        return $this->buildTestCase(
+            $example->setResponse(
+                ResponseExample::create()
+                    ->setStatusCode($this->config->response->getStatusCode() ?? '404')
+                    ->setHeaders($this->config->response->headers ?? [])
+                    ->setContent($this->config->response->body ?? $response->getDescription())
+            ),
+            false
+        );
+    }
+
+    private function buildMissingResourceExample(Operation $operation): OperationExample
+    {
+        $example = $operation->getExamples()->count() === 0
+            ? OperationExample::create('RandomPath', $operation)
+            : $operation->getExample()->withName('RandomPath');
+
+        return $example
+            ->setAutoComplete(false)
+            ->setForceRandom(false)
+            ->setPathParameters($operation->getPathParameters()->getRandomExamples())
+        ;
+    }
+
+    private function completeConfiguredRequestParameters(OperationExample $example): void
+    {
+        $example
+            ->setAuthenticationHeaders($this->tokens)
+            ->setHeaders($this->config->headers)
+        ;
+    }
+
+    private function getMissingRequiredExampleReason(Operation $operation, OperationExample $example): ?string
+    {
+        foreach ($operation->getRequestBodies() as $body) {
+            if ($body->isRequired() && $example->getBody() === null) {
+                return 'required request body has no example';
+            }
         }
 
-        return $testcases;
+        foreach (
+            [
+                Parameter::TYPE_QUERY => $operation->getQueryParameters(),
+                Parameter::TYPE_HEADER => $operation->getHeaders(),
+            ] as $in => $parameters
+        ) {
+            foreach ($parameters->where('required', true) as $parameter) {
+                if (!$example->hasParameter($parameter->getName(), $in)) {
+                    return "required {$in} parameter {$parameter->getName()} has no example";
+                }
+            }
+        }
+
+        return null;
     }
 }

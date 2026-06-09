@@ -235,7 +235,9 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             $request = Body::create(
                 $schema,
                 $type,
-            );
+            )
+                ->setRequired($requestBody->required ?? false)
+            ;
             $collection->add($request);
         }
 
