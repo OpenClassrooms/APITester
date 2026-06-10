@@ -8,7 +8,6 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
 use APITester\Definition\Response as DefinitionResponse;
 use APITester\Test\TestCase;
 
@@ -66,6 +65,8 @@ final class Error404Preparator extends TestCasesPreparator
                     ->setHeaders($this->config->response->headers ?? [])
                     ->setContent($this->config->response->body ?? $response->getDescription())
             ),
+            false,
+            [],
             false
         );
     }
@@ -81,37 +82,5 @@ final class Error404Preparator extends TestCasesPreparator
             ->setForceRandom(false)
             ->setPathParameters($operation->getPathParameters()->getRandomExamples())
         ;
-    }
-
-    private function completeConfiguredRequestParameters(OperationExample $example): void
-    {
-        $example
-            ->setAuthenticationHeaders($this->tokens)
-            ->setHeaders($this->config->headers)
-        ;
-    }
-
-    private function getMissingRequiredExampleReason(Operation $operation, OperationExample $example): ?string
-    {
-        foreach ($operation->getRequestBodies() as $body) {
-            if ($body->isRequired() && $example->getBody() === null) {
-                return 'required request body has no example';
-            }
-        }
-
-        foreach (
-            [
-                Parameter::TYPE_QUERY => $operation->getQueryParameters(),
-                Parameter::TYPE_HEADER => $operation->getHeaders(),
-            ] as $in => $parameters
-        ) {
-            foreach ($parameters->where('required', true) as $parameter) {
-                if (!$example->hasParameter($parameter->getName(), $in)) {
-                    return "required {$in} parameter {$parameter->getName()} has no example";
-                }
-            }
-        }
-
-        return null;
     }
 }

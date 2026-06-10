@@ -8,6 +8,8 @@ use APITester\Definition\Body;
 use APITester\Definition\Collection\Operations;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Example\OperationExample;
+use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
 use APITester\Definition\Token;
 use APITester\Preparator\Config\PreparatorConfig;
 use APITester\Preparator\Exception\InvalidPreparatorConfigException;
@@ -49,7 +51,8 @@ abstract class TestCasesPreparator
     final public function buildTestCase(
         OperationExample $example,
         bool $auth = true,
-        array $excludedFields = []
+        array $excludedFields = [],
+        bool $configureHeaders = true
     ): TestCase {
         $operation = $example->getParent();
 
@@ -57,7 +60,9 @@ abstract class TestCasesPreparator
             $example->setAuthenticationHeaders($this->tokens);
         }
 
-        $example->setHeaders($this->config->headers);
+        if ($configureHeaders) {
+            $example->setHeaders($this->config->headers);
+        }
 
         return new TestCase(
             static::getName()
@@ -182,6 +187,45 @@ abstract class TestCasesPreparator
                 true
             ))->generate()
         );
+    }
+
+    protected function completeConfiguredRequestParameters(OperationExample $example): void
+    {
+        $example
+            ->setAuthenticationHeaders($this->tokens)
+            ->setHeaders($this->config->headers)
+        ;
+    }
+
+    /**
+     * @param array<string> $parameterTypes
+     */
+    protected function getMissingRequiredExampleReason(
+        Operation $operation,
+        OperationExample $example,
+        array $parameterTypes = [Parameter::TYPE_QUERY, Parameter::TYPE_HEADER]
+    ): ?string {
+        foreach ($operation->getRequestBodies() as $body) {
+            if ($body->isRequired() && $example->getBody() === null) {
+                return 'required request body has no example';
+            }
+        }
+
+        $parametersByType = [
+            Parameter::TYPE_PATH => $operation->getPathParameters(),
+            Parameter::TYPE_QUERY => $operation->getQueryParameters(),
+            Parameter::TYPE_HEADER => $operation->getHeaders(),
+        ];
+
+        foreach ($parameterTypes as $in) {
+            foreach ($parametersByType[$in]->where('required', true) as $parameter) {
+                if (!$example->hasParameter($parameter->getName(), $in)) {
+                    return "required {$in} parameter {$parameter->getName()} has no example";
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

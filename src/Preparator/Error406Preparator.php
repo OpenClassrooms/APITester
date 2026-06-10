@@ -8,6 +8,7 @@ use APITester\Definition\Collection\Operations;
 use APITester\Definition\Example\OperationExample;
 use APITester\Definition\Example\ResponseExample;
 use APITester\Definition\Operation;
+use APITester\Definition\Parameter;
 use APITester\Preparator\Config\Error406PreparatorConfig;
 use APITester\Test\TestCase;
 
@@ -34,20 +35,52 @@ final class Error406Preparator extends TestCasesPreparator
                     $operation,
                     (string) $type
                 ))
+                ->filter()
         )->flatten();
     }
 
-    private function prepareTestCase(Operation $operation, string $type): TestCase
+    private function prepareTestCase(Operation $operation, string $type): ?TestCase
     {
+        $example = $this->buildInvalidMediaTypeExample($operation, $type);
+        $missingExampleReason = $this->getMissingRequiredExampleReason(
+            $operation,
+            $example,
+            [Parameter::TYPE_PATH, Parameter::TYPE_QUERY, Parameter::TYPE_HEADER]
+        );
+
+        if ($missingExampleReason !== null) {
+            $this->logger->warning(
+                "Skipping 406 test for operation {$operation->getId()}: {$missingExampleReason}."
+            );
+
+            return null;
+        }
+
         return $this->buildTestCase(
-            OperationExample::create('InvalidMediaType', $operation)
-                ->setHeaders([
-                    'Accept' => $type,
-                ])->setResponse(
+            $example
+                ->setResponse(
                     ResponseExample::create()
                         ->setStatusCode('406')
                         ->setContent($this->config->response->body ?? null)
-                ),
+            ),
+            false,
+            [],
+            false
         );
+    }
+
+    private function buildInvalidMediaTypeExample(Operation $operation, string $type): OperationExample
+    {
+        $example = $operation->getExamples()->count() === 0
+            ? OperationExample::create('InvalidMediaType', $operation)
+            : $operation->getExample()->withName('InvalidMediaType');
+
+        $example
+            ->setAutoComplete(false)
+            ->setForceRandom(false)
+        ;
+        $this->completeConfiguredRequestParameters($example);
+
+        return $example->setHeader('Accept', $type);
     }
 }
