@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Util;
 
-use APITester\Definition\Example\ResponseExample;
+use APITester\Schema\Entity\Example\ResponseExample;
 use APITester\Util\Normalizer\PsrRequestNormalizer;
 use APITester\Util\Normalizer\PsrResponseNormalizer;
 use PHPUnit\Framework\Assert as BaseAssert;

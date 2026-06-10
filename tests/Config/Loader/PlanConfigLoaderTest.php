@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Config\Loader;
 
-use APITester\Config\Exception\ConfigurationException;
-use APITester\Config\Loader\PlanConfigLoader;
+use APITester\Runtime\Config\Exception\ConfigurationException;
+use APITester\Runtime\Config\Loader\PlanConfigLoader;
 use APITester\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 

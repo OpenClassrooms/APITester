@@ -23,7 +23,7 @@ if (!$loaded) {
     exit(1);
 }
 
-use APITester\Command\ExecutePlanCommand;
+use APITester\Runtime\Console\ExecutePlanCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application('api-tester', '0.1');

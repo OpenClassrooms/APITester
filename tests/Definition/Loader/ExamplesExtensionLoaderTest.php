@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Definition\Loader;
 
-use APITester\Definition\Collection\Operations;
-use APITester\Definition\Example\BodyExample;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Loader\ExamplesExtensionLoader;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Definition\Response;
+use APITester\Schema\Loader\ExamplesExtensionLoader;
+use APITester\Schema\Entity\Collection\Operations;
+use APITester\Schema\Entity\Example\BodyExample;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Schema\Entity\Response;
 use APITester\Tests\Fixtures\FixturesLocation;
 use APITester\Util\Assert;
 use PHPUnit\Framework\TestCase;

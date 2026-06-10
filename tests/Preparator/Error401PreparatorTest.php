@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Definition\Response as DefinitionResponse;
-use APITester\Definition\Security\ApiKeySecurity;
-use APITester\Definition\Security\HttpSecurity;
-use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use APITester\Preparator\Error401Preparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Schema\Entity\Response as DefinitionResponse;
+use APITester\Schema\Entity\Security\ApiKeySecurity;
+use APITester\Schema\Entity\Security\HttpSecurity;
+use APITester\Schema\Entity\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error401Preparator;
 use APITester\Util\Assert;
 use Firebase\JWT\JWT;
 

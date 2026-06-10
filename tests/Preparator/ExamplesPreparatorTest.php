@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Config\Filters;
-use APITester\Definition\Api;
-use APITester\Definition\Body;
-use APITester\Definition\Collection\Scopes;
-use APITester\Definition\Example\BodyExample;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Definition\Response as DefinitionResponse;
-use APITester\Definition\Security\HttpSecurity;
-use APITester\Definition\Token;
-use APITester\Preparator\Config\ExamplesPreparatorConfig;
-use APITester\Preparator\ExamplesPreparator;
-use APITester\Test\TestCase;
+use APITester\Runtime\Config\Entity\Filters;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Body;
+use APITester\Schema\Entity\Collection\Scopes;
+use APITester\Schema\Entity\Example\BodyExample;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Schema\Entity\Response as DefinitionResponse;
+use APITester\Schema\Entity\Security\HttpSecurity;
+use APITester\Schema\Entity\Token;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Config\ExamplesPreparatorConfig;
+use APITester\Test\Preparator\ExamplesPreparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
 

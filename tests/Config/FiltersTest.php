@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Config;
 
-use APITester\Config\Filters;
+use APITester\Runtime\Config\Entity\Filters;
 use APITester\Util\Filterable;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Tag\TaggedValue;

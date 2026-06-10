@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Response as DefinitionResponse;
-use APITester\Preparator\Error406Preparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Response as DefinitionResponse;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error406Preparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
 
