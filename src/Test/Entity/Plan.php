@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Test\Entity;
 
-use;
-use APITester\Config;
+use APITester\Runtime\Config;
 use APITester\Runtime\Requester\Exception\RequesterNotFoundException;
 use APITester\Runtime\Requester\Requester;
 use APITester\Schema\Entity\Api;

@@ -278,7 +278,7 @@ final class TestCase implements \JsonSerializable, Filterable
         );
 
         try {
-            $validator = new ResponseValidator($this->specification->getDocument());
+            $validator = new ResponseValidator($this->operationExample->getParent()->getParent()->getSpecification());
             $validator->validate($operationAddress, $this->response);
         } catch (ValidationFailed $e) {
             $previous = $e->getPrevious();
