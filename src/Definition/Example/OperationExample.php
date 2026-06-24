@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Definition\Example;
 
+use APITester\Definition\Body;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
@@ -335,7 +336,7 @@ final class OperationExample
             return BodyExample::create($requestBody->getRandomContent());
         }
 
-        if ($this->autoComplete) {
+        if ($this->autoComplete && !$this->isExampleProvidedAtRootLevel($requestBody)) {
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
                 $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
@@ -594,5 +595,11 @@ final class OperationExample
         }
 
         return [];
+    }
+
+    private function isExampleProvidedAtRootLevel(Body $requestBody): bool
+    {
+        return $requestBody->getSchema()
+            ->example !== null;
     }
 }

@@ -1,0 +1,62 @@
+openapi: "3.0.0"
+info:
+    version: 1.0.0
+    title: Schema level example
+    license:
+        name: MIT
+servers:
+    -   url: http://example.test/v1
+paths:
+    /array-body:
+        post:
+            summary: Array body with a schema level example
+            operationId: createArrayBody
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            example:
+                                -   id: 5656
+                                    evaluationCriteria: 'KDKKE Ipsum'
+                            items:
+                                type: object
+                                properties:
+                                    id:
+                                        nullable: false
+                                        type: integer
+                                        example: 12345
+                                    evaluationCriteria:
+                                        type: string
+                                        nullable: true
+                                        example: 'Lorem Ipsum'
+            responses:
+                '201':
+                    description: created
+    /object-body:
+        post:
+            summary: Object body with a schema level example
+            operationId: createObjectBody
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            example:
+                                id: 5656
+                                evaluationCriteria: 'KDKKE Ipsum'
+                            properties:
+                                id:
+                                    nullable: false
+                                    type: integer
+                                    example: 12345
+                                evaluationCriteria:
+                                    type: string
+                                    nullable: true
+                                    example: 'Lorem Ipsum'
+            responses:
+                '201':
+                    description: created
+

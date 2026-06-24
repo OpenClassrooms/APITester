@@ -597,12 +597,12 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             return null;
         }
 
+        if ($this->exampleIsSetAtRootLevel($schema)) {
+            return $schema->example;
+        }
+
         if (isset($schema->type)) {
             if ($schema->type === 'array' && $schema->items instanceof Schema) {
-                if ($schema->example !== null) {
-                    return $schema->example;
-                }
-
                 return [
                     $this->extractDeepExamples($schema->items, false, $path),
                 ];
@@ -633,10 +633,6 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
             }
         }
 
-        if (isset($schema->example)) {
-            return $schema->example;
-        }
-
         if (isset($schema->default)) {
             return $schema->default;
         }
@@ -648,5 +644,10 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         throw new InvalidExampleException(
             'Could not extract example for ' . $path
         );
+    }
+
+    private function exampleIsSetAtRootLevel(Schema $schema): bool
+    {
+        return isset($schema->example);
     }
 }
