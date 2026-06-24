@@ -27,12 +27,18 @@ final class Error404Preparator extends TestCasesPreparator
                 /** @var DefinitionResponse $response */
                 return $this->prepareTestCase($response);
             })
+            ->filter(static fn (?TestCase $testCase) => $testCase !== null)
+            ->values()
         ;
     }
 
-    private function prepareTestCase(DefinitionResponse $response): TestCase
+    private function prepareTestCase(DefinitionResponse $response): ?TestCase
     {
         $operation = $response->getParent();
+
+        if ($operation->getPathParameters()->count() === 0) {
+            return null;
+        }
 
         $base = $operation->getExample();
 

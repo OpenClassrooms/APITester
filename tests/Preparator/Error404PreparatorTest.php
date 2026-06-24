@@ -145,7 +145,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        yield 'without param' => [
+        yield 'without param test is not created' => [
             Api::create()
                 ->addOperation(
                     Operation::create('postTest', '/test', 'POST')
@@ -169,20 +169,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                         )
                 ),
             [
-                new TestCase(
-                    Error404Preparator::getName() . ' - postTest - RandomPath',
-                    OperationExample::create('test1')
-                        ->setPath('/test')
-                        ->setMethod('POST')
-                        ->setBodyContent(
-                            [
-                                'name' => 'toto',
-                            ]
-                        )
-                        ->setResponse(
-                            ResponseExample::create('404', 'description test')
-                        ),
-                ),
+
             ],
         ];
     }
