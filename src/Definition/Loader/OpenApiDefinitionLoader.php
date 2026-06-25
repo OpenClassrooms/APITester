@@ -447,21 +447,32 @@ final class OpenApiDefinitionLoader implements DefinitionLoader
         }
 
         if ($operation->requestBody instanceof RequestBody) {
+            $requestBodyExampleIsProvided = false;
             foreach ($operation->requestBody->content as $mediaType) {
                 /** @var Example $example */
                 foreach ($mediaType->examples ?? [] as $name => $example) {
                     $operationExample = $this->getExample($name, $examples);
-                    $operationExample->setBody(BodyExample::create((array) $example->value));
+                    $operationExample->setBody(BodyExample::create((array) $example->value))->setIsRootLevelExample(
+                        true
+                    );
+                    $requestBodyExampleIsProvided = true;
                 }
                 if ($mediaType->example !== null) {
                     $operationExample = $this->getExample('default', $examples);
-                    $operationExample->setBody(BodyExample::create((array) $mediaType->example));
+                    $operationExample->setBody(BodyExample::create((array) $mediaType->example))->setIsRootLevelExample(
+                        true
+                    );
+                    $requestBodyExampleIsProvided = true;
                 }
                 if ($mediaType->schema instanceof Schema) {
                     if ($mediaType->schema->example !== null) {
                         $operationExample = $this->getExample('default', $examples);
-                        $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example));
-                    } else {
+                        $operationExample->setBody(BodyExample::create((array) $mediaType->schema->example))
+                            ->setIsRootLevelExample(true)
+                        ;
+                        $requestBodyExampleIsProvided = true;
+                    }
+                    if ($requestBodyExampleIsProvided === false) {
                         try {
                             $example = (array) $this->extractDeepExamples(
                                 $mediaType->schema,

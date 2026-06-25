@@ -54,6 +54,7 @@ final class OperationExample
         private string $name,
         ?Operation $parent = null,
         ?int $statusCode = null,
+        private bool $isRootLevelExample = false
     ) {
         if ($parent !== null) {
             $this->parent = $parent;
@@ -335,7 +336,7 @@ final class OperationExample
             return BodyExample::create($requestBody->getRandomContent());
         }
 
-        if ($this->autoComplete) {
+        if ($this->autoComplete && !$this->isRootLevelExample) {
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
                 $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
@@ -526,6 +527,11 @@ final class OperationExample
         return $this->getBody()
             ->getStringContent()
         ;
+    }
+
+    public function setIsRootLevelExample(bool $isRootLevelExample): void
+    {
+        $this->isRootLevelExample = $isRootLevelExample;
     }
 
     private function getParametersProp(string $type): string
