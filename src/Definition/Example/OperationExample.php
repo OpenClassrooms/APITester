@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Definition\Example;
 
-use APITester\Definition\Body;
 use APITester\Definition\Collection\Tokens;
 use APITester\Definition\Operation;
 use APITester\Definition\Parameter;
@@ -55,6 +54,7 @@ final class OperationExample
         private string $name,
         ?Operation $parent = null,
         ?int $statusCode = null,
+        private bool $isRootLevelExample = false
     ) {
         if ($parent !== null) {
             $this->parent = $parent;
@@ -336,7 +336,7 @@ final class OperationExample
             return BodyExample::create($requestBody->getRandomContent());
         }
 
-        if ($this->autoComplete && !$this->isExampleProvidedAtRootLevel($requestBody)) {
+        if ($this->autoComplete && !$this->isRootLevelExample) {
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
                 $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
@@ -529,6 +529,11 @@ final class OperationExample
         ;
     }
 
+    public function setIsRootLevelExample(bool $isRootLevelExample): void
+    {
+        $this->isRootLevelExample = $isRootLevelExample;
+    }
+
     private function getParametersProp(string $type): string
     {
         if ($type === 'path') {
@@ -595,11 +600,5 @@ final class OperationExample
         }
 
         return [];
-    }
-
-    private function isExampleProvidedAtRootLevel(Body $requestBody): bool
-    {
-        return $requestBody->getSchema()
-            ->example !== null;
     }
 }

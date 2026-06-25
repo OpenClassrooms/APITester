@@ -34,6 +34,65 @@ paths:
             responses:
                 '201':
                     description: created
+    /media-type-array-examples:
+        post:
+            summary: Array body with mediatype level examples
+            operationId: createMediaTypeExamples
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        examples:
+                            criteria:
+                                value:
+                                    id: 10
+                                    evaluationCriteria: Jessica Smith
+                            noCriteria:
+                                value:
+                                    id: 11
+                        schema:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    id:
+                                        nullable: false
+                                        type: integer
+                                        example: 12345
+                                    evaluationCriteria:
+                                        type: string
+                                        nullable: true
+                                        example: 'Lorem Ipsum'
+            responses:
+                '201':
+                    description: created
+    /media-type-example:
+        post:
+            summary: Array body with a mediatype level example
+            operationId: createMediaTypeExample
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        example:
+                            id: 111
+                            evaluationCriteria: strict evaluation
+                        schema:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    id:
+                                        nullable: false
+                                        type: integer
+                                        example: 12345
+                                    evaluationCriteria:
+                                        type: string
+                                        nullable: true
+                                        example: 'Lorem Ipsum'
+            responses:
+                '201':
+                    description: created
     /object-body:
         post:
             summary: Object body with a schema level example
@@ -59,4 +118,24 @@ paths:
             responses:
                 '201':
                     description: created
-
+    /optional-body-without-example:
+        post:
+            summary: Optional request body without any example
+            operationId: createOptionalBodyWithoutExample
+            requestBody:
+                description: ''
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                id:
+                                    nullable: false
+                                    type: integer
+                                evaluationCriteria:
+                                    type: string
+                                    nullable: true
+            responses:
+                '201':
+                    description: created

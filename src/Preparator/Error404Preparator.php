@@ -43,11 +43,7 @@ final class Error404Preparator extends TestCasesPreparator
         $base = $operation->getExample();
 
         $example = OperationExample::create('RandomPath', $operation)
-            // Disable autocompletion to avoid injecting random (potentially
-            // invalid) data into the request.
             ->setAutoComplete(false)
-            // Only the path is randomized so the request targets a resource
-            // that does not exist, which is what should trigger the 404.
             ->setPathParameters($operation->getPathParameters()->getRandomExamples())
             ->setQueryParameters($base->getQueryParameters())
             ->setHeaders($base->getHeaders())
