@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace APITester\Test\Preparator;
 
-use APITester\Schema\Loader\ExamplesExtensionLoader;
 use APITester\Schema\Entity\Collection\OperationExamples;
 use APITester\Schema\Entity\Collection\Operations;
 use APITester\Schema\Entity\Example\OperationExample;
 use APITester\Schema\Entity\Operation;
+use APITester\Schema\Loader\ExamplesExtensionLoader;
 use APITester\Test\Entity\TestCase;
 use APITester\Test\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Test\Preparator\Exception\PreparatorLoadingException;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Runtime\Console;
 
-use APITester\Config;
 use APITester\Runtime\Config\Exception\ConfigurationException;
 use APITester\Test\Entity\Plan;
 use APITester\Test\Exception\SuiteNotFoundException;

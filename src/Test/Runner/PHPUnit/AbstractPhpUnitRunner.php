@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Test\Runner\PHPUnit;
 
-use APITester\Config;
 use APITester\Test\Runner\TestRunner;
 use APITester\Util\Object_;
 use APITester\Util\Path;

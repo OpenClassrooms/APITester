@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 final class Operations extends Collection
 {
     /**
-     * @return Operation
+     * @return array<string, list<Operation>>
      */
     public function toPropIndexedArray(): array
     {

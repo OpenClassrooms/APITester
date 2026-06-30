@@ -116,8 +116,10 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
     /**
      * @return TestCase[]
      */
-    private function prepareWithQueryParam(Operation $operation, \APITester\Test\Preparator\Config\PaginationError\RangeConfig $configItem): array
-    {
+    private function prepareWithQueryParam(
+        Operation $operation,
+        \APITester\Test\Preparator\Config\PaginationError\RangeConfig $configItem
+    ): array {
         $testCases = [];
         foreach ($this->getQueryValues() as $values) {
             $testCases[] = $this->buildTestCase(

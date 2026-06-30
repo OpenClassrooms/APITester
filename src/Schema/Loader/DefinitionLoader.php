@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Schema\Loader;
 
-use APITester\Schema\Loader\Exception\DefinitionLoadingException;
 use APITester\Schema\Entity\Api;
+use APITester\Schema\Loader\Exception\DefinitionLoadingException;
 use Psr\Log\LoggerInterface;
 
 interface DefinitionLoader

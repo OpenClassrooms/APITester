@@ -50,10 +50,10 @@
     "firebase/php-jwt": "^6.0 || ^7.0",
     "guzzlehttp/promises": "^1.4.0 || ^2.0",
     "illuminate/collections": "^8.99",
+    "league/openapi-psr7-validator": "^0.18",
     "myclabs/deep-copy": "^1.11",
     "nesbot/carbon": "^2.48",
     "nyholm/psr7": "^1.0",
-    "league/openapi-psr7-validator": "^0.18",
     "openclassrooms/openapi-psr7-validator": "dev-master",
     "opis/json-schema": "^2.3",
     "php-http/httplug": "^2.2",
@@ -66,6 +66,7 @@
     "symfony/dotenv": "^6.0 || ^7.0",
     "symfony/finder": "^6.0 || ^7.0",
     "symfony/http-client": "^6.0 || ^7.0",
+    "symfony/http-foundation": "^6.0 || ^7.0",
     "symfony/http-kernel": "^6.0 || ^7.0",
     "symfony/process": "^6.0 || ^7.0",
     "symfony/property-access": "^6.0 || ^7.0",
@@ -139,7 +140,7 @@
     ],
     "unit": "vendor/bin/phpunit --testdox -c config/phpunit.xml --coverage-clover build/coverage/coverage.xml --exclude-group=integration",
     "psalm": "vendor/bin/psalm -c config/psalm.xml",
-    "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi",
+    "phpstan": "vendor/bin/phpstan analyse -c config/phpstan.neon --ansi --memory-limit=512M",
     "ecs": "@check-cs"
   }
 }

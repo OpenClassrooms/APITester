@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Test\Entity;
 
-use APITester\Runtime\Config;
 use APITester\Runtime\Requester\Exception\RequesterNotFoundException;
 use APITester\Runtime\Requester\Requester;
 use APITester\Schema\Entity\Api;
@@ -79,8 +78,11 @@ final class Plan
      *
      * @return TestCase[]
      */
-    public function getTestCases(\APITester\Runtime\Config\Entity\Plan $testPlanConfig, string $suiteName = '', array $options = []): array
-    {
+    public function getTestCases(
+        \APITester\Runtime\Config\Entity\Plan $testPlanConfig,
+        string $suiteName = '',
+        array $options = []
+    ): array {
         $suiteConfig = $this->getSuiteConfig($testPlanConfig, $suiteName);
 
         $bootstrap = $testPlanConfig->getBootstrap();
@@ -105,8 +107,9 @@ final class Plan
      * @throws SuiteNotFoundException
      */
     public function getSuiteConfig(
-        \APITester\Runtime\Config\Entity\Plan $testPlanConfig, string $suiteName = ''): \APITester\Runtime\Config\Entity\Suite
-    {
+        \APITester\Runtime\Config\Entity\Plan $testPlanConfig,
+        string $suiteName = ''
+    ): \APITester\Runtime\Config\Entity\Suite {
         $suites = $testPlanConfig->getSuites();
         if ($suiteName !== '') {
             /** @var Collection<string, \APITester\Runtime\Config\Entity\Suite> $indexSuites */
@@ -196,8 +199,11 @@ final class Plan
         throw new RequesterNotFoundException($name);
     }
 
-    private function authenticate(\APITester\Runtime\Config\Entity\Suite $config, Api $api, Requester $requester): Tokens
-    {
+    private function authenticate(
+        \APITester\Runtime\Config\Entity\Suite $config,
+        Api $api,
+        Requester $requester
+    ): Tokens {
         $tokens = new Tokens();
         foreach ($config->getAuthentications() as $authConf) {
             try {
@@ -341,8 +347,10 @@ final class Plan
         return $filtered;
     }
 
-    private function filterOperation(\APITester\Runtime\Config\Entity\Suite $suiteConfig, Operations $operations): Operations
-    {
+    private function filterOperation(
+        \APITester\Runtime\Config\Entity\Suite $suiteConfig,
+        Operations $operations
+    ): Operations {
         return $operations->filter(
             static fn (Operation $operation) => $suiteConfig->getFilters()
                 ->includes($operation)

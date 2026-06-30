@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Test\Runner;
 
-use APITester\Config;
-
 interface TestRunner
 {
     /**

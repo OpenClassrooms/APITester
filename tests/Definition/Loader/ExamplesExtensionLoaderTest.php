@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Definition\Loader;
 
-use APITester\Schema\Loader\ExamplesExtensionLoader;
 use APITester\Schema\Entity\Collection\Operations;
 use APITester\Schema\Entity\Example\BodyExample;
 use APITester\Schema\Entity\Example\OperationExample;
@@ -12,6 +11,7 @@ use APITester\Schema\Entity\Example\ResponseExample;
 use APITester\Schema\Entity\Operation;
 use APITester\Schema\Entity\Parameter;
 use APITester\Schema\Entity\Response;
+use APITester\Schema\Loader\ExamplesExtensionLoader;
 use APITester\Tests\Fixtures\FixturesLocation;
 use APITester\Util\Assert;
 use PHPUnit\Framework\TestCase;

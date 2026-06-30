@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace APITester\Schema\Loader;
 
-use APITester\Schema\Loader\Exception\DefinitionLoadingException;
-use APITester\Schema\Loader\Exception\InvalidExampleException;
 use APITester\Schema\Entity\Api;
 use APITester\Schema\Entity\Body;
 use APITester\Schema\Entity\Collection\Bodies;
@@ -32,6 +30,8 @@ use APITester\Schema\Entity\Security\OAuth2\OAuth2ImplicitSecurity;
 use APITester\Schema\Entity\Security\OAuth2\OAuth2PasswordSecurity;
 use APITester\Schema\Entity\Server;
 use APITester\Schema\Entity\Tag;
+use APITester\Schema\Loader\Exception\DefinitionLoadingException;
+use APITester\Schema\Loader\Exception\InvalidExampleException;
 use APITester\Util\Json;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\Example;
