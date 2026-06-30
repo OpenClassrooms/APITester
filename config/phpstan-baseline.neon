@@ -38,11 +38,6 @@ parameters:
 		-
 			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\Entity\\\\TestCase\\> is not subtype of type APITester\\\\Schema\\\\Entity\\\\Collection\\\\Operations\\.$#"
 			count: 1
-			path: ../src/Test/Preparator/Error404Preparator.php
-
-		-
-			message: "#^PHPDoc tag @var with type iterable\\<\\(int\\|string\\), APITester\\\\Test\\\\Entity\\\\TestCase\\> is not subtype of type APITester\\\\Schema\\\\Entity\\\\Collection\\\\Operations\\.$#"
-			count: 1
 			path: ../src/Test/Preparator/Error405Preparator.php
 
 		-
