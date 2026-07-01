@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Response as DefinitionResponse;
-use APITester\Definition\Security\OAuth2\OAuth2ImplicitSecurity;
-use APITester\Definition\Token;
-use APITester\Preparator\Error403Preparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Response as DefinitionResponse;
+use APITester\Schema\Entity\Security\OAuth2\OAuth2ImplicitSecurity;
+use APITester\Schema\Entity\Token;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error403Preparator;
 use APITester\Util\Assert;
 
 final class Error403PreparatorTest extends \PHPUnit\Framework\TestCase

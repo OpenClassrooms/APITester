@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Util;
 
-use APITester\Definition\Api;
-use APITester\Definition\Loader\DefinitionLoader;
-use APITester\Definition\Loader\OpenApiDefinitionLoader;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Loader\DefinitionLoader;
+use APITester\Schema\Loader\OpenApiDefinitionLoader;
 use APITester\Util\Object_;
 use PHPUnit\Framework\TestCase;
 

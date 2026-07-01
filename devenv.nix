@@ -3,7 +3,10 @@
 {
   languages.php = {
     enable = true;
+    extensions = [ "pcov" ];
     ini = ''
+      memory_limit = 512M
+      pcov.enabled = 1
       xdebug.idekey = "PHPSTORM"
       xdebug.start_with_request = "yes"
     '';

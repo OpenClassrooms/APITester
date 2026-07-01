@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Requester;
 
-use APITester\Requester\HttpDumpRequester;
-use APITester\Requester\Requester;
+use APITester\Runtime\Requester\HttpDumpRequester;
+use APITester\Runtime\Requester\Requester;
 use Nyholm\Psr7\Request;
 use PHPUnit\Framework\TestCase;
 

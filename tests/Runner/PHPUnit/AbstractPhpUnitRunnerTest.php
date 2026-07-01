@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Runner\PHPUnit;
 
-use APITester\Config\Definition;
-use APITester\Config\Suite;
-use APITester\Runner\PHPUnit\PhpUnitRunner;
+use APITester\Runtime\Config\Entity\Definition;
+use APITester\Runtime\Config\Entity\Suite;
+use APITester\Test\Runner\PHPUnit\PhpUnitRunner;
 use PHPUnit\Framework\TestCase;
 
 final class AbstractPhpUnitRunnerTest extends TestCase

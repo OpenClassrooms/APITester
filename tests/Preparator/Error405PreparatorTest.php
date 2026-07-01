@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Preparator\Error405Preparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error405Preparator;
 use APITester\Util\Assert;
 
 final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase

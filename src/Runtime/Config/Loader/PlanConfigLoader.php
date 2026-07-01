@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace APITester\Runtime\Config\Loader;
+
+use APITester\Runtime\Config\Entity\Plan;
+use APITester\Runtime\Config\Exception\ConfigurationException;
+use APITester\Util\Path;
+use APITester\Util\Yaml;
+use Symfony\Component\Dotenv\Dotenv;
+
+final class PlanConfigLoader
+{
+    /**
+     * @throws ConfigurationException
+     */
+    public static function load(string $path): Plan
+    {
+        if (!is_file($path)) {
+            throw new ConfigurationException("File '{$path}' does not exist.");
+        }
+        $content = file_get_contents($path);
+        if ($content === false) {
+            throw new ConfigurationException("Could not load file '{$path}'");
+        }
+        $content = self::process($content);
+
+        return Yaml::deserialize($content, Plan::class);
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private static function process(string $content): string
+    {
+        $dotenv = new Dotenv();
+
+        $envFile = Path::getBasePath() . '/env/.env';
+        if (is_file($envFile)) {
+            $dotenv->loadEnv($envFile);
+        }
+
+        $processed = preg_replace_callback(
+            '/%env\((.+?)\)%/i',
+            static function (array $matches): string {
+                $var = $matches[1];
+                $env = $_ENV[$var] ?? null;
+                if ($env === null) {
+                    throw new ConfigurationException("Environment variable '{$var}' is not defined.");
+                }
+
+                return (string) $env;
+            },
+            $content
+        );
+
+        return $processed ?? $content;
+    }
+}

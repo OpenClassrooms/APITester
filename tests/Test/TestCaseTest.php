@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Test;
 
-use APITester\Definition\Collection\Responses;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\OpenApiSpecification;
-use APITester\Definition\Operation;
+use APITester\Schema\Entity\Collection\Responses;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\OpenApiSpecification;
+use APITester\Schema\Entity\Operation;
+use APITester\Test\Entity\TestCase;
 use APITester\Test\Exception\InvalidResponseSchemaException;
-use APITester\Test\TestCase;
 use APITester\Tests\Fixtures\FixturesLocation;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\Schema;
@@ -203,7 +203,7 @@ final class TestCaseTest extends UnitTestCase
                 operation: Operation::create('showPetById', '/pets/{petId}')
                     ->setResponses(
                         new Responses([
-                            \APITester\Definition\Response::create($operationResponseStatusCode)
+                            \APITester\Schema\Entity\Response::create($operationResponseStatusCode)
                                 ->setMediaType('application/json')
                                 ->setBody($this->getValidSchema()),
                         ])

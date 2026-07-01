@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Body;
-use APITester\Definition\Example\BodyExample;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Preparator\Error400BadTypesPreparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Body;
+use APITester\Schema\Entity\Example\BodyExample;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error400BadTypesPreparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
 

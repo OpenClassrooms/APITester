@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Definition\Loader;
 
-use APITester\Definition\Loader\OpenApiDefinitionLoader;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Loader\OpenApiDefinitionLoader;
 use APITester\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 
@@ -16,11 +18,7 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
-        $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createArrayBody'
-            )
-        ;
+        $operation = self::getOperation($api, 'createArrayBody');
         $body = $operation->getExample()
             ->getBody()
         ;
@@ -43,11 +41,7 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
-        $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createMediaTypeExample'
-            )
-        ;
+        $operation = self::getOperation($api, 'createMediaTypeExample');
         $body = $operation->getExample()
             ->getBody()
         ;
@@ -68,30 +62,31 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
-        $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createMediaTypeExamples'
-            )
-        ;
+        $operation = self::getOperation($api, 'createMediaTypeExamples');
         $body = $operation->getExamples();
         self::assertCount(3, $body);
 
+        $criteriaBody = $operation->getExample('criteria')
+            ->getBody()
+        ;
+        self::assertNotNull($criteriaBody);
         self::assertSame(
             [
                 'id' => 10,
                 'evaluationCriteria' => 'Jessica Smith',
             ],
-            $operation->getExample('criteria')
-                ->getBody()
-                ->getContent()
+            $criteriaBody->getContent()
         );
+
+        $noCriteriaBody = $operation->getExample('noCriteria')
+            ->getBody()
+        ;
+        self::assertNotNull($noCriteriaBody);
         self::assertSame(
             [
                 'id' => 11,
             ],
-            $operation->getExample('noCriteria')
-                ->getBody()
-                ->getContent()
+            $noCriteriaBody->getContent()
         );
     }
 
@@ -101,11 +96,7 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
-        $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createObjectBody'
-            )
-        ;
+        $operation = self::getOperation($api, 'createObjectBody');
         $body = $operation->getExample()
             ->getBody()
         ;
@@ -126,11 +117,7 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
-        $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createMediaTypeExamples'
-            )
-        ;
+        $operation = self::getOperation($api, 'createMediaTypeExamples');
 
         // The "noCriteria" example only defines "id"; being a root level example it
         // must be used verbatim and not be merged with random schema based values.
@@ -153,12 +140,19 @@ final class OpenApiDefinitionLoaderTest extends TestCase
             FixturesLocation::OPEN_API_WITH_SCHEMA_EXAMPLE
         );
 
+        $operation = self::getOperation($api, 'createOptionalBodyWithoutExample');
+
+        self::assertCount(0, $operation->getExamples());
+    }
+
+    private static function getOperation(Api $api, string $id): Operation
+    {
         $operation = $api->getOperations()
-            ->first(
-                static fn ($op) => $op->getId() === 'createOptionalBodyWithoutExample'
-            )
+            ->first(static fn (Operation $operation): bool => $operation->getId() === $id)
         ;
 
-        self::assertSame(0, $operation->getExamples()->count());
+        self::assertInstanceOf(Operation::class, $operation);
+
+        return $operation;
     }
 }

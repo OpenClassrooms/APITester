@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Test;
 
-use APITester\Test\Result;
+use APITester\Test\Entity\Result;
 use PHPUnit\Framework\TestCase;
 
 final class ResultTest extends TestCase

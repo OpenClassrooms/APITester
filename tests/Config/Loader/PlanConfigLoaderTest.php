@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Config\Loader;
 
-use APITester\Config\Exception\ConfigurationException;
-use APITester\Config\Loader\PlanConfigLoader;
+use APITester\Runtime\Config\Exception\ConfigurationException;
+use APITester\Runtime\Config\Loader\PlanConfigLoader;
 use APITester\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 
@@ -14,9 +14,44 @@ final class PlanConfigLoaderTest extends TestCase
     public function testLoadReturnsPlanWithSuites(): void
     {
         $plan = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
+        $suite = $plan->getSuites()[0];
 
         static::assertNotEmpty($plan->getSuites());
-        static::assertSame('oc', $plan->getSuites()[0]->getName());
+        static::assertSame('oc', $suite->getName());
+        static::assertSame('openapi', $suite->getDefinition()->getFormat());
+        static::assertStringEndsWith(
+            '/tests/Fixtures/OpenAPI/openclassrooms-api.yml',
+            $suite->getDefinition()
+                ->getPath()
+        );
+        static::assertSame('http-async', $suite->getRequester());
+        static::assertSame([
+            [
+                'id' => 'oc_api_learning_activity_learning_path_projects_with_user_information_get',
+            ],
+            [
+                'tags.*.name' => 'Invitation',
+            ],
+        ], $suite->getFilters()
+            ->getInclude());
+
+        $preparators = $suite->getPreparators();
+
+        static::assertArrayHasKey('examples', $preparators);
+        static::assertSame(
+            'tests/Fixtures/Examples/petstore/examples.new.yml',
+            $preparators['examples']['extensionPath']
+        );
+
+        $authentications = $suite->getAuthentications();
+
+        static::assertCount(2, $authentications);
+        static::assertSame('user_1', $authentications[0]->getName());
+        static::assertSame('password', $authentications[0]->getBody()['grant_type']);
+        static::assertSame('application/json', $authentications[0]->getHeaders()['Accept']);
+        static::assertNull($authentications[0]->getFilters());
+        static::assertSame('user_2', $authentications[1]->getName());
+        static::assertSame('client_credentials', $authentications[1]->getBody()['grant_type']);
     }
 
     public function testLoadThrowsForNonExistentFile(): void
