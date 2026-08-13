@@ -258,6 +258,34 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
         self::assertSame('/test/10', $testCases[0]->jsonSerialize()['request']->getUri()->getPath());
     }
 
+    public function testUsesTheMaximumIntegerWhenTheSchemaHasNoBounds(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getTest', '/test/{id}')
+                    ->addPathParameter(
+                        Parameter::create('id')->setSchema(
+                            new Schema([
+                                'type' => 'integer',
+                                'format' => 'int32',
+                            ])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+                    ->addExample(
+                        OperationExample::create('default')
+                            ->setPathParameter('id', '1')
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        $testCases = [...(new Error404Preparator())->doPrepare($api->getOperations())];
+
+        self::assertCount(1, $testCases);
+        self::assertSame('/test/2147483647', $testCases[0]->jsonSerialize()['request']->getUri()->getPath());
+    }
+
     public function testUsesAValueMatchingTheFullStringSchema(): void
     {
         $api = Api::create()
@@ -339,6 +367,15 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                 'multipleOf' => 1.5,
             ],
             '0',
+        ];
+
+        yield 'invalid integer range' => [
+            [
+                'type' => 'integer',
+                'minimum' => 2,
+                'maximum' => 1,
+            ],
+            '1',
         ];
 
         yield 'empty string' => [
