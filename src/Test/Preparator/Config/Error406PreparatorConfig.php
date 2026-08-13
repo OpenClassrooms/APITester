@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace APITester\Test\Preparator\Config;
 
-use APITester\Util\Mime;
-
 final class Error406PreparatorConfig extends PreparatorConfig
 {
     /**
      * @var string[]
      */
-    public array $mediaTypes = Mime::TYPES;
+    public array $mediaTypes = ['application/vnd.api-tester.unsupported'];
 
-    public int $casesCount = 3;
+    public int $casesCount = 1;
 }
