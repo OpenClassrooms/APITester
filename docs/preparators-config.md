@@ -66,7 +66,7 @@ name: error404
 # (Uses only common configuration)
 ```
 
-The preparator keeps the operation example intact and replaces the last eligible string or integer path parameter, based on URI order, with a different stable, schema-valid value. It skips the operation when no safe non-empty replacement can be generated, including enum-only and single-value paths.
+The preparator keeps the operation example intact and replaces every eligible string or integer path parameter with a different stable, schema-valid value. This makes nested-resource requests invalid even when only a parent or child lookup can return the documented error. It skips the operation when no safe non-empty replacement can be generated, including enum-only and single-value paths.
 
 ## error405
 

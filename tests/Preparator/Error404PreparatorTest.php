@@ -141,7 +141,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testUsesAStableValueForTheLastResourcePathParameter(): void
+    public function testUsesStableValuesForEveryResourcePathParameter(): void
     {
         $api = Api::create()
             ->addOperation(
@@ -192,7 +192,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
 
             self::assertCount(1, $testCases);
             self::assertSame(
-                '/parents/10/children/apitesternot/summary',
+                '/parents/100/children/apitesternot/summary',
                 $testCases[0]->jsonSerialize()['request']->getUri()->getPath()
             );
         }
