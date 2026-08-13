@@ -6,15 +6,19 @@ namespace APITester\Test\Preparator;
 
 use APITester\Schema\Entity\Collection\Operations;
 use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
 use APITester\Schema\Entity\Parameter;
 use APITester\Schema\Entity\Response as DefinitionResponse;
 use APITester\Test\Entity\TestCase;
 use cebe\openapi\spec\Schema;
+use Opis\JsonSchema\Validator;
 use Vural\OpenAPIFaker\Options;
 use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Error404Preparator extends TestCasesPreparator
 {
+    private ?Validator $schemaValidator = null;
+
     /**
      * @inheritDoc
      */
@@ -37,20 +41,17 @@ final class Error404Preparator extends TestCasesPreparator
     private function prepareTestCase(DefinitionResponse $response): ?TestCase
     {
         $operation = $response->getParent();
-
-        $parameter = $operation->getPathParameters()
-            ->reverse()
-            ->first(fn (Parameter $parameter) => $this->supportsNotFoundValue($parameter))
-        ;
-        if (!$parameter instanceof Parameter) {
+        $example = $operation->getExample();
+        $pathParameters = $example->getPathParameters();
+        $replacement = $this->getPathReplacement($operation, $pathParameters);
+        if ($replacement === null) {
             return null;
         }
 
-        $example = $operation->getExample();
-        $example->getPathParameters();
+        [$parameter, $value] = $replacement;
         $example = $example->withParameter(
             $parameter->getName(),
-            $this->getNotFoundValue($parameter),
+            $value,
             Parameter::TYPE_PATH
         );
         $example->getQueryParameters();
@@ -71,55 +72,171 @@ final class Error404Preparator extends TestCasesPreparator
         return $this->buildTestCase($example);
     }
 
-    private function supportsNotFoundValue(Parameter $parameter): bool
+    /**
+     * @param array<string, int|string> $currentValues
+     *
+     * @return array{Parameter, string}|null
+     */
+    private function getPathReplacement(Operation $operation, array $currentValues): ?array
     {
-        $schema = $parameter->getSchema();
+        $parametersByPosition = [];
+        foreach ($operation->getPathParameters() as $parameter) {
+            $position = mb_strpos($operation->getPath(), "{{$parameter->getName()}}");
+            if ($position !== false) {
+                $parametersByPosition[$position] = $parameter;
+            }
+        }
+        krsort($parametersByPosition);
 
-        return $schema instanceof Schema
-            && empty($schema->enum)
-            && \in_array($schema->type, ['integer', 'string'], true);
-    }
-
-    private function getNotFoundValue(Parameter $parameter): string
-    {
-        $schema = $parameter->getSchema();
-        if (!$schema instanceof Schema) {
-            throw new \LogicException('A schema is required to build a not-found value.');
+        foreach ($parametersByPosition as $parameter) {
+            $value = $this->getNotFoundValue(
+                $parameter,
+                $currentValues[$parameter->getName()] ?? null
+            );
+            if ($value !== null) {
+                return [$parameter, $value];
+            }
         }
 
-        if ($schema->type === 'integer') {
-            return (string) $this->getNotFoundInteger($schema);
-        }
-
-        return $this->getNotFoundString($schema);
+        return null;
     }
 
-    private function getNotFoundInteger(Schema $schema): int
+    private function getNotFoundValue(Parameter $parameter, int|string|null $currentValue): ?string
     {
-        $maximum = $schema->maximum ?? match ($schema->format) {
-            'int32' => 2_147_483_647,
-            default => PHP_INT_MAX,
+        $schema = $parameter->getSchema();
+        if (!$schema instanceof Schema || !empty($schema->enum)) {
+            return null;
+        }
+
+        return match ($schema->type) {
+            'integer' => $this->getNotFoundInteger($schema, $currentValue),
+            'string' => $this->getNotFoundString($schema, $currentValue),
+            default => null,
         };
-        $value = (int) $maximum;
-        if ($schema->exclusiveMaximum) {
-            --$value;
-        }
-
-        $multipleOf = (int) ($schema->multipleOf ?? 1);
-        if ($multipleOf > 1) {
-            $value -= $value % $multipleOf;
-        }
-
-        return $value;
     }
 
-    private function getNotFoundString(Schema $schema): string
+    private function getNotFoundInteger(Schema $schema, int|string|null $currentValue): ?string
     {
+        $multipleOf = $schema->multipleOf ?? 1;
+        if (!\is_numeric($multipleOf)
+            || (float) (int) $multipleOf !== (float) $multipleOf
+            || $multipleOf < 1
+            || $multipleOf > PHP_INT_MAX) {
+            return null;
+        }
+
+        $minimum = $this->getMinimumInteger($schema);
+        $maximum = $this->getMaximumInteger($schema);
+        if ($minimum === null || $maximum === null || $minimum > $maximum) {
+            return null;
+        }
+
+        $multipleOf = (int) $multipleOf;
+        $maximumCandidate = $this->alignDown($maximum, $multipleOf);
+        $minimumCandidate = $this->alignUp($minimum, $multipleOf);
+        $candidates = [$maximumCandidate, $minimumCandidate];
+        if ($maximumCandidate !== null && $maximumCandidate >= PHP_INT_MIN + $multipleOf) {
+            $candidates[] = $maximumCandidate - $multipleOf;
+        }
+        if ($minimumCandidate !== null && $minimumCandidate <= PHP_INT_MAX - $multipleOf) {
+            $candidates[] = $minimumCandidate + $multipleOf;
+        }
+
+        foreach ([2_147_483_647, 999_999_999, 1, 0, -1] as $candidate) {
+            $candidates[] = $this->alignDown($candidate, $multipleOf);
+        }
+
+        foreach ($candidates as $candidate) {
+            if ($candidate === null
+                || (string) $candidate === (string) $currentValue
+                || !$this->matchesSchema($candidate, $schema)) {
+                continue;
+            }
+
+            return (string) $candidate;
+        }
+
+        return null;
+    }
+
+    private function getMinimumInteger(Schema $schema): ?int
+    {
+        $formatMinimum = $schema->format === 'int32' ? -2_147_483_648 : -PHP_INT_MAX;
+        if ($schema->minimum === null) {
+            return $formatMinimum;
+        }
+
+        $minimum = $schema->exclusiveMinimum
+            ? floor((float) $schema->minimum) + 1
+            : ceil((float) $schema->minimum);
+        if ($minimum > PHP_INT_MAX) {
+            return null;
+        }
+
+        return (int) max($minimum, $formatMinimum);
+    }
+
+    private function getMaximumInteger(Schema $schema): ?int
+    {
+        $formatMaximum = $schema->format === 'int32' ? 2_147_483_647 : PHP_INT_MAX;
+        if ($schema->maximum === null) {
+            return $formatMaximum;
+        }
+
+        $maximum = $schema->exclusiveMaximum
+            ? ceil((float) $schema->maximum) - 1
+            : floor((float) $schema->maximum);
+        if ($maximum < -PHP_INT_MAX) {
+            return null;
+        }
+
+        return (int) min($maximum, $formatMaximum);
+    }
+
+    private function alignDown(int $value, int $multipleOf): ?int
+    {
+        if ($multipleOf <= 0) {
+            return null;
+        }
+
+        $remainder = $value % $multipleOf;
+        if ($remainder === 0) {
+            return $value;
+        }
+
+        $offset = $remainder > 0 ? $remainder : $multipleOf + $remainder;
+
+        return $value < PHP_INT_MIN + $offset ? null : $value - $offset;
+    }
+
+    private function alignUp(int $value, int $multipleOf): ?int
+    {
+        if ($multipleOf <= 0) {
+            return null;
+        }
+
+        $remainder = $value % $multipleOf;
+        if ($remainder === 0) {
+            return $value;
+        }
+
+        $offset = $remainder > 0 ? $multipleOf - $remainder : -$remainder;
+
+        return $value > PHP_INT_MAX - $offset ? null : $value + $offset;
+    }
+
+    private function getNotFoundString(Schema $schema, int|string|null $currentValue): ?string
+    {
+        if ($schema->maxLength === 0) {
+            return null;
+        }
+
         $candidates = [
             'api-tester-not-found',
             'apitesternotfound',
             'APITESTERNOTFOUND',
             'ffffffff-ffff-4fff-bfff-ffffffffffff',
+            '00000000-0000-4000-8000-000000000000',
             str_repeat('z', $schema->maxLength ?? 32),
             str_repeat('9', $schema->maxLength ?? 32),
         ];
@@ -141,7 +258,7 @@ final class Error404Preparator extends TestCasesPreparator
             $minimumLength = max($schema->minLength ?? 0, 1);
             for ($length = mb_strlen($candidate); $length >= $minimumLength; --$length) {
                 $value = mb_substr($candidate, 0, $length);
-                if ($this->matchesStringSchema($value, $schema)) {
+                if ($value !== (string) $currentValue && $this->matchesSchema($value, $schema)) {
                     if ($bestCandidate === null || mb_strlen($value) > mb_strlen($bestCandidate)) {
                         $bestCandidate = $value;
                     }
@@ -154,7 +271,7 @@ final class Error404Preparator extends TestCasesPreparator
             return $bestCandidate;
         }
 
-        throw new \LogicException('Could not build a schema-valid not-found value.');
+        return null;
     }
 
     private function fitStringLength(string $value, Schema $schema): string
@@ -172,28 +289,25 @@ final class Error404Preparator extends TestCasesPreparator
         return $value;
     }
 
-    private function matchesStringSchema(string $value, Schema $schema): bool
+    private function matchesSchema(int|string $value, Schema $schema): bool
     {
-        $length = mb_strlen($value);
-        if ($length < ($schema->minLength ?? 0)
-            || ($schema->maxLength !== null && $length > $schema->maxLength)) {
-            return false;
+        $schemaData = (array) $schema->getSerializableData();
+        foreach (['Minimum', 'Maximum'] as $bound) {
+            $exclusive = "exclusive{$bound}";
+            $inclusive = mb_strtolower($bound);
+            if (($schemaData[$exclusive] ?? false) === true && isset($schemaData[$inclusive])) {
+                $schemaData[$exclusive] = $schemaData[$inclusive];
+                unset($schemaData[$inclusive]);
+            } else {
+                unset($schemaData[$exclusive]);
+            }
         }
+        unset($schemaData['example'], $schemaData['nullable']);
 
-        if ($schema->format === 'uuid'
-            && preg_match(
-                '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
-                $value
-            ) !== 1) {
-            return false;
-        }
+        $this->schemaValidator ??= new Validator();
 
-        if ($schema->pattern === null) {
-            return true;
-        }
-
-        $pattern = str_replace('~', '\\~', $schema->pattern);
-
-        return preg_match("~{$pattern}~u", $value) === 1;
+        return $this->schemaValidator
+            ->validate($value, (object) $schemaData)
+            ->isValid();
     }
 }

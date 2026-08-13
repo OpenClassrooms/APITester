@@ -45,7 +45,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                             new Schema([
                                 'type' => 'integer',
                                 'minimum' => 1,
-                                'maximum' => 1,
+                                'maximum' => 100,
                             ])
                         )
                     )
@@ -88,6 +88,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                     )
                     ->addExample(
                         OperationExample::create('200')
+                            ->setPathParameter('id', '1')
                             ->setQueryParameter('lang', 'en')
                             ->setParameter(
                                 'sort',
@@ -113,7 +114,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                 OperationExample::create('test')
                     ->setPath('/test/{id}')
                     ->setMethod('PUT')
-                    ->setPathParameter('id', '1')
+                    ->setPathParameter('id', '100')
                     ->setQueryParameter('lang', 'en')
                     ->setParameter(
                         'sort',
@@ -146,20 +147,20 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             ->addOperation(
                 Operation::create('getChild', '/parents/{parentId}/children/{childId}/{view}')
                     ->addPathParameter(
-                        Parameter::create('parentId')->setSchema(
-                            new Schema([
-                                'type' => 'integer',
-                                'minimum' => 1,
-                                'maximum' => 100,
-                            ])
-                        )
-                    )
-                    ->addPathParameter(
                         Parameter::create('childId')->setSchema(
                             new Schema([
                                 'type' => 'string',
                                 'maxLength' => 12,
                                 'pattern' => '^[a-z0-9]{1,12}$',
+                            ])
+                        )
+                    )
+                    ->addPathParameter(
+                        Parameter::create('parentId')->setSchema(
+                            new Schema([
+                                'type' => 'integer',
+                                'minimum' => 1,
+                                'maximum' => 100,
                             ])
                         )
                     )
@@ -227,6 +228,138 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
         self::assertCount(0, $preparator->doPrepare($api->getOperations()));
     }
 
+    public function testUsesTheGreatestIntegerBelowAnExclusiveDecimalMaximum(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getTest', '/test/{id}')
+                    ->addPathParameter(
+                        Parameter::create('id')->setSchema(
+                            new Schema([
+                                'type' => 'integer',
+                                'minimum' => 9,
+                                'maximum' => 10.5,
+                                'exclusiveMaximum' => true,
+                            ])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+                    ->addExample(
+                        OperationExample::create('default')
+                            ->setPathParameter('id', '9')
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        $testCases = [...(new Error404Preparator())->doPrepare($api->getOperations())];
+
+        self::assertCount(1, $testCases);
+        self::assertSame('/test/10', $testCases[0]->jsonSerialize()['request']->getUri()->getPath());
+    }
+
+    public function testUsesAValueMatchingTheFullStringSchema(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getUser', '/users/{email}')
+                    ->addPathParameter(
+                        Parameter::create('email')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                                'format' => 'email',
+                            ])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+                    ->addExample(
+                        OperationExample::create('default')
+                            ->setPathParameter('email', 'existing@example.com')
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        $testCases = [...(new Error404Preparator())->doPrepare($api->getOperations())];
+
+        self::assertCount(1, $testCases);
+        self::assertSame(
+            '/users/user@example.com',
+            $testCases[0]->jsonSerialize()['request']->getUri()->getPath()
+        );
+    }
+
+    /**
+     * @dataProvider getSchemasWithoutSafeReplacement
+     *
+     * @param array<string, mixed> $schemaData
+     */
+    public function testSkipsPathWithoutSafeReplacement(array $schemaData, string $currentValue): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getTest', '/test/{id}')
+                    ->addPathParameter(
+                        Parameter::create('id')->setSchema(new Schema($schemaData))
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+                    ->addExample(
+                        OperationExample::create('default')
+                            ->setPathParameter('id', $currentValue)
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        self::assertCount(
+            0,
+            (new Error404Preparator())->doPrepare($api->getOperations())
+        );
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, string}>
+     */
+    public static function getSchemasWithoutSafeReplacement(): iterable
+    {
+        yield 'single integer' => [
+            [
+                'type' => 'integer',
+                'minimum' => 1,
+                'maximum' => 1,
+            ],
+            '1',
+        ];
+
+        yield 'decimal multiple' => [
+            [
+                'type' => 'integer',
+                'minimum' => 0,
+                'maximum' => 3,
+                'multipleOf' => 1.5,
+            ],
+            '0',
+        ];
+
+        yield 'empty string' => [
+            [
+                'type' => 'string',
+                'maxLength' => 0,
+            ],
+            '',
+        ];
+
+        yield 'single matching string' => [
+            [
+                'type' => 'string',
+                'minLength' => 1,
+                'maxLength' => 1,
+                'pattern' => '^a$',
+            ],
+            'a',
+        ];
+    }
+
     /**
      * @return iterable<array-key, array{Api, array<TestCase>}>
      */
@@ -241,7 +374,7 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                                 new Schema([
                                     'type' => 'integer',
                                     'minimum' => 1,
-                                    'maximum' => 1,
+                                    'maximum' => 100,
                                 ])
                             )
                         )
@@ -250,13 +383,18 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                             DefinitionResponse::create(404)
                                 ->setDescription('description test')
                         )
+                        ->addExample(
+                            OperationExample::create('default')
+                                ->setPathParameter('id', '1')
+                                ->setResponse(ResponseExample::create('200'))
+                        )
                 ),
             [
                 new TestCase(
                     Error404Preparator::getName() . ' - getTest - RandomPath',
                     OperationExample::create('test1')
                         ->setPath('/test/{id}')
-                        ->setPathParameter('id', '1')
+                        ->setPathParameter('id', '100')
                         ->setResponse(ResponseExample::create('404', 'description test')),
                 ),
             ],

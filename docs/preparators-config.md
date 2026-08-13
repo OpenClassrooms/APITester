@@ -66,7 +66,7 @@ name: error404
 # (Uses only common configuration)
 ```
 
-The preparator keeps the operation example intact and replaces the last non-enum string or integer path parameter with a stable, schema-valid value. Enum-only paths are skipped because every generated value may identify a real route.
+The preparator keeps the operation example intact and replaces the last eligible string or integer path parameter, based on URI order, with a different stable, schema-valid value. It skips the operation when no safe non-empty replacement can be generated, including enum-only and single-value paths.
 
 ## error405
 
