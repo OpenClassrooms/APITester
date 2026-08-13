@@ -56,6 +56,18 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                             ])
                         )
                     )
+                    ->addQueryParameter(
+                        Parameter::create('sort')->setSchema(
+                            new Schema([
+                                'type' => 'object',
+                                'properties' => [
+                                    'name' => [
+                                        'type' => 'string',
+                                    ],
+                                ],
+                            ])
+                        )
+                    )
                     ->addRequestBody(
                         Body::create(
                             new Schema([
@@ -77,6 +89,15 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                     ->addExample(
                         OperationExample::create('200')
                             ->setQueryParameter('lang', 'en')
+                            ->setParameter(
+                                'sort',
+                                [
+                                    'name' => 'asc',
+                                ],
+                                Parameter::TYPE_QUERY,
+                                'object',
+                                true
+                            )
                             ->setBody(
                                 BodyExample::create([
                                     'name' => 'John Doe',
@@ -94,6 +115,15 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
                     ->setMethod('PUT')
                     ->setPathParameter('id', '1')
                     ->setQueryParameter('lang', 'en')
+                    ->setParameter(
+                        'sort',
+                        [
+                            'name' => 'asc',
+                        ],
+                        Parameter::TYPE_QUERY,
+                        'object',
+                        true
+                    )
                     ->setBodyContent([
                         'name' => 'John Doe',
                     ])
@@ -108,6 +138,93 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
             $preparator->doPrepare($api->getOperations()),
             ['parent']
         );
+    }
+
+    public function testUsesAStableValueForTheLastResourcePathParameter(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getChild', '/parents/{parentId}/children/{childId}/{view}')
+                    ->addPathParameter(
+                        Parameter::create('parentId')->setSchema(
+                            new Schema([
+                                'type' => 'integer',
+                                'minimum' => 1,
+                                'maximum' => 100,
+                            ])
+                        )
+                    )
+                    ->addPathParameter(
+                        Parameter::create('childId')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                                'maxLength' => 12,
+                                'pattern' => '^[a-z0-9]{1,12}$',
+                            ])
+                        )
+                    )
+                    ->addPathParameter(
+                        Parameter::create('view')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                                'enum' => ['summary', 'details'],
+                            ])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+                    ->addExample(
+                        OperationExample::create('default')
+                            ->setPathParameter('parentId', '10')
+                            ->setPathParameter('childId', 'existing')
+                            ->setPathParameter('view', 'summary')
+                            ->setResponse(ResponseExample::create('200'))
+                    )
+            );
+
+        $preparator = new Error404Preparator();
+        for ($iteration = 0; $iteration < 5; ++$iteration) {
+            $testCases = [];
+            foreach ($preparator->doPrepare($api->getOperations()) as $testCase) {
+                $testCases[] = $testCase;
+            }
+
+            self::assertCount(1, $testCases);
+            self::assertSame(
+                '/parents/10/children/apitesternot/summary',
+                $testCases[0]->jsonSerialize()['request']->getUri()->getPath()
+            );
+        }
+    }
+
+    public function testSkipsEnumOnlyPaths(): void
+    {
+        $api = Api::create()
+            ->addOperation(
+                Operation::create('getFacet', '/facets/{domain}/{facet}')
+                    ->addPathParameter(
+                        Parameter::create('domain')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                                'enum' => ['organization', 'job-posting'],
+                            ])
+                        )
+                    )
+                    ->addPathParameter(
+                        Parameter::create('facet')->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                                'enum' => ['provider', 'country'],
+                            ])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addResponse(DefinitionResponse::create(404))
+            );
+
+        $preparator = new Error404Preparator();
+
+        self::assertCount(0, $preparator->doPrepare($api->getOperations()));
     }
 
     /**
