@@ -43,17 +43,18 @@ final class Error404Preparator extends TestCasesPreparator
         $operation = $response->getParent();
         $example = $operation->getExample();
         $pathParameters = $example->getPathParameters();
-        $replacement = $this->getPathReplacement($operation, $pathParameters);
-        if ($replacement === null) {
+        $replacements = $this->getPathReplacements($operation, $pathParameters);
+        if ($replacements === []) {
             return null;
         }
 
-        [$parameter, $value] = $replacement;
-        $example = $example->withParameter(
-            $parameter->getName(),
-            $value,
-            Parameter::TYPE_PATH
-        );
+        foreach ($replacements as [$parameter, $value]) {
+            $example = $example->withParameter(
+                $parameter->getName(),
+                $value,
+                Parameter::TYPE_PATH
+            );
+        }
         $example->getQueryParameters();
         $example->getHeaders();
         $example->getBody();
@@ -75,30 +76,22 @@ final class Error404Preparator extends TestCasesPreparator
     /**
      * @param array<string, int|string> $currentValues
      *
-     * @return array{Parameter, string}|null
+     * @return list<array{Parameter, string}>
      */
-    private function getPathReplacement(Operation $operation, array $currentValues): ?array
+    private function getPathReplacements(Operation $operation, array $currentValues): array
     {
-        $parametersByPosition = [];
+        $replacements = [];
         foreach ($operation->getPathParameters() as $parameter) {
-            $position = mb_strpos($operation->getPath(), "{{$parameter->getName()}}");
-            if ($position !== false) {
-                $parametersByPosition[$position] = $parameter;
-            }
-        }
-        krsort($parametersByPosition);
-
-        foreach ($parametersByPosition as $parameter) {
             $value = $this->getNotFoundValue(
                 $parameter,
                 $currentValues[$parameter->getName()] ?? null
             );
             if ($value !== null) {
-                return [$parameter, $value];
+                $replacements[] = [$parameter, $value];
             }
         }
 
-        return null;
+        return $replacements;
     }
 
     private function getNotFoundValue(Parameter $parameter, int|string|null $currentValue): ?string
