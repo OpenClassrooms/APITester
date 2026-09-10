@@ -46,7 +46,7 @@ suites:
                         names: [ 'RangeConfig' ]
                         unit: items
             -   name: examples
-                extensionPath: tests/Fixtures/Examples/oc
+                extensionPath: 'tests/Fixtures/Examples/petstore/examples.new.yml'
         filters:
             include:
                 - {id: oc_api_learning_activity_learning_path_projects_with_user_information_get}

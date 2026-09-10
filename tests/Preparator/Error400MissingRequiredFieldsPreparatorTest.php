@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Body;
-use APITester\Definition\Example\BodyExample;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Preparator\Error400MissingRequiredFieldsPreparator;
-use APITester\Test\TestCase;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Body;
+use APITester\Schema\Entity\Example\BodyExample;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Error400MissingRequiredFieldsPreparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
 
@@ -21,11 +21,13 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
     /**
      * @dataProvider getData
      *
-     * @param TestCase[] $expected
+     * @param array<string, array<mixed>> $config
+     * @param TestCase[]                  $expected
      */
-    public function test(Api $api, array $expected): void
+    public function test(Api $api, array $expected, array $config = []): void
     {
         $preparator = new Error400MissingRequiredFieldsPreparator();
+        $preparator->configure($config);
         Assert::objectsEqual(
             $expected,
             $preparator->doPrepare($api->getOperations()),
@@ -36,7 +38,7 @@ final class Error400MissingRequiredFieldsPreparatorTest extends \PHPUnit\Framewo
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getData(): iterable
+    public static function getData(): iterable
     {
         yield 'Required body param and query param' => [
             Api::create()

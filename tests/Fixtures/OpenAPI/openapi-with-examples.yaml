@@ -173,6 +173,25 @@ components:
                     type: string
                 tag:
                     type: string
+                    nullable: true
+                location:
+                    required:
+                        - city
+                        - country
+                    type: object
+                    properties:
+                        city:
+                            type: string
+                            enum:
+                                - Paris
+                                - Lyon
+                                - Marseille
+                            example: 'Paris'
+                        country:
+                            type: string
+                            enum:
+                                - France
+                            example: 'France'
         Pets:
             type: array
             items:

@@ -9,6 +9,7 @@ trait FilterableTrait
     public function has(string $prop, $value, string $operator = '='): bool
     {
         $self = collect([$this]);
+
         if (str_contains($prop, '*')) {
             $operator = 'contains';
         }

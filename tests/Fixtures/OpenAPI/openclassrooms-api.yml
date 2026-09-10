@@ -586,6 +586,29 @@ paths:
             summary: 'Get funding-mechanisms'
             description: 'Get funding-mechanisms'
             operationId: oc_api_funding_mechanisms_get
+            parameters:
+                - name: op
+                  in: query
+                  description: 'Filter operator on ID'
+                  required: false
+                  style: deepObject
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+                              enum: [in, nin]
+                              example: in
+                - name: id
+                  in: query
+                  description: 'Filter by ID'
+                  required: false
+                  explode: false
+                  schema:
+                      type: array
+                      items:
+                        type: integer
+                        example: 1
             responses:
                 200:
                     description: Ok

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Test;
 
-use APITester\Config\Loader\PlanConfigLoader;
+use APITester\Runtime\Config\Loader\PlanConfigLoader;
+use APITester\Test\Entity\Plan;
 use APITester\Test\Exception\SuiteNotFoundException;
-use APITester\Test\Plan;
 use APITester\Tests\Fixtures\FixturesLocation;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Logger\ConsoleLogger;
@@ -33,12 +33,14 @@ final class PlanTest extends TestCase
     {
         $this->expectException(SuiteNotFoundException::class);
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
-        $this->testPlan->execute($config, 'petstore');
+        $this->testPlan->getSuiteConfig($config, 'petstore');
     }
 
     public function testOC(): void
     {
         $config = PlanConfigLoader::load(FixturesLocation::CONFIG_OPENAPI);
-        $this->testPlan->execute($config, 'oc');
+
+        $suite = $this->testPlan->getSuiteConfig($config, 'oc');
+        self::assertSame('oc', $suite->getName());
     }
 }

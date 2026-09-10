@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Preparator;
 
-use APITester\Definition\Api;
-use APITester\Definition\Body;
-use APITester\Definition\Example\BodyExample;
-use APITester\Definition\Example\OperationExample;
-use APITester\Definition\Example\ResponseExample;
-use APITester\Definition\Operation;
-use APITester\Definition\Parameter;
-use APITester\Definition\Response as DefinitionResponse;
-use APITester\Preparator\Config\ExamplesPreparatorConfig;
-use APITester\Preparator\ExamplesPreparator;
-use APITester\Test\TestCase;
+use APITester\Runtime\Config\Entity\Filters;
+use APITester\Schema\Entity\Api;
+use APITester\Schema\Entity\Body;
+use APITester\Schema\Entity\Collection\Scopes;
+use APITester\Schema\Entity\Example\BodyExample;
+use APITester\Schema\Entity\Example\OperationExample;
+use APITester\Schema\Entity\Example\ResponseExample;
+use APITester\Schema\Entity\Operation;
+use APITester\Schema\Entity\Parameter;
+use APITester\Schema\Entity\Response as DefinitionResponse;
+use APITester\Schema\Entity\Security\HttpSecurity;
+use APITester\Schema\Entity\Token;
+use APITester\Test\Entity\TestCase;
+use APITester\Test\Preparator\Config\ExamplesPreparatorConfig;
+use APITester\Test\Preparator\ExamplesPreparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
 
@@ -23,6 +27,84 @@ use cebe\openapi\spec\Schema;
  */
 final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @dataProvider getAutoCompleteBodies
+     *
+     * @param array<string, mixed> $schema
+     * @param array<mixed>|null $body
+     * @param array<mixed> $expected
+     */
+    public function testAutoCompleteBodies(array $schema, ?array $body, array $expected): void
+    {
+        $example = OperationExample::create('default');
+        if ($body !== null) {
+            $example->setBodyContent($body);
+        }
+        $api = Api::create()->addOperation(
+            Operation::create('autoCompleteBody', '/items', 'POST')
+                ->addRequestBody(Body::create($schema))
+                ->addResponse(DefinitionResponse::create(200))
+                ->addExample($example)
+        );
+        $preparator = new ExamplesPreparator();
+        $preparator->configure([
+            'autoComplete' => true,
+        ]);
+
+        $count = 0;
+        foreach ($preparator->doPrepare($api->getOperations()) as $testCase) {
+            ++$count;
+            $request = $testCase->jsonSerialize()['request'];
+            static::assertSame($expected, json_decode((string) $request->getBody(), true));
+        }
+        static::assertSame(1, $count);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, array<mixed>|null, array<mixed>}>
+     */
+    public static function getAutoCompleteBodies(): iterable
+    {
+        $arraySchema = [
+            'type' => 'array',
+            'minItems' => 1,
+            'maxItems' => 1,
+            'items' => [
+                'type' => 'integer',
+                'nullable' => true,
+                'enum' => [9],
+            ],
+        ];
+
+        yield 'empty array' => [$arraySchema, [], []];
+        yield 'array beginning with null' => [$arraySchema, [null], [null]];
+        yield 'nonempty array' => [$arraySchema, [3, 5], [3, 5]];
+        yield 'missing body is generated' => [$arraySchema, null, [9]];
+        yield 'missing object property is filled' => [
+            [
+                'type' => 'object',
+                'required' => ['name', 'age'],
+                'properties' => [
+                    'name' => [
+                        'type' => 'string',
+                        'enum' => ['generated'],
+                    ],
+                    'age' => [
+                        'type' => 'integer',
+                        'enum' => [25],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'provided',
+            ],
+            [
+                'name' => 'provided',
+                'age' => 25,
+            ],
+        ];
+    }
+
     public function testConfigureConfig(): void
     {
         $preparator = new ExamplesPreparator();
@@ -43,6 +125,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     {
         $preparator = new ExamplesPreparator();
 
+        $this->addTokens($preparator);
         $preparator->configure([]);
         Assert::objectsEqual(
             $expected,
@@ -54,7 +137,7 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return iterable<string, array{Api, array<TestCase>}>
      */
-    public function getExpectedTestSuites(): iterable
+    public static function getExpectedTestSuites(): iterable
     {
         yield 'with 1 query param' => [
             Api::create()->addOperation(
@@ -376,5 +459,152 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
                 ),
             ],
         ];
+
+        yield 'with filtered tokens' => [
+            Api::create()->addOperation(
+                Operation::create('filtered_token_test', '/tokens')
+                    ->addSecurity(
+                        HttpSecurity::create(
+                            'bearer_test',
+                            'bearer',
+                            scopes: Scopes::fromNames(['scope5'])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addExample(
+                        OperationExample::create('200.default')
+                            ->setResponse(new ResponseExample())
+                    )
+            ),
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - filtered_token_test - 200.default',
+                    OperationExample::create('filtered_token_test')
+                        ->setPath('/tokens')
+                        ->setHeaders([
+                            'Authorization' => ['Bearer 3333'],
+                        ])
+                        ->setResponse(ResponseExample::create('200')),
+                ),
+            ],
+        ];
+
+        yield 'without filtered tokens but multiple options' => [
+            Api::create()->addOperation(
+                Operation::create('unfiltered_token_test', '/tokens')
+                    ->addSecurity(
+                        HttpSecurity::create(
+                            'bearer_test',
+                            'bearer',
+                            scopes: Scopes::fromNames(['scope5'])
+                        )
+                    )
+                    ->addResponse(DefinitionResponse::create(200))
+                    ->addExample(
+                        OperationExample::create('200.default')
+                            ->setResponse(new ResponseExample())
+                    )
+            ),
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - unfiltered_token_test - 200.default',
+                    OperationExample::create('unfiltered_token_test')
+                        ->setPath('/tokens')
+                        ->setHeaders([
+                            'Authorization' => ['Bearer 1111'],
+                        ])
+                        ->setResponse(ResponseExample::create('200')),
+                ),
+            ],
+        ];
+    }
+
+    public function testSchemaValidationDisabledForBaselineOperation(): void
+    {
+        $preparator = new ExamplesPreparator();
+
+        $preparator->configure([
+            'schemaValidation' => true,
+        ]);
+
+        $api = Api::create()->addOperation(
+            Operation::create('operationIdInBaseline', '/test')
+                ->addQueryParameter(
+                    Parameter::create('foo')
+                        ->setSchema(
+                            new Schema([
+                                'type' => 'string',
+                            ])
+                        )
+                )
+                ->addResponse(DefinitionResponse::create(200))
+                ->addExample(
+                    OperationExample::create('200.default')
+                        ->setQueryParameters([
+                            'foo' => 'bar',
+                        ])
+                        ->setResponse(new ResponseExample())
+                )
+        );
+        $filters = new Filters(
+            schemaValidationBaseline: __DIR__ . '/../../tests/Fixtures/Config/schema-validation-baseline.yaml'
+        );
+        $preparator->setSchemaValidationBaseline($filters->getSchemaValidationBaseline());
+
+        Assert::objectsEqual(
+            [
+                new TestCase(
+                    ExamplesPreparator::getName() . ' - operationIdInBaseline - 200.default',
+                    OperationExample::create('operationIdInBaseline')
+                        ->setPath('/test')
+                        ->setQueryParameter('foo', 'bar')
+                        ->setResponse(ResponseExample::create('200')),
+                    schemaValidation: false
+                ),
+            ],
+            $preparator->doPrepare($api->getOperations()),
+            ['parent']
+        );
+    }
+
+    private function addTokens(ExamplesPreparator $preparator): void
+    {
+        $preparator->addToken(
+            new Token(
+                'token1',
+                'oauth2_implicit',
+                '1111',
+                [
+                    'scope1',
+                    'scope2',
+                    'scope5',
+                ],
+            )
+        )
+            ->addToken(
+                new Token(
+                    'token2',
+                    'oauth2_implicit',
+                    '2222',
+                    [
+                        'scope3',
+                        'scope4',
+                    ],
+                )
+            )
+            ->addToken(
+                new Token(
+                    'token3',
+                    'oauth2_implicit',
+                    '3333',
+                    [
+                        'scope5',
+                    ],
+                    filters: new Filters(include: [[
+                        'id' => 'filtered_token_test',
+                    ]])
+                )
+            )
+        ;
     }
 }

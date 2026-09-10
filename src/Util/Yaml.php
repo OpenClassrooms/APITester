@@ -17,6 +17,10 @@ final class Yaml
             return [];
         }
 
+        if (!is_file($path)) {
+            $path = Path::getFullPath($path);
+        }
+
         /** @var array<array-key, mixed> */
         return \Symfony\Component\Yaml\Yaml::parseFile($path);
     }
@@ -30,7 +34,7 @@ final class Yaml
             return [];
         }
 
-        $directory = \dirname(__DIR__, 2) . '/' . trim($path, '/');
+        $directory = \dirname(__DIR__, 2) . '/' . mb_trim($path, '/');
 
         $data = [];
         /** @var DirectoryIterator $fileInfo */

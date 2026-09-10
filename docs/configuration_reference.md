@@ -1,329 +1,210 @@
-# Configuration Reference
+# APITester Configuration Reference
 
-## Name
+This document provides a comprehensive reference for configuring APITester. The configuration is structured into **Root Configuration** and **Suite Configuration**.
+
+## Root Configuration
+
+The top-level configuration defines global settings and the list of test suites.
 
 ```yaml
-required: true
-type: string
+bootstrap: 'tests/bootstrap.php' # Optional: Path to a bootstrap file to include before running tests
+suites: # Required: List of test suites
+    - ...
 ```
 
-name is useful for selecting which
+---
 
-## definition
+## Suite Configuration
 
-## path
+Each suite in the `suites` list can be configured with the following options:
+
+### Name
 
 ```yaml
-required: true
-type: string
+name: 'my-suite' # Required
+```
+The name is used to select which suite to run via the command line (e.g., `--suite=my-suite`).
+
+### Definition
+
+Defines the source of the API specification (e.g., OpenAPI / Swagger).
+
+```yaml
+definition:
+    path: 'path/to/openapi.yaml' # Required: Path or URL to the definition file
+    format: 'openapi'            # Required: Format of the definition (currently only 'openapi' is supported)
 ```
 
-## format
+### Base URL
+
+Overrides the host defined in the OpenAPI specification.
 
 ```yaml
-required: true
-type: [ openapi ] # for now we support only the openapi format
+baseUrl: 'http://localhost:8080' # Optional
 ```
 
-## requester
+### Requester
+
+Determines how HTTP requests are executed.
 
 ```yaml
-required: false
-default: http-async
-type: [ symfony-kernel, http-async ]
+requester: 'http-async' # Optional, default: 'http-async'
 ```
 
-## symfony-kernel
+Available values:
+- `http-async`: Sends real HTTP requests over the network asynchronously.
+- `symfony-kernel`: Forwards requests directly to the Symfony Kernel (requires `symfonyKernelClass`). Useful for testing within a Symfony application context (e.g., handling transactions).
 
-Forwards http requests directly to symfony kernel, has the advantage of being
-compatible with transactions (in case it's
-used in test cases callbacks)
+#### Symfony Kernel Configuration
 
-## http-async
-
-Sends http requests asynchronously through the network.
-
-## preparators
+If `requester` is set to `symfony-kernel`, you must specify the Kernel class.
 
 ```yaml
-required: false
-default: all
+symfonyKernelClass: '\App\Kernel'
 ```
 
-Theses are used to produce test cases, each one based on it's own logic and
-configuration.
-Following the list of supported preparators.
+### Test Case Class
 
-## examples
-
-## error400
+Specifies the PHPUnit TestCase class that generated tests will extend.
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
+testCaseClass: '\OC\IntegrationTestCase' # Optional, default: '\PHPUnit\Framework\TestCase'
 ```
 
-## error401
+### PHPUnit Config
+
+Path to a specific PHPUnit XML configuration file for this suite.
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 401
-        description: the exact statusCode to be checked
+phpunitConfig: 'phpunit.xml' # Optional
 ```
 
-## error403
+---
+
+## Filters
+
+Filters allow you to select which API operations to test based on their properties (tags, operationId, etc.).
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 403
-        description: the exact statusCode to be checked
+filters:
+    include: ...
+    exclude: ...
+    baseline: 'api-tester.baseline.yaml'
+    schemaValidationBaseline: 'api-tester.schema-baseline.yaml'
 ```
 
-## error404
+### Include / Exclude
+
+Include or exclude operations. Rules are matched against operation properties.
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 404
-        description: the exact statusCode to be checked
+include:
+    - { tags.*.name: 'User' } # Include operations with 'User' tag
+exclude:
+    - { id: 'delete_user' }   # Exclude operation with id 'delete_user'
 ```
 
-## error405
+### Baselines
+
+- `baseline`: Path to a file containing a list of failed tests to ignore in future runs. Generated via `--set-baseline` or `--update-baseline`.
+- `schemaValidationBaseline`: Path to a file containing schema validation errors to ignore.
+
+---
+
+## Preparators
+
+Preparators are responsible for generating test cases for each API operation. You can configure them to customize the generated tests.
 
 ```yaml
-methods:
-    type: [ GET, POST, PATCH, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT ]
-    default: all
-    description: methods to validate against
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
+preparators:
+    - name: 'error400'
+      # ... config ...
 ```
 
-## error406
+Available preparators: `examples`, `error400`, `error401`, `error403`, `error404`, `error405`, `error406`, `error413`, `error416`, `random`, `pagination_error`, `security_error`.
+
+### Common Configuration
+
+All preparators support the following configuration:
 
 ```yaml
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
+- name: 'error400'
+  excludedFields: ['email', 'password'] # Fields to exclude/ignore during generation
+  schemaValidation: false               # Disable response schema validation for this preparator
+  headers:                              # Custom headers to inject
+      X-Custom-Header: 'value'
+  response:                             # Assertions on the response
+      statusCode: 400                   # Expected status code (can use regex or 'NOT' tag)
+      body: '...'                       # Expected body content (regex support)
+      headers:                          # Expected response headers
+         Content-Type: 'application/json'
 ```
 
-## error413
+---
+
+## Auth
+
+Handles authentication for the requests. You can define multiple authentication strategies.
 
 ```yaml
-range:
-    type: array<object>
-    description: describes how pagination is handled by the api
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
+auth:
+    - name: 'admin_user'
+      type: 'oauth2_password' # Currently supported: oauth2_password, oauth2_implicit
+      # ... type specific config ...
+      body:
+          username: 'admin'
+          password: 'password'
+          grant_type: 'password'
+          client_id: '...'
+      headers:
+          Authorization: 'Basic ...'
+      filters: # Optional: Apply this auth only to specific operations
+          include:
+              - { tags.*.name: 'Admin' }
 ```
 
-## error416
+---
+
+## Full Example
 
 ```yaml
-range:
-    type: array<object>
-    description: describes how pagination is handled by the api
-excludedFields:
-    type: array
-    description: list of response fields to be excluded when checking
-schemaValidation:
-    type: bool
-    description: allows to enable or disable the schema validation. By default, the schema validation is enabled.
-response:
-    body:
-        type: string
-        default: null
-        description: the exact body to be checked
-    statusCode:
-        type: int
-        default: 400
-        description: the exact statusCode to be checked
-```
+bootstrap: 'tests/bootstrap.php'
 
-## filters
-
-```yaml
-required: false
-```
-
-## include
-
-```yaml
-required: false
-type: array<object>
-```
-
-List of operations to include depending on the selected criteria.
-
-## exclude
-
-```yaml
-required: false
-type: array<object>
-```
-
-List of operations to exclude depending on the selected criteria.
-
-## authentication
-
-```yaml
-required: false
-type: array<object>
-```
-
-Handles authentication, which produces a list of tokens that are
-
-## name
-
-```yaml
-required: yes
-type: string
-```
-
-## type
-
-```yaml
-required: yes
-type: [ oauth2_password, oauth2_implicit ] #other auth methods still need support
-```
-
-## Full example
-
-```yaml
 suites:
-    -   name: 'all' # name of suite, can be used to select which suite to launch
+    -   name: 'main'
         definition:
-            path: 'src/OC/ApiBundle/Resources/schema/openclassrooms-api.yml' # path/url of the definition document
-            format: 'openapi' # type of the definition
-        requester: 'symfony-kernel' # how requests are executed, default: http-async
-        preparators: # are responsible of preparing test cases, leaving them empty will load all prepartors with optional config
-            -   name: error400 # which preparator
-                excludedFields: [ 'body' ]
-                schemaValidation: false
-            -   name: error401
-                excludedFields: [ 'body' ]
-            -   name: error403
-                excludedFields: [ 'body' ]
-                schemaValidation: true
-            -   name: error404
-                excludedFields: [ 'body' ]
-        filters: # select which operations to test, filters are on operations properties
-            #please refer to the class APITester\Definition\Operation
-            include: # we include operations with the following tags
-                - { tags.*.name: Invitation }
-                - { tags.*.name: Support }
-                - { tags.*.name: Project }
-                - { tags.*.name: Course }
-            exclude:
-                # we exclude an operation with it's id for the error404 preparator
-                - { id: oc_api_learning_activity_course_chapter_complete_post, preparator: error404 }
-                - { id: oc_api_invitation_invitations_get, preparator: error401 }
-                - { id: oc_api_invitation_invitations_get, preparator: error403 }
+            path: 'openapi.yaml'
+            format: 'openapi'
+        baseUrl: 'http://localhost:8000'
+        requester: 'symfony-kernel'
+        symfonyKernelClass: '\App\Kernel'
+        testCaseClass: '\App\Tests\ApiTestCase'
         
-        auth: # authentication requests configuration
-          - name: 'user_1'
-            body:
-              grant_type: 'password'
-              scope: 'scope 1'
-              username: 'tech-tests+1111111@openclassrooms.com'
-              password: 'test'
-            headers:
-              Authorization: 'Basic xxx'
-              Accept: 'application/json'
-              Content-Type: 'application/json'
-          - name: 'user_2'
-            body:
-              grant_type: 'client_credentials'
-              scope: 'scope2 scope3'
-            headers:
-              Authorization: 'Basic xxx'
-              Accept: 'application/json'
-              Content-Type: 'application/json'
+        filters:
+            baseline: 'tests/api-tester.baseline.yaml'
+            include:
+                - { tags.*.name: 'Public' }
+                - { tags.*.name: 'Private' }
+            exclude:
+                - { id: 'deprecated_operation' }
 
+        auth:
+            -   name: 'user'
+                type: 'oauth2_password'
+                body:
+                    username: '%env(TEST_USER)%'
+                    password: '%env(TEST_PASSWORD)%'
+                    grant_type: 'password'
+                    client_id: 'app_client'
+                headers:
+                    Authorization: 'Basic Y2xpZW50OnNlY3JZXdA=='
+        
+        preparators:
+            -   name: 'examples'
+                schemaValidation: true
+            -   name: 'error400'
+                excludedFields: ['id', 'created_at']
+            -   name: 'error403'
+                response:
+                    statusCode: 403
 ```
