@@ -27,6 +27,84 @@ use cebe\openapi\spec\Schema;
  */
 final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @dataProvider getAutoCompleteBodies
+     *
+     * @param array<string, mixed> $schema
+     * @param array<mixed>|null $body
+     * @param array<mixed> $expected
+     */
+    public function testAutoCompleteBodies(array $schema, ?array $body, array $expected): void
+    {
+        $example = OperationExample::create('default');
+        if ($body !== null) {
+            $example->setBodyContent($body);
+        }
+        $api = Api::create()->addOperation(
+            Operation::create('autoCompleteBody', '/items', 'POST')
+                ->addRequestBody(Body::create($schema))
+                ->addResponse(DefinitionResponse::create(200))
+                ->addExample($example)
+        );
+        $preparator = new ExamplesPreparator();
+        $preparator->configure([
+            'autoComplete' => true,
+        ]);
+
+        $count = 0;
+        foreach ($preparator->doPrepare($api->getOperations()) as $testCase) {
+            ++$count;
+            $request = $testCase->jsonSerialize()['request'];
+            static::assertSame($expected, json_decode((string) $request->getBody(), true));
+        }
+        static::assertSame(1, $count);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, array<mixed>|null, array<mixed>}>
+     */
+    public static function getAutoCompleteBodies(): iterable
+    {
+        $arraySchema = [
+            'type' => 'array',
+            'minItems' => 1,
+            'maxItems' => 1,
+            'items' => [
+                'type' => 'integer',
+                'nullable' => true,
+                'enum' => [9],
+            ],
+        ];
+
+        yield 'empty array' => [$arraySchema, [], []];
+        yield 'array beginning with null' => [$arraySchema, [null], [null]];
+        yield 'nonempty array' => [$arraySchema, [3, 5], [3, 5]];
+        yield 'missing body is generated' => [$arraySchema, null, [9]];
+        yield 'missing object property is filled' => [
+            [
+                'type' => 'object',
+                'required' => ['name', 'age'],
+                'properties' => [
+                    'name' => [
+                        'type' => 'string',
+                        'enum' => ['generated'],
+                    ],
+                    'age' => [
+                        'type' => 'integer',
+                        'enum' => [25],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'provided',
+            ],
+            [
+                'name' => 'provided',
+                'age' => 25,
+            ],
+        ];
+    }
+
     public function testConfigureConfig(): void
     {
         $preparator = new ExamplesPreparator();

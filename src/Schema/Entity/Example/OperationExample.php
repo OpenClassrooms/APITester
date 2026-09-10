@@ -337,6 +337,10 @@ final class OperationExample
         }
 
         if ($this->autoComplete && !$this->isRootLevelExample) {
+            if ($this->body !== null && $requestBody->getSchema()->type === 'array') {
+                return $this->body;
+            }
+
             $randomBody = BodyExample::create($requestBody->getRandomContent());
             if ($this->body !== null) {
                 $this->body->setContent(array_merge($randomBody->getContent(), $this->body->getContent()));
