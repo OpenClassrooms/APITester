@@ -78,6 +78,14 @@ jobs:
                   tools: composer:v2
               env:
                   COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Isolate runner dependencies from analyzer tools
+              run: |
+                  php -r '
+                      $path = "composer.json";
+                      $composer = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+                      $composer["require-dev"] = ["brianium/paratest" => $composer["require-dev"]["brianium/paratest"]];
+                      file_put_contents($path, json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+                  '
             - name: Install compatible test runners
               run: >-
                   composer update --no-interaction --prefer-dist --no-progress
