@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+    title: Runner compatibility fixture
+    version: 1.0.0
+servers:
+    - url: https://runner.example
+paths:
+    /first:
+        get:
+            operationId: first
+            responses:
+                '200':
+                    description: Successful response
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                            examples:
+                                'named':
+                                    value: parent
+    /second:
+        get:
+            operationId: second
+            responses:
+                '200':
+                    description: Successful response
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                            examples:
+                                'named':
+                                    value: parent
+    /third:
+        get:
+            operationId: third
+            responses:
+                '200':
+                    description: Successful response
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                            examples:
+                                'named #2':
+                                    value: parent
+    /fourth:
+        get:
+            operationId: fourth
+            responses:
+                '200':
+                    description: Successful response
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                            examples:
+                                'named':
+                                    value: parent

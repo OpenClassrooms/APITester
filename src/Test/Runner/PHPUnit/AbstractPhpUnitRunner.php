@@ -42,6 +42,9 @@ abstract class AbstractPhpUnitRunner implements TestRunner
         $configExport = var_export($configPath, true);
         $suiteExport = var_export($suiteName, true);
         $optionsExport = var_export($runnerOptions, true);
+        $dataProvider = class_exists(\PHPUnit\Framework\Attributes\DataProvider::class)
+            ? "#[\\PHPUnit\\Framework\\Attributes\\DataProvider('apiTestCases')]"
+            : '/** @dataProvider apiTestCases */';
 
         $content = <<<'PHP'
             <?php
@@ -69,37 +72,19 @@ abstract class AbstractPhpUnitRunner implements TestRunner
 
                     $seenDataSetNames = [];
                     foreach ($plan->getTestCases($config, self::SUITE_NAME, self::OPTIONS) as $testCase) {
-                        $dataSetName = $testCase->getName();
-                        $seenDataSetNames[$dataSetName] = ($seenDataSetNames[$dataSetName] ?? 0) + 1;
-                        if ($seenDataSetNames[$dataSetName] > 1) {
-                            $dataSetName .= ' #' . $seenDataSetNames[$dataSetName];
+                        $baseName = $testCase->getName();
+                        $dataSetName = $baseName;
+                        $suffix = 1;
+                        while (isset($seenDataSetNames[$dataSetName])) {
+                            $dataSetName = $baseName . ' #' . ++$suffix;
                         }
+                        $seenDataSetNames[$dataSetName] = true;
 
                         yield $dataSetName => [$testCase];
                     }
                 }
 
-                /**
-                 * @param array<array-key, mixed> $data
-                 * @param int|string              $dataName
-                 */
-                public function __construct(?string $name = null, array $data = [], $dataName = '')
-                {
-                    if ($name !== null && $data === [] && $dataName === '') {
-                        $pattern = '/^(?<method>[^ ]+) with data set "(?<dataName>.*)"$/';
-                        if (preg_match($pattern, $name, $m) === 1) {
-                            $name = $m['method'];
-                            $dataName = $m['dataName'];
-                            $data = [null];
-                        }
-                    }
-
-                    parent::__construct($name, $data, $dataName);
-                }
-
-                /**
-                 * @dataProvider apiTestCases
-                 */
+                __APITESTER_DATA_PROVIDER__
                 public function testApi(TestCase $testCase): void
                 {
 
@@ -122,8 +107,9 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                 '__APITESTER_CONFIG__',
                 '__APITESTER_SUITE__',
                 '__APITESTER_OPTIONS__',
+                '__APITESTER_DATA_PROVIDER__',
             ],
-            [$parent, $configExport, $suiteExport, $optionsExport],
+            [$parent, $configExport, $suiteExport, $optionsExport, $dataProvider],
             $content
         );
 
