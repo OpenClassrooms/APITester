@@ -42,9 +42,6 @@ abstract class AbstractPhpUnitRunner implements TestRunner
         $configExport = var_export($configPath, true);
         $suiteExport = var_export($suiteName, true);
         $optionsExport = var_export($runnerOptions, true);
-        $dataProvider = class_exists(\PHPUnit\Framework\Attributes\DataProvider::class)
-            ? "#[\\PHPUnit\\Framework\\Attributes\\DataProvider('apiTestCases')]"
-            : '/** @dataProvider apiTestCases */';
 
         $content = <<<'PHP'
             <?php
@@ -84,7 +81,7 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                     }
                 }
 
-                __APITESTER_DATA_PROVIDER__
+                #[\PHPUnit\Framework\Attributes\DataProvider('apiTestCases')]
                 public function testApi(TestCase $testCase): void
                 {
 
@@ -107,9 +104,8 @@ abstract class AbstractPhpUnitRunner implements TestRunner
                 '__APITESTER_CONFIG__',
                 '__APITESTER_SUITE__',
                 '__APITESTER_OPTIONS__',
-                '__APITESTER_DATA_PROVIDER__',
             ],
-            [$parent, $configExport, $suiteExport, $optionsExport, $dataProvider],
+            [$parent, $configExport, $suiteExport, $optionsExport],
             $content
         );
 
