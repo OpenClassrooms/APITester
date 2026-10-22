@@ -57,3 +57,37 @@ jobs:
                     action: update
                     files: '[{"coverage": "build/coverage/coverage.xml", "summary": "coverage-summary.json", "label": "Coverage", "badge": "coverage.svg"}]'
                     token: ${{ secrets.GITHUB_TOKEN }}
+
+    runner-compatibility:
+        name: Runners / PHPUnit ${{ matrix.phpunit }}
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - phpunit: '10.5'
+                      paratest: '7.4'
+                    - phpunit: '11.5'
+                      paratest: '7.8'
+        steps:
+            - uses: actions/checkout@v5
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: pcov
+                  tools: composer:v2
+              env:
+                  COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Install compatible test runners
+              run: >-
+                  composer update --no-interaction --prefer-dist --no-progress
+                  --with phpunit/phpunit:~${{ matrix.phpunit }}.0
+                  --with brianium/paratest:~${{ matrix.paratest }}.0
+            - name: Check static analysis with selected PHPUnit version
+              run: composer phpstan
+            - name: Test generated cases and process results
+              run: >-
+                  vendor/bin/phpunit --no-configuration --bootstrap vendor/autoload.php
+                  --fail-on-phpunit-deprecation tests/Runner
+            - name: Run full unit suite
+              run: composer unit

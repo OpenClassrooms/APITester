@@ -61,7 +61,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
         static::assertStringContainsString('test-suite', $content);
         static::assertStringContainsString('ApiTesterRunnerTest', $content);
         static::assertStringContainsString('$seenDataSetNames = [];', $content);
-        static::assertStringContainsString('$dataSetName = $testCase->getName();', $content);
+        static::assertStringContainsString('$baseName = $testCase->getName();', $content);
     }
 
     public function testCleanupRunnerFileDeletesFile(): void
@@ -109,6 +109,7 @@ final class AbstractPhpUnitRunnerTest extends TestCase
      * @param list<string>         $expectedContains
      * @param list<string>         $expectedNotContains
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('buildArgumentsProvider')]
     public function testBuildArguments(
         array $options,
         ?string $phpunitConfig,

@@ -26,7 +26,6 @@ parameters:
         - '/Unable to resolve the template type TValue in call to function collect/'
         - '/Class APITester\\Test\\Preparator\\Config\\PreparatorConfig is neither abstract nor final./'
         - '/Construct empty\(\) is not allowed. Use more strict comparison./'
-        - '/Language construct empty\(\) should not be used./'
         - '/In method "APITester\\Runtime\\Requester\\SymfonyKernelRequester::request", caught "Throwable" must be rethrown.+/'
         - '/throws checked exception Symfony\\Component\\Serializer\\Exception\\ExceptionInterface/'
         - {paths: [ ../tests ], message: '/Method .+ throws checked exception .+ but it''s missing from the PHPDoc @throws tag./'}
