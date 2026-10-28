@@ -33,7 +33,8 @@ final class Error403Preparator extends SecurityErrorPreparator
                     fn (Token $x) => !\in_array($x->getName(), $this->config->excludedTokens, true)
                         && $security
                             ->getScopes()
-                            ->select('name')
+                            ->toBase()
+                            ->pluck('name')
                             ->intersect($x->getScopes())
                             ->count() === 0
                 )

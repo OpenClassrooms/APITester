@@ -23,7 +23,7 @@ final class Operations extends Collection
         foreach ($this as $operation) {
             $operations[$operation->getMethod()][] = $operation;
             $operations[$operation->getId()][] = $operation;
-            foreach ($operation->getTags()->select('name') as $tag) {
+            foreach ($operation->getTags()->toBase()->pluck('name') as $tag) {
                 $operations[(string) $tag][] = $operation;
             }
         }

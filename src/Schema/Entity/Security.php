@@ -20,13 +20,17 @@ abstract class Security
 
     public const SCHEME_BEARER_AUTH = 'bearer';
 
+    public string $type {
+        get => $this->getType();
+    }
+
+    public protected(set) string $name;
+
+    public protected(set) Scopes $scopes;
+
     protected Operation $parent;
 
     protected string $description = '';
-
-    protected string $name;
-
-    protected Scopes $scopes;
 
     public function __construct(string $name, ?Scopes $scopes = null)
     {

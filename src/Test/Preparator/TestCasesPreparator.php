@@ -24,6 +24,10 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 abstract class TestCasesPreparator
 {
+    public string $name {
+        get => static::getName();
+    }
+
     protected Tokens $tokens;
 
     protected PreparatorConfig $config;

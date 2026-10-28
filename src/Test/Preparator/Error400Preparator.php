@@ -66,7 +66,7 @@ abstract class Error400Preparator extends TestCasesPreparator
     {
         /** @var Body|null $requiredBody */
         $requiredBody = $operation->getRequestBodies()
-            ->where('required', true)
+            ->whereStrict('required', true)
             ->first()
         ;
 
@@ -97,7 +97,7 @@ abstract class Error400Preparator extends TestCasesPreparator
                 ->setPathParameters($parameters[Parameter::TYPE_PATH]->getExamples())
                 ->setHeaders(
                     $parameters[Parameter::TYPE_HEADER]
-                        ->where('required', true)
+                        ->whereStrict('required', true)
                         ->getExamples()
                 )
                 ->setBody(BodyExample::create($body))

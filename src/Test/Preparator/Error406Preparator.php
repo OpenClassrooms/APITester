@@ -23,10 +23,8 @@ final class Error406Preparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations->map(
-            fn (Operation $operation) => $operation->getResponses()
-                ->select('mediaType')
-                ->intersect($this->config->mediaTypes)
-                ->compare($this->config->mediaTypes)
+            fn (Operation $operation) => collect($this->config->mediaTypes)
+                ->diff($operation->getResponses()->toBase()->pluck('mediaType'))
                 ->sort()
                 ->take($this->config->casesCount)
                 ->map(fn ($type) => $this->prepareTestCase(

@@ -21,8 +21,10 @@ abstract class SecurityErrorPreparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations
-            ->where('responses.*.statusCode', 'contains', (int) $this->getStatusCode())
-            ->select('securities.*')
+            ->filter(fn (\APITester\Schema\Entity\Operation $operation) => $operation->getResponses()
+                ->contains('statusCode', '===', (int) $this->getStatusCode()))
+            ->toBase()
+            ->pluck('securities.*')
             ->flatten()
             ->map(function ($security) {
                 /** @var Security $security */

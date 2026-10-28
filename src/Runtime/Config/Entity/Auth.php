@@ -19,7 +19,7 @@ final class Auth
     private ?Filters $filters = null;
 
     public function __construct(
-        private readonly string $name
+        public readonly string $name
     ) {
     }
 
