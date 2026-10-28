@@ -85,7 +85,7 @@ final class TestCase implements \JsonSerializable, Filterable
      * @param array<int, string> $excludedFields
      */
     public function __construct(
-        private readonly string $name,
+        public readonly string $name,
         private readonly OperationExample $operationExample,
         array $excludedFields = [],
         bool $schemaValidation = true

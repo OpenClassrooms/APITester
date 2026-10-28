@@ -54,7 +54,7 @@ final class ExamplesExtensionLoader
             $operationExamples = $links[$operation->getId()] ?? [];
             foreach ($operationExamples as $exampleName) {
                 $example = $examples
-                    ->where('name', $exampleName)
+                    ->whereStrict('name', $exampleName)
                     ->first()
                 ;
                 if ($example !== null) {

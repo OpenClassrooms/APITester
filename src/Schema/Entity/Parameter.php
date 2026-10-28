@@ -26,8 +26,8 @@ final class Parameter
      * @param Schema|array<string, string|int>|null $schema
      */
     public function __construct(
-        private readonly string $name,
-        private bool $required = true,
+        public readonly string $name,
+        public private(set) bool $required = true,
         $schema = null
     ) {
         if (\is_array($schema)) {

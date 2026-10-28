@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace APITester\Tests\Test;
 
+use APITester\Runtime\Requester\HttpDumpRequester;
 use APITester\Schema\Entity\Collection\Responses;
 use APITester\Schema\Entity\Example\OperationExample;
 use APITester\Schema\Entity\OpenApiSpecification;
@@ -11,6 +12,7 @@ use APITester\Schema\Entity\Operation;
 use APITester\Test\Entity\TestCase;
 use APITester\Test\Exception\InvalidResponseSchemaException;
 use APITester\Tests\Fixtures\FixturesLocation;
+use Carbon\Carbon;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\Schema;
 use Nyholm\Psr7\Response;
@@ -19,6 +21,23 @@ use PHPUnit\Framework\TestCase as UnitTestCase;
 final class TestCaseTest extends UnitTestCase
 {
     private TestCase $testCase;
+
+    public function testPrepareRecordsRequestTimestamps(): void
+    {
+        $testCase = new TestCase('pets', OperationExample::create('pets')->setPath('/pets'));
+        $testCase->setRequester(new HttpDumpRequester());
+        $this->expectOutputRegex('/GET \{\{url\}\}\/pets/');
+        Carbon::setTestNow(new \DateTimeImmutable('2026-10-28T12:00:00+00:00'));
+
+        try {
+            $testCase->prepare();
+
+            static::assertSame('2026-10-28T12:00:00+00:00', $testCase->getStartedAt()?->format(DATE_ATOM));
+            static::assertSame('2026-10-28T12:00:00+00:00', $testCase->getFinishedAt()?->format(DATE_ATOM));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
 
     public function testValidSchemaWithoutValidationShouldPass(): void
     {

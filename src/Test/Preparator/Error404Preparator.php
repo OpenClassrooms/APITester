@@ -27,7 +27,7 @@ final class Error404Preparator extends TestCasesPreparator
         $testCases = [];
 
         foreach ($operations as $operation) {
-            foreach ($operation->getResponses()->where('statusCode', 404) as $response) {
+            foreach ($operation->getResponses()->whereStrict('statusCode', 404) as $response) {
                 $testCase = $this->prepareTestCase($response);
                 if ($testCase !== null) {
                     $testCases[] = $testCase;

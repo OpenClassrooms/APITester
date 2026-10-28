@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class ExecutePlanCommand extends Command
 {
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'launch';
 

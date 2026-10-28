@@ -231,7 +231,7 @@ final class Plan
         $configuredPreparators = [];
         foreach ($preparators as $name => $preparatorConfig) {
             $preparator = collect($this->preparators)
-                ->where('name', $name)
+                ->whereStrict('name', $name)
                 ->first()
             ;
             if ($preparator === null) {

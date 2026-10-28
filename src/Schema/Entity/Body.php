@@ -11,11 +11,11 @@ use Vural\OpenAPIFaker\SchemaFaker\SchemaFaker;
 
 final class Body
 {
+    public private(set) bool $required = false;
+
     private Operation $parent;
 
     private readonly Schema $schema;
-
-    private bool $required = false;
 
     /**
      * @param Schema|array<mixed> $schema
@@ -24,7 +24,7 @@ final class Body
      */
     public function __construct(
         $schema,
-        private readonly string $mediaType = 'application/json'
+        public readonly string $mediaType = 'application/json'
     ) {
         $this->schema = $schema instanceof Schema ? $schema : new Schema($schema);
     }

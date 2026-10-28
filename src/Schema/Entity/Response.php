@@ -9,9 +9,9 @@ use cebe\openapi\spec\Schema;
 
 final class Response
 {
-    private Operation $parent;
+    public private(set) ?string $mediaType = null;
 
-    private ?string $mediaType = null;
+    private Operation $parent;
 
     private Parameters $headers;
 
@@ -20,7 +20,7 @@ final class Response
     private string $description = '';
 
     public function __construct(
-        private int $statusCode
+        public private(set) int $statusCode
     ) {
         $this->headers = new Parameters();
     }

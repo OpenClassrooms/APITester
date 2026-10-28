@@ -51,7 +51,7 @@ final class OperationExample
     private DeepCopy $deepCopy;
 
     public function __construct(
-        private string $name,
+        public private(set) string $name,
         ?Operation $parent = null,
         ?int $statusCode = null,
         private bool $isRootLevelExample = false
@@ -384,9 +384,10 @@ final class OperationExample
         }
         foreach ($operation->getSecurities() as $security) {
             $scopes = $security->getScopes()
-                ->where('name', '!=', 'current_user')
-                ->select('name')
-                ->toArray()
+                ->where('name', '!==', 'current_user')
+                ->toBase()
+                ->map(static fn (\APITester\Schema\Entity\Scope $scope): string => $scope->getName())
+                ->all()
             ;
 
             if ($ignoreScope) {
@@ -397,7 +398,9 @@ final class OperationExample
                 $token = $tokens->filter(
                     static fn (Token $token) => $token->getFilters()?->includes($operation) ?? false
                 )
-                    ->first() ?? $tokens->where('scopes', 'includes', $scopes)
+                    ->first() ?? $tokens->filter(
+                        static fn (Token $token) => array_diff($scopes, $token->getScopes()) === []
+                    )
                     ->first()
                 ;
             }

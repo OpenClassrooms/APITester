@@ -60,7 +60,7 @@ final class Authenticator
     {
         /** @var Security|null $security */
         $security = $api->getSecurities()
-            ->where('type', $type)
+            ->whereStrict('type', $type)
             ->first()
         ;
 

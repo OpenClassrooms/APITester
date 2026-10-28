@@ -82,11 +82,11 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
         foreach ($this->config->range as $configItem) {
             if ($configItem->inQuery()) {
                 $lower = $operation->getQueryParameters()
-                    ->where('name', $configItem->getLower())
+                    ->whereStrict('name', $configItem->getLower())
                     ->first()
                 ;
                 $upper = $operation->getQueryParameters()
-                    ->where('name', $configItem->getUpper())
+                    ->whereStrict('name', $configItem->getUpper())
                     ->first()
                 ;
 
@@ -99,7 +99,7 @@ abstract class PaginationErrorPreparator extends TestCasesPreparator
 
             if ($configItem->inHeader()) {
                 $header = $operation->getHeaders()
-                    ->where('name', $configItem->getNames()[0])->first()
+                    ->whereStrict('name', $configItem->getNames()[0])->first()
                 ;
 
                 if ($header === null) {

@@ -42,7 +42,7 @@ final class Suite
     private ?string $baseUrl = null;
 
     public function __construct(
-        private readonly string $name,
+        public readonly string $name,
         private readonly Definition $definition
     ) {
         $this->filters = new Filters();
@@ -135,8 +135,8 @@ final class Suite
     public function getPreparators(): array
     {
         return collect($this->preparators)
-            ->keyBy('name')
-            ->toArray()
+            ->keyBy(static fn (array $preparator): string => (string) ($preparator['name'] ?? ''))
+            ->all()
         ;
     }
 

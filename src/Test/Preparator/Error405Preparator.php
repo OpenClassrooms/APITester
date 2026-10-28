@@ -24,10 +24,8 @@ final class Error405Preparator extends TestCasesPreparator
     {
         /** @var iterable<array-key, TestCase> */
         return $operations->groupBy('path', true)
-            ->map(fn (Collection $pathOperations) => $pathOperations
-                ->select('method')
-                ->intersect($this->config->methods)
-                ->compare($this->config->methods)
+            ->map(fn (Collection $pathOperations) => collect($this->config->methods)
+                ->diff($pathOperations->toBase()->pluck('method'))
                 ->crossJoin($pathOperations->take(1))
                 ->map(
                     function (array $data) {

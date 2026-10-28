@@ -19,6 +19,16 @@ final class Operation implements Filterable
 {
     use FilterableTrait;
 
+    public string $path {
+        get => $this->getPath();
+    }
+
+    public private(set) Responses $responses;
+
+    public private(set) Securities $securities;
+
+    private readonly string $routePath;
+
     private string $description = '';
 
     private Parameters $headers;
@@ -33,10 +43,6 @@ final class Operation implements Filterable
 
     private Bodies $bodies;
 
-    private Responses $responses;
-
-    private Securities $securities;
-
     private string $summary = '';
 
     private Tags $tags;
@@ -50,9 +56,12 @@ final class Operation implements Filterable
 
     public function __construct(
         private readonly string $id,
-        private readonly string $path,
-        private string $method
+        string $path,
+        public private(set) string $method {
+            get => mb_strtoupper($this->method);
+        }
     ) {
+        $this->routePath = $path;
         $this->pathParameters = new Parameters();
         $this->queryParameters = new Parameters();
         $this->headers = new Parameters();
@@ -84,7 +93,7 @@ final class Operation implements Filterable
         ];
 
         if ($onlyRequired) {
-            $parameters = array_map(static fn (Parameters $p) => $p->where('required', true), $parameters);
+            $parameters = array_map(static fn (Parameters $p) => $p->whereStrict('required', true), $parameters);
         }
 
         return $parameters;
@@ -93,7 +102,7 @@ final class Operation implements Filterable
     public function getPathParameters(bool $onlyRequired = false): Parameters
     {
         if ($onlyRequired) {
-            return $this->pathParameters->where('required', true);
+            return $this->pathParameters->whereStrict('required', true);
         }
 
         return $this->pathParameters;
@@ -272,7 +281,7 @@ final class Operation implements Filterable
         $params = self::substituteParams($this->pathParameters, $params);
         $query = self::substituteParams($this->queryParameters, $query);
 
-        return self::formatPath($this->path, $params, $query);
+        return self::formatPath($this->routePath, $params, $query);
     }
 
     public function getExamples(): OperationExamples
@@ -343,7 +352,7 @@ final class Operation implements Filterable
 
     public function getMethod(): string
     {
-        return mb_strtoupper($this->method ?? 'GET');
+        return $this->method;
     }
 
     public function setMethod(string $method): self

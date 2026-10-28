@@ -84,7 +84,7 @@ final class Error400MissingRequiredFieldsPreparator extends Error400Preparator
      */
     private function excludeParameter(array $parameters, string $type, Parameter $toExclude): array
     {
-        $parameters[$type] = $parameters[$type]->where('name', '!=', $toExclude->getName());
+        $parameters[$type] = $parameters[$type]->where('name', '!==', $toExclude->getName());
 
         return $parameters;
     }

@@ -7,7 +7,7 @@ namespace APITester\Schema\Entity;
 final class Scope
 {
     public function __construct(
-        private readonly string $name,
+        public readonly string $name,
         private readonly string $description = ''
     ) {
     }

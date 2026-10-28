@@ -16,10 +16,10 @@ final class Token
      * @param string[] $scopes
      */
     public function __construct(
-        private readonly string $name,
+        public readonly string $name,
         private readonly string $authType,
         private readonly string $accessToken,
-        private readonly array $scopes = [],
+        public readonly array $scopes = [],
         private readonly ?string $refreshToken = null,
         private readonly ?Filters $filters = null,
         ?string $type = null,
