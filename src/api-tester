@@ -27,6 +27,6 @@ use APITester\Runtime\Console\ExecutePlanCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application('api-tester', '0.1');
-$application->add(new ExecutePlanCommand());
+$application->addCommands([new ExecutePlanCommand()]);
 $application->setDefaultCommand('launch', true);
 $application->run();

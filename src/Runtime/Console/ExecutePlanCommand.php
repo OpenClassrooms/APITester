@@ -11,19 +11,16 @@ use APITester\Test\Runner\ParaTest\ParaTestRunner;
 use APITester\Test\Runner\PHPUnit\PhpUnitRunner;
 use APITester\Test\Runner\TestRunner;
 use DOMDocument;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(name: 'launch')]
 final class ExecutePlanCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'launch';
-
     /**
      * @var list<string>
      */
