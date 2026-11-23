@@ -103,8 +103,6 @@ final class AbstractPhpUnitRunnerTest extends TestCase
     }
 
     /**
-     * @dataProvider buildArgumentsProvider
-     *
      * @param array<string, mixed> $options
      * @param list<string>         $expectedContains
      * @param list<string>         $expectedNotContains

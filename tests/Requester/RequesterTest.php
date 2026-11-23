@@ -7,6 +7,7 @@ namespace APITester\Tests\Requester;
 use APITester\Runtime\Requester\HttpDumpRequester;
 use APITester\Runtime\Requester\Requester;
 use Nyholm\Psr7\Request;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class RequesterTest extends TestCase
@@ -59,9 +60,7 @@ final class RequesterTest extends TestCase
         static::assertSame('/users', (string) $resolved->getUri());
     }
 
-    /**
-     * @dataProvider fillVarsProvider
-     */
+    #[DataProvider('fillVarsProvider')]
     public function testFillVarsReplacesPlaceholders(string $subject, string $expected): void
     {
         $requester = new HttpDumpRequester();

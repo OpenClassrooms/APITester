@@ -54,13 +54,11 @@ final class ExecutePlanCommandTest extends TestCase
     }
 
     #[DataProvider('executionOutcomes')]
-    public function testLaunchPreservesRunnerOutcome(
-        int $statusCode,
-        int $expectedExitCode,
-        string $expectedSummary
-    ): void {
+    public function testLaunchPreservesRunnerOutcome(int $statusCode, int $expectedExitCode): void
+    {
         $configPath = tempnam(sys_get_temp_dir(), 'api-tester-console-');
         self::assertNotFalse($configPath);
+        $junit = $configPath . '.xml';
         $config = [
             'suites' => [[
                 'name' => 'console',
@@ -88,22 +86,34 @@ final class ExecutePlanCommandTest extends TestCase
             $status = $tester->execute([
                 '--config' => $configPath,
                 '--suite' => 'console',
+                '--log-junit' => $junit,
             ]);
 
             self::assertSame($expectedExitCode, $status, $tester->getDisplay());
-            self::assertStringContainsString($expectedSummary, $tester->getDisplay());
+            self::assertFileExists($junit, $tester->getDisplay());
+            $report = simplexml_load_file($junit);
+            self::assertNotFalse($report);
+            $cases = $report->xpath('//testcase');
+            $failures = $report->xpath('//testcase/failure');
+            self::assertIsArray($cases);
+            self::assertIsArray($failures);
+            self::assertCount(4, $cases);
+            self::assertCount($expectedExitCode === 0 ? 0 : 4, $failures);
             self::assertStringNotContainsString('PHPUnit Deprecation', $tester->getDisplay());
         } finally {
             unlink($configPath);
+            if (is_file($junit)) {
+                unlink($junit);
+            }
         }
     }
 
     /**
-     * @return iterable<string, array{int, int, string}>
+     * @return iterable<string, array{int, int}>
      */
     public static function executionOutcomes(): iterable
     {
-        yield 'successful responses' => [200, 0, 'OK (4 tests,'];
-        yield 'unexpected responses' => [201, 1, 'Tests: 4'];
+        yield 'successful responses' => [200, 0];
+        yield 'unexpected responses' => [201, 1];
     }
 }

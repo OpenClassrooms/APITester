@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace APITester\Tests\Util;
 
 use APITester\Util\Json;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class JsonTest extends TestCase
 {
-    /**
-     * @dataProvider isJsonProvider
-     */
+    #[DataProvider('isJsonProvider')]
     public function testIsJson(string $input, bool $expected): void
     {
         static::assertSame($expected, Json::isJson($input));

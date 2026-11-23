@@ -17,14 +17,14 @@ use APITester\Test\Entity\TestCase;
 use APITester\Test\Preparator\Error401Preparator;
 use APITester\Util\Assert;
 use Firebase\JWT\JWT;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error401PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error401Preparator();

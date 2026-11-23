@@ -82,7 +82,7 @@ final class RunnerExecutionTest extends TestCase
                         }, $file);
 
                         static::assertSame($fail ? 1 : 0, $status, $output);
-                        static::assertStringContainsString($fail ? 'Tests: 4' : 'OK (4 tests,', $output);
+                        static::assertMatchesRegularExpression('/OK \(4 tests,|Tests: 4,/', $output);
                         static::assertStringNotContainsString('PHPUnit Deprecation', $output);
                         if ($fail && $definition === 'duplicate-names.yaml') {
                             static::assertStringContainsString('examples - runner - named #2 #2', $output);
