@@ -8,6 +8,7 @@ use APITester\Runtime\Config\Loader\PlanConfigLoader;
 use APITester\Test\Entity\Plan;
 use APITester\Test\Exception\SuiteNotFoundException;
 use APITester\Tests\Fixtures\FixturesLocation;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -15,8 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
- * @group integration
  */
+#[Group('integration')]
 final class PlanTest extends TestCase
 {
     private Plan $testPlan;

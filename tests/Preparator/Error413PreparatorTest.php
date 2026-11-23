@@ -12,15 +12,15 @@ use APITester\Schema\Entity\Parameter;
 use APITester\Test\Entity\TestCase;
 use APITester\Test\Preparator\Error413Preparator;
 use APITester\Util\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error413PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param array<string, array<mixed>> $config
      * @param TestCase[]                  $expected
      */
+    #[DataProvider('getData')]
     public function test(array $config, Api $api, array $expected): void
     {
         $preparator = new Error413Preparator();

@@ -11,14 +11,14 @@ use APITester\Schema\Entity\Operation;
 use APITester\Test\Entity\TestCase;
 use APITester\Test\Preparator\Error405Preparator;
 use APITester\Util\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error405PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error405Preparator();

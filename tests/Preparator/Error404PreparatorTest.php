@@ -16,14 +16,14 @@ use APITester\Test\Entity\TestCase;
 use APITester\Test\Preparator\Error404Preparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getData
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getData')]
     public function test(Api $api, array $expected): void
     {
         $preparator = new Error404Preparator();
@@ -318,10 +318,9 @@ final class Error404PreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider getSchemasWithoutSafeReplacement
-     *
      * @param array<string, mixed> $schemaData
      */
+    #[DataProvider('getSchemasWithoutSafeReplacement')]
     public function testSkipsPathWithoutSafeReplacement(array $schemaData, string $currentValue): void
     {
         $api = Api::create()

@@ -21,6 +21,7 @@ use APITester\Test\Preparator\Config\ExamplesPreparatorConfig;
 use APITester\Test\Preparator\ExamplesPreparator;
 use APITester\Util\Assert;
 use cebe\openapi\spec\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @internal
@@ -28,12 +29,11 @@ use cebe\openapi\spec\Schema;
 final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider getAutoCompleteBodies
-     *
      * @param array<string, mixed> $schema
      * @param array<mixed>|null $body
      * @param array<mixed> $expected
      */
+    #[DataProvider('getAutoCompleteBodies')]
     public function testAutoCompleteBodies(array $schema, ?array $body, array $expected): void
     {
         $example = OperationExample::create('default');
@@ -117,10 +117,9 @@ final class ExamplesPreparatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider getExpectedTestSuites
-     *
      * @param TestCase[] $expected
      */
+    #[DataProvider('getExpectedTestSuites')]
     public function testPrepare(Api $api, array $expected): void
     {
         $preparator = new ExamplesPreparator();
